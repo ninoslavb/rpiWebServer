@@ -2,21 +2,62 @@
 <html>
   <head>
     <title>GPIO Control</title>
-    <link rel="stylesheet" href="/static/master.css?v=101" />
-	<!--Include the external socket.io.min.js library for WebSocket support.-->
+    <link rel="stylesheet" href="/static/master.css?v=343" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
-    <script src="/static/js/main.js"></script>
+    
+    <script> 
+    document.addEventListener('DOMContentLoaded', () => {
+      const socket = io.connect();
+    
+      socket.on('relay_status', (data) => {
+        const relayStatus = data.Relay;
+        document.querySelector('#relay-input').checked = relayStatus === 1;
+      });
+    
+      socket.on('sensor1_status', (data) => {
+        const sensor1Disconnected = document.querySelector('#sensor1-disconnected');
+        const sensor1Connected = document.querySelector('#sensor1-connected');
+        if (data.Sensor1 === 0) {
+          sensor1Disconnected.style.display = 'none';
+          sensor1Connected.style.display = 'inline';
+       } else {
+          sensor1Disconnected.style.display = 'inline';
+          sensor1Connected.style.display = 'none';
+       }
+      });
+
+      const sendUpdate = (action) => {
+        socket.emit('relay_update', { action: action });
+      };
+    
+      document.querySelector('#relay-input').addEventListener('change', (e) => {
+        e.preventDefault();
+        if (e.target.checked) {
+          sendUpdate('on');
+        } else {
+          sendUpdate('off');
+        }
+      });
+    });
+    </script>
+
+    
   </head>
   <body>
     <h1>RELAY CONTROL</h1>
 
     <h2>RELAY STATUS</h2>
-    <h3 id="relay-status">{{ Relay }}</h3>
+    <label class="switch">
+      <input type="checkbox" id="relay-input">
+      <span class="slider round"></span>
+    </label>
+    <h2>SENSOR STATUS</h2>
+    <div id="sensor1-status" style="font-size: 24px;">
+      <i class="fa-solid fa-door-open" id="sensor1-disconnected" style="display: inline;"></i>
+      <i class="fa-solid fa-door-closed" id="sensor1-connected" style="display: none;"></i>
+    </div>
+    
     <br />
-    <h2></h2>
-    <h2>
-      <a href="#" id="relay-on" class="blue_glare">ON</a>
-      <a href="#" id="relay-off" class="blue_glare">OFF</a>
-    </h2>
   </body>
 </html>
