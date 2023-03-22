@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GPIO Control</title>
+    <link rel="stylesheet" href="/static/master.css?v=101" />
+	<!--Include the external socket.io.min.js library for WebSocket support.-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
+    <script src="/static/js/main.js"></script>
+  </head>
+  <body>
+    <h1>RELAY CONTROL</h1>
+
+    <h2>RELAY STATUS</h2>
+    <h3 id="relay-status">{{ Relay }}</h3>
+    <br />
+    <h2></h2>
+    <h2>
+      <a href="#" id="relay-on" class="blue_glare">ON</a>
+      <a href="#" id="relay-off" class="blue_glare">OFF</a>
+    </h2>
+  </body>
+</html>
