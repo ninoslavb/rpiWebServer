@@ -1,66 +1,136 @@
 body {
-        font-family: Arial, sans-serif;
-        text-align: center;
+  font-family: 'Poppins', Arial, sans-serif;
+  text-align: center;
+  background-color: #f1f1f1;
+}
 
-      }
-      
-      h1 {
-        font-size: 36px;
-        margin-bottom: 10px;
-      }
-      
-      h2 {
-        font-size: 24px;
-      }
-      
-      .switch {
-        position: relative;
-        display: inline-block;
-        width: 60px;
-        height: 34px;
-      }
-      
-      .switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-      
-      .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: lightgrey;
-        transition: 0.4s;
-      }
-      
-      .slider:before {
-        position: absolute;
-        content: "";
-        height: 26px;
-        width: 26px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: 0.4s;
-      }
-      
-      input:checked + .slider {
-        background-color: blue;
-      }
-      
-      input:checked + .slider:before {
-        transform: translateX(26px);
-      }
-      
-      .slider.round {
-        border-radius: 34px;
-      }
-      
-      .slider.round:before {
-        border-radius: 50%;
-      }
-      
+h1 {
+  font-size: 36px;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.device-container {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: left;
+  margin: 0 20px;
+}
+
+.device-box {
+  position: relative;
+  flex: 1;
+  max-width: 280px;
+  height: 160px;
+  margin: 10px;
+  padding: 20px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  background-color: #fff;
+  transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  border-radius: 10px;
+}
+
+.device-box:hover {
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.4);
+}
+
+.device-name {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.device-input {
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  color: #333;
+  width: calc(100% - 20px);
+  padding: 5px 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.device-input:focus {
+  border-color: #2196F3;
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+}
+
+.device-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  margin-bottom: 20px;
+  transform: translateY(-10px);
+}
+
+.device-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.device-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #d9d9d9;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.device-switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #fff;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+.device-switch input:checked + .slider {
+  background-color: #2196F3;
+}
+
+.device-switch input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.device-switch .slider.round:before {
+  border-radius: 50%;
+}
+
+
+.sensor-connected {
+  background-color: #d4edda;
+}
+
+.device-label {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6c757d;
+}
+
+.device-icon {
+  position: relative;
+  top: -20px;
+  left: 0;
+  font-size: 50px;
+}
+
+
