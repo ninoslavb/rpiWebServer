@@ -5,7 +5,7 @@ def get_database_connection():
     print("get_database_connection called")
     conn = None
     try:
-        conn = sqlite3.connect('devices2.db')
+        conn = sqlite3.connect('devices10.db')
     except Error as e:
         print(e)
     return conn
@@ -22,8 +22,11 @@ def create_table():
         c.execute('SELECT COUNT(*) FROM devices')
         count = c.fetchone()[0]
         if count == 0:
-            c.execute('INSERT INTO devices (device_key, device_name, device_status) VALUES (?, ?, ?)', ('relay', 'Relay', 0))
+            c.execute('INSERT INTO devices (device_key, device_name, device_status) VALUES (?, ?, ?)', ('relay', 'Relay1', 0))
             c.execute('INSERT INTO devices (device_key, device_name, device_status) VALUES (?, ?, ?)', ('sensor1', 'Sensor 1', 0))
+            c.execute('INSERT INTO devices (device_key, device_name, device_status) VALUES (?, ?, ?)', ('sensor2', 'Sensor 2', 0))
+            c.execute('INSERT INTO devices (device_key, device_name, device_status) VALUES (?, ?, ?)', ('sensor3', 'Sensor 3', 0))
+            c.execute('INSERT INTO devices (device_key, device_name, device_status) VALUES (?, ?, ?)', ('sensor4', 'Sensor 4', 0))
             conn.commit()
 
         conn.close()

@@ -2,7 +2,8 @@
 <html>
   <head>
     <title>Dashboard</title>
-    <link rel="stylesheet" href="/static/master.css?v=701" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/master.css?v=1233321212232221" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,6 +16,9 @@
 
       const relayNameInput = document.querySelector('#relay-name');
       const sensor1NameInput = document.querySelector('#sensor1-name');
+      const sensor2NameInput = document.querySelector('#sensor2-name');
+      const sensor3NameInput = document.querySelector('#sensor3-name');
+      const sensor4NameInput = document.querySelector('#sensor4-name');
 
   // Handle device name updates from the server
       socket.on('device_name_updated', (data) => {
@@ -22,6 +26,12 @@
           relayNameInput.value = data.device_name;
         } else if (data.device_key === 'sensor1') {
           sensor1NameInput.value = data.device_name;
+       }  else if (data.device_key === 'sensor2') {
+          sensor2NameInput.value = data.device_name;
+       }  else if (data.device_key === 'sensor3') {
+          sensor3NameInput.value = data.device_name;
+       }  else if (data.device_key === 'sensor4') {
+          sensor4NameInput.value = data.device_name;
        }
       });
 
@@ -34,6 +44,20 @@
       socket.emit('update_device_name', { device_key: 'sensor1', device_name: e.target.value });
       });
     
+
+      sensor2NameInput.addEventListener('change', (e) => {
+      socket.emit('update_device_name', { device_key: 'sensor2', device_name: e.target.value });
+      });
+
+
+      sensor3NameInput.addEventListener('change', (e) => {
+      socket.emit('update_device_name', { device_key: 'sensor3', device_name: e.target.value });
+      });
+
+      sensor4NameInput.addEventListener('change', (e) => {
+      socket.emit('update_device_name', { device_key: 'sensor4', device_name: e.target.value });
+      });
+
       socket.on('relay_status', (data) => {
         const relayStatus = data.Relay;
         if(relayStatus === 1) {
@@ -53,6 +77,32 @@
       }
       });
 
+      socket.on('sensor2_status', (data) => {
+      const sensor2Box = document.querySelector('.device-box:nth-child(3)');
+      if (data.Sensor2 === 0) {
+      sensor2Box.classList.add('sensor-connected');
+      } else {
+     sensor2Box.classList.remove('sensor-connected');
+      }
+      });
+
+      socket.on('sensor3_status', (data) => {
+      const sensor3Box = document.querySelector('.device-box:nth-child(4)');
+      if (data.Sensor3 === 0) {
+      sensor3Box.classList.add('sensor-connected');
+      } else {
+     sensor3Box.classList.remove('sensor-connected');
+      }
+      });
+
+      socket.on('sensor4_status', (data) => {
+      const sensor4Box = document.querySelector('.device-box:nth-child(5)');
+      if (data.Sensor4 === 0) {
+      sensor4Box.classList.add('sensor-connected');
+      } else {
+     sensor4Box.classList.remove('sensor-connected');
+      }
+      });
 
       const sendUpdate = (action) => {
         socket.emit('relay_update', { action: action });
@@ -79,7 +129,7 @@
             <input class="device-input" type="text" placeholder="Enter device name" id="relay-name" value="{{ device_names['relay'] }}">
           </div>
           <div class="device-icon">
-          <i class="fas fa-lightbulb"></i>
+          <i class="fas fa-lightbulb" style="color: #FFFFFF;"></i>
           </div>
           <label class="device-switch">
           <input type="checkbox" id="relay-input">
@@ -95,10 +145,47 @@
             <input class="device-input" type="text" placeholder="Enter device name" id="sensor1-name" value="{{ device_names['sensor1'] }}">
           </div>
           <div class="device-icon">
-            <i class="fa-solid fa-door-open"></i>
+            <i class="fa-solid fa-door-open" style="color: #FFFFFF;"></i>
           </div>
        </div>
     </div>
+
+    <div class="device-box">
+      <div class="device-label">DI2</div>
+        <div class="device-top">
+          <div class="device-name">
+            <input class="device-input" type="text" placeholder="Enter device name" id="sensor2-name" value="{{ device_names['sensor2'] }}">
+          </div>
+          <div class="device-icon">
+            <i class="fa-solid fa-door-open" style="color: #FFFFFF;"></i>
+          </div>
+       </div>
+    </div>
+
+    <div class="device-box">
+      <div class="device-label">DI3</div>
+        <div class="device-top">
+          <div class="device-name">
+            <input class="device-input" type="text" placeholder="Enter device name" id="sensor3-name" value="{{ device_names['sensor3'] }}">
+          </div>
+          <div class="device-icon">
+            <i class="fa-solid fa-door-open" style="color: #FFFFFF;"></i>
+          </div>
+       </div>
+    </div>
+
+    <div class="device-box">
+      <div class="device-label">DI4</div>
+        <div class="device-top">
+          <div class="device-name">
+            <input class="device-input" type="text" placeholder="Enter device name" id="sensor4-name" value="{{ device_names['sensor4'] }}">
+          </div>
+          <div class="device-icon">
+            <i class="fa-solid fa-door-open" style="color: #FFFFFF;"></i>
+          </div>
+       </div>
+    </div>
+
   </div>  
   </body>
 </html>
