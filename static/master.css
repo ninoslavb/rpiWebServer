@@ -21,11 +21,11 @@ h1 {
 .device-box {
   position: relative;
   flex: 1 1 auto;
-  max-width: 180px;
-  height: 160px;
+  max-width: 120px;
+  height: 120px;
   margin: 10px;
-  padding: 20px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
   text-align: center;
   background-color: #0472a9;
   transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
@@ -33,23 +33,24 @@ h1 {
 }
 
 .device-box:hover {
-  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.54);
 }
 
+/*
 .device-name {
   font-size: 24px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
-
+*/
 .device-input {
   font-family: 'Poppins', Arial, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   text-align: center;
   color: white;
   width: calc(100% - 20px);
   padding: 5px 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   border: 0px solid #ccc;
   border-radius: 4px;
   outline: none;
@@ -66,10 +67,11 @@ h1 {
 .device-switch {
   position: relative;
   display: inline-block;
-  width: 60px;
-  height: 34px;
-  margin-bottom: 20px;
-  transform: translateY(-10px);
+  width: 55px;
+  height: 24px;
+  margin-top:10px;
+  margin-bottom: 10px;
+  
 }
 
 .device-switch input {
@@ -87,14 +89,14 @@ h1 {
   bottom: 0;
   background-color: #d9d9d9;
   transition: 0.4s;
-  border-radius: 34px;
+  border-radius: 24px;
 }
 
 .device-switch .slider:before {
   position: absolute;
   content: "";
-  height: 26px;
-  width: 26px;
+  height: 16px;
+  width: 16px;
   left: 4px;
   bottom: 4px;
   background-color: #fff;
@@ -107,7 +109,7 @@ h1 {
 }
 
 .device-switch input:checked + .slider:before {
-  transform: translateX(26px);
+  transform: translateX(30px);
 }
 
 .device-switch .slider.round:before {
@@ -121,8 +123,8 @@ h1 {
 
 .device-label {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
+  bottom: 5px;
+  left: 5px;
   font-size: 14px;
   font-weight: 600;
   color: white;
@@ -130,8 +132,8 @@ h1 {
 
 .device-icon {
   position: relative;
-  top: -20px;
+  top: -10px;
   left: 0;
-  font-size: 50px;
+  font-size: 30px;
 }
 

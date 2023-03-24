@@ -5,7 +5,7 @@ def get_database_connection():
     print("get_database_connection called")
     conn = None
     try:
-        conn = sqlite3.connect('devices10.db')
+        conn = sqlite3.connect('devices.db')
     except Error as e:
         print(e)
     return conn
