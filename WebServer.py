@@ -6,6 +6,7 @@ from database_handler import get_device_status, update_device_status, get_device
 app = Flask(__name__)
 socketio = SocketIO(app)
 
+
 GPIO.setwarnings(False)
 
 # Define actuators GPIOs
@@ -51,15 +52,8 @@ GPIO.output(Relay, GPIO.HIGH if device_status['relay'] else GPIO.LOW)
 def index():
     return render_template('index.html', device_names=device_names, device_status=device_status)
 
-@socketio.on('update_device_name')
-def update_device_name_socketio(data):
-    device_key = data['device_key']
-    device_name = data['device_name']
-    device_names[device_key] = device_name
-    emit('device_name_updated', {'device_key': device_key, 'device_name': device_name}, broadcast=True)
-    update_device_name(device_key, device_name)
 
-
+#When the socket connection is established, send all relay and sensor statuses and device names
 @socketio.on('connect')
 def handle_connect():
     RelaySts = GPIO.input(Relay)
@@ -75,8 +69,19 @@ def handle_connect():
 
     # Emit device names
     for device_key, device_name in device_names.items():
-        emit('device_name_updated', {'device_key': device_key, 'device_name': device_name})    
+        emit('device_name_updated', {'device_key': device_key, 'device_name': device_name})   
 
+
+#When the name of device is changed, update the name and send feedback to the client
+@socketio.on('update_device_name')
+def update_device_name_socketio(data):
+    device_key = data['device_key']
+    device_name = data['device_name']
+    device_names[device_key] = device_name
+    emit('device_name_updated', {'device_key': device_key, 'device_name': device_name}, broadcast=True)
+    update_device_name(device_key, device_name) #update database with the new name
+
+#When the button for change the relay state is pressed, execute the action, check the state of the relay and send update to the client
 @socketio.on('relay_update')
 def handle_relay_update(data):
     action = data['action']
@@ -124,6 +129,10 @@ def sensor4_callback(channel):
 
 
 GPIO.add_event_detect(Sensor4, GPIO.BOTH, callback=sensor4_callback, bouncetime=50)
+
+#@app.route('/static/<path:path>')
+#def send_static(path):
+#    return send_from_directory('static', path)
 
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=80, debug=True, allow_unsafe_werkzeug=True)

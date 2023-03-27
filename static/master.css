@@ -12,18 +12,15 @@ h1 {
 }
 
 .device-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: left;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
   margin: 0 10px;
 }
 
 .device-box {
   position: relative;
-  flex: 1 1 auto;
-  max-width: 120px;
   height: 120px;
-  margin: 10px;
   padding: 10px;
   box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
   text-align: center;
@@ -137,3 +134,15 @@ h1 {
   font-size: 30px;
 }
 
+@media (min-width: 768px) {
+  .device-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: left;
+  }
+
+  .device-box {
+    flex: 1 1 auto;
+    max-width: 120px;
+  }
+}

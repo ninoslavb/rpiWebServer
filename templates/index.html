@@ -3,126 +3,24 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/master.css?v=12788668907714421" />
+    <link rel="stylesheet" href="/static/master.css?v=1142345325001" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
+    <script src="/static/test.js"></script>
+    <script type="module" src="/static/main.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <script> 
-    // Your JavaScript code here
-    document.addEventListener('DOMContentLoaded', () => {
-      const socket = io.connect();
-
-      const relayNameInput = document.querySelector('#relay-name');
-      const sensor1NameInput = document.querySelector('#sensor1-name');
-      const sensor2NameInput = document.querySelector('#sensor2-name');
-      const sensor3NameInput = document.querySelector('#sensor3-name');
-      const sensor4NameInput = document.querySelector('#sensor4-name');
-
-  // Handle device name updates from the server
-      socket.on('device_name_updated', (data) => {
-        if (data.device_key === 'relay') {
-          relayNameInput.value = data.device_name;
-        } else if (data.device_key === 'sensor1') {
-          sensor1NameInput.value = data.device_name;
-       }  else if (data.device_key === 'sensor2') {
-          sensor2NameInput.value = data.device_name;
-       }  else if (data.device_key === 'sensor3') {
-          sensor3NameInput.value = data.device_name;
-       }  else if (data.device_key === 'sensor4') {
-          sensor4NameInput.value = data.device_name;
-       }
-      });
-
-  // Send updates to the server when the input value changes
-      relayNameInput.addEventListener('change', (e) => {
-      socket.emit('update_device_name', { device_key: 'relay', device_name: e.target.value });
-      });
-
-      sensor1NameInput.addEventListener('change', (e) => {
-      socket.emit('update_device_name', { device_key: 'sensor1', device_name: e.target.value });
-      });
-    
-
-      sensor2NameInput.addEventListener('change', (e) => {
-      socket.emit('update_device_name', { device_key: 'sensor2', device_name: e.target.value });
-      });
-
-
-      sensor3NameInput.addEventListener('change', (e) => {
-      socket.emit('update_device_name', { device_key: 'sensor3', device_name: e.target.value });
-      });
-
-      sensor4NameInput.addEventListener('change', (e) => {
-      socket.emit('update_device_name', { device_key: 'sensor4', device_name: e.target.value });
-      });
-
-      socket.on('relay_status', (data) => {
-        const relayStatus = data.Relay;
-        if(relayStatus === 1) {
-          document.querySelector('#relay-input').checked = true;
-        }
-        else {
-        document.querySelector('#relay-input').checked = false;
-        }
-      });
-
-      socket.on('sensor1_status', (data) => {
-      const sensor1Box = document.querySelector('.device-box:nth-child(2)');
-      if (data.Sensor1 === 0) {
-      sensor1Box.classList.add('sensor-connected');
-      } else {
-     sensor1Box.classList.remove('sensor-connected');
-      }
-      });
-
-      socket.on('sensor2_status', (data) => {
-      const sensor2Box = document.querySelector('.device-box:nth-child(3)');
-      if (data.Sensor2 === 0) {
-      sensor2Box.classList.add('sensor-connected');
-      } else {
-     sensor2Box.classList.remove('sensor-connected');
-      }
-      });
-
-      socket.on('sensor3_status', (data) => {
-      const sensor3Box = document.querySelector('.device-box:nth-child(4)');
-      if (data.Sensor3 === 0) {
-      sensor3Box.classList.add('sensor-connected');
-      } else {
-     sensor3Box.classList.remove('sensor-connected');
-      }
-      });
-
-      socket.on('sensor4_status', (data) => {
-      const sensor4Box = document.querySelector('.device-box:nth-child(5)');
-      if (data.Sensor4 === 0) {
-      sensor4Box.classList.add('sensor-connected');
-      } else {
-     sensor4Box.classList.remove('sensor-connected');
-      }
-      });
-
-      const sendUpdate = (action) => {
-        socket.emit('relay_update', { action: action });
-      };
-    
-      document.querySelector('#relay-input').addEventListener('change', (e) => {
-        e.preventDefault();
-        if (e.target.checked) {
-          sendUpdate('on');
-        } else {
-          sendUpdate('off');
-        }
-      });
-    });
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script>
+      
     </script>
   </head>
   <body>
     <h1>Dashboard</h1>
+ 
   <div class="device-container">  
-    <div class="device-box">
+    <div class="device-box" data-id="1"> 
       <div class="device-label">DO1</div>
         <div class="device-top">
           <div class="device-name">
@@ -138,7 +36,7 @@
       </div>
     </div>
     
-    <div class="device-box">
+    <div class="device-box" data-id="2">
       <div class="device-label">DI1</div>
         <div class="device-top">
           <div class="device-name">
@@ -150,7 +48,7 @@
        </div>
     </div>
 
-    <div class="device-box">
+    <div class="device-box" data-id="3">
       <div class="device-label">DI2</div>
         <div class="device-top">
           <div class="device-name">
@@ -162,7 +60,7 @@
        </div>
     </div>
 
-    <div class="device-box">
+    <div class="device-box" data-id="4">
       <div class="device-label">DI3</div>
         <div class="device-top">
           <div class="device-name">
@@ -174,7 +72,7 @@
        </div>
     </div>
 
-    <div class="device-box">
+    <div class="device-box" data-id="5">
       <div class="device-label">DI4</div>
         <div class="device-top">
           <div class="device-name">
@@ -187,5 +85,25 @@
     </div>
 
   </div>  
-  </body>
+
+  <script> 
+  const deviceContainer = document.querySelector('.device-container');
+  const sortable = Sortable.create(deviceContainer, {
+  animation: 150,
+  delay: 100,
+  delayOnTouchOnly: true,
+  store: {
+    get: function (sortable) {
+      const order = localStorage.getItem('device-order');
+      return order ? order.split('|') : [];
+    },
+    set: function (sortable) {
+      const order = sortable.toArray();
+      localStorage.setItem('device-order', order.join('|'));
+    }
+  }
+});
+  </script>
+  
+</body>
 </html>
