@@ -11,6 +11,7 @@
   function attachDeviceNameUpdateListener(device_key) {
     const inputSelector = `#${device_key}-name`;
     const inputElement = document.querySelector(inputSelector);
+    const socket = io.connect(); //connect the socket
   
     if (inputElement) {
       inputElement.addEventListener('change', (e) => {

@@ -4,6 +4,8 @@ import { updateDeviceName, attachDeviceNameUpdateListener } from './deviceName_h
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io.connect(); //connect the socket
 
+    
+
     // Handle device name updates from the server and send the name update to the server when it is changed
       socket.on('device_name_updated', (data) => {
       updateDeviceName(data.device_key, data.device_name);
@@ -11,30 +13,57 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
 
-    //function to send relay_update
-    const sendUpdate = (action) => {
-      socket.emit('relay_update', { action: action });
+    //function to send relay1_update
+    const sendUpdate1 = (action) => {
+      socket.emit('relay1_update', { action: action });
     };
-    //When the relay-input (slider) is changed / pressed, send action to the server
-    document.querySelector('#relay-input').addEventListener('change', (e) => {
+    //When the Relay1-input (slider) is changed / pressed, send action to the server
+    document.querySelector('#relay1-input').addEventListener('change', (e) => {
       e.preventDefault();
       if (e.target.checked) {
-        sendUpdate('on');
+        sendUpdate1('on');
       } else {
-        sendUpdate('off');
+        sendUpdate1('off');
       }
     });
 
     //Server sends back infromation if it is on (1) of off (0), and slider is changed accordingly
-      socket.on('relay_status', (data) => {
-      const relayStatus = data.Relay;
-      if(relayStatus === 1) {
-        document.querySelector('#relay-input').checked = true;
+      socket.on('relay1_status', (data) => {
+      const relay1Status = data.Relay1;
+      if(relay1Status === 1) {
+        document.querySelector('#relay1-input').checked = true;
       }
       else {
-      document.querySelector('#relay-input').checked = false;
+      document.querySelector('#relay1-input').checked = false;
       }
     });
+
+
+      //function to send relay2_update
+        const sendUpdate2 = (action) => {
+          socket.emit('relay2_update', { action: action });
+        };
+        //When the Relay2-input (slider) is changed / pressed, send action to the server
+        document.querySelector('#relay2-input').addEventListener('change', (e) => {
+          e.preventDefault();
+          if (e.target.checked) {
+            sendUpdate2('on');
+          } else {
+            sendUpdate2('off');
+          }
+        });
+    
+        //Server sends back infromation if it is on (1) of off (0), and slider is changed accordingly
+          socket.on('relay2_status', (data) => {
+          const relay2Status = data.Relay2;
+          if(relay2Status === 1) {
+            document.querySelector('#relay2-input').checked = true;
+          }
+          else {
+          document.querySelector('#relay2-input').checked = false;
+          }
+        });
+
 
     //function to update sensor box
     function updateSensorStatus(sensorBox, sensorStatus) {
@@ -66,4 +95,19 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSensorStatus(sensor4Box, data.Sensor4);
     });
 
+
+    //if this, then this example
+   /* socket.on('sensor1_status', (data) => {
+    const mapping = document.querySelector(`option[value="sensor1-relay1"]`);
+    if (mapping) {
+      if(data.Sensor1===0) //if sensor is closed
+      sendUpdate1('on')
+      else 
+      sendUpdate1('off')
+    }
+  });*/
+  
+
   });
+
+ 

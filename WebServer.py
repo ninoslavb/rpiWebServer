@@ -1,24 +1,33 @@
 import RPi.GPIO as GPIO
-from flask import Flask, render_template
+from flask import Flask, render_template, make_response
 from flask_socketio import SocketIO, emit
 from database_handler import get_device_status, update_device_status, get_device_name, update_device_name, get_database_connection, create_table
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 
+@app.route('/gateway1.mbednino.online')
+def my_route():
+    response = make_response('Disable cache for /gateway.mbednino.online')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 GPIO.setwarnings(False)
 
 # Define actuators GPIOs
-Relay = 40
+Relay1 = 40
+Relay2 = 12
 Sensor1 = 35
 Sensor2 = 22
 Sensor3 = 33
 Sensor4 = 37
 
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(Relay, GPIO.OUT)
-#GPIO.output(Relay, GPIO.LOW)
+GPIO.setup(Relay1, GPIO.OUT)
+GPIO.setup(Relay2, GPIO.OUT)
+#GPIO.output(Relay1, GPIO.LOW)
 GPIO.setup(Sensor1, GPIO.IN)
 GPIO.setup(Sensor2, GPIO.IN)
 GPIO.setup(Sensor3, GPIO.IN)
@@ -26,14 +35,16 @@ GPIO.setup(Sensor4, GPIO.IN)
 
 def init_device_data():
     device_names = {
-        'relay': get_device_name('relay'),
+        'relay1': get_device_name('relay1'),
+        'relay2': get_device_name('relay2'),
         'sensor1': get_device_name('sensor1'),
         'sensor2': get_device_name('sensor2'),
         'sensor3': get_device_name('sensor3'),
         'sensor4': get_device_name('sensor4'),
     }
     device_status = {
-        'relay': get_device_status('relay'),
+        'relay1': get_device_status('relay1'),
+        'relay2': get_device_status('relay2'),
         'sensor1': get_device_status('sensor1'),
         'sensor2': get_device_status('sensor2'),
         'sensor3': get_device_status('sensor3'),
@@ -45,7 +56,8 @@ if __name__ == '__main__':
     create_table()
     device_names, device_status = init_device_data()
 
-GPIO.output(Relay, GPIO.HIGH if device_status['relay'] else GPIO.LOW)
+GPIO.output(Relay1, GPIO.HIGH if device_status['relay1'] else GPIO.LOW)
+GPIO.output(Relay2, GPIO.HIGH if device_status['relay2'] else GPIO.LOW)
 
 
 @app.route("/")
@@ -56,12 +68,14 @@ def index():
 #When the socket connection is established, send all relay and sensor statuses and device names
 @socketio.on('connect')
 def handle_connect():
-    RelaySts = GPIO.input(Relay)
+    Relay1Sts = GPIO.input(Relay1)
+    Relay2Sts = GPIO.input(Relay2)
     Sensor1Sts = GPIO.input(Sensor1)
     Sensor2Sts = GPIO.input(Sensor2)
     Sensor3Sts = GPIO.input(Sensor3)
     Sensor4Sts = GPIO.input(Sensor4)
-    emit('relay_status', {'Relay': RelaySts})
+    emit('relay1_status', {'Relay1': Relay1Sts})
+    emit('relay2_status', {'Relay2': Relay2Sts})
     emit('sensor1_status', {'Sensor1': Sensor1Sts})
     emit('sensor2_status', {'Sensor2': Sensor2Sts})
     emit('sensor3_status', {'Sensor3': Sensor3Sts})
@@ -81,18 +95,31 @@ def update_device_name_socketio(data):
     emit('device_name_updated', {'device_key': device_key, 'device_name': device_name}, broadcast=True)
     update_device_name(device_key, device_name) #update database with the new name
 
-#When the button for change the relay state is pressed, execute the action, check the state of the relay and send update to the client
-@socketio.on('relay_update')
-def handle_relay_update(data):
+#When the button for change the relay1 state is pressed, execute the action, check the state of the relay1 and send update to the client
+@socketio.on('relay1_update')
+def handle_relay1_update(data):
     action = data['action']
     if action == 'on':
-        GPIO.output(Relay, GPIO.HIGH)
+        GPIO.output(Relay1, GPIO.HIGH)
     elif action == 'off':
-        GPIO.output(Relay, GPIO.LOW)
+        GPIO.output(Relay1, GPIO.LOW)
 
-    RelaySts = GPIO.input(Relay)
-    update_device_status('relay', RelaySts)
-    emit('relay_status', {'Relay': RelaySts}, broadcast=True)
+    Relay1Sts = GPIO.input(Relay1)
+    update_device_status('relay1', Relay1Sts)
+    emit('relay1_status', {'Relay1': Relay1Sts}, broadcast=True)
+
+#When the button for change the relay2 state is pressed, execute the action, check the state of the relay2 and send update to the client
+@socketio.on('relay2_update')
+def handle_relay2_update(data):
+    action = data['action']
+    if action == 'on':
+        GPIO.output(Relay2, GPIO.HIGH)
+    elif action == 'off':
+        GPIO.output(Relay2, GPIO.LOW)
+
+    Relay2Sts = GPIO.input(Relay2)
+    update_device_status('relay2', Relay2Sts)
+    emit('relay2_status', {'Relay2': Relay2Sts}, broadcast=True)
 
 def sensor1_callback(channel):
     Sensor1Sts = GPIO.input(channel)

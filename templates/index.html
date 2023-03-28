@@ -3,7 +3,7 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/master.css?v=1142345325001" />
+    <link rel="stylesheet" href="/static/master.css?v=14421342381175001" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
@@ -12,29 +12,43 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
-    <script>
-      
-    </script>
+   
   </head>
   <body>
     <h1>Dashboard</h1>
  
   <div class="device-container">  
-    <div class="device-box" data-id="1"> 
+    <div class="device-box" data-id="0"> 
       <div class="device-label">DO1</div>
         <div class="device-top">
           <div class="device-name">
-            <input class="device-input" type="text" placeholder="Enter name" id="relay-name" value="{{ device_names['relay'] }}">
+            <input class="device-input" type="text" placeholder="Enter name" id="relay1-name" value="{{ device_names['relay1'] }}">
           </div>
           <div class="device-icon">
           <i class="fas fa-lightbulb" style="color: #FFFFFF;"></i>
           </div>
           <label class="device-switch">
-          <input type="checkbox" id="relay-input">
+          <input type="checkbox" id="relay1-input">
           <span class="slider round"></span>
         </label>
       </div>
     </div>
+
+      <div class="device-box" data-id="1"> 
+        <div class="device-label">DO2</div>
+          <div class="device-top">
+            <div class="device-name">
+              <input class="device-input" type="text" placeholder="Enter name" id="relay2-name" value="{{ device_names['relay2'] }}">
+            </div>
+            <div class="device-icon">
+            <i class="fas fa-lightbulb" style="color: #FFFFFF;"></i>
+            </div>
+            <label class="device-switch">
+            <input type="checkbox" id="relay2-input">
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
     
     <div class="device-box" data-id="2">
       <div class="device-label">DI1</div>
@@ -83,6 +97,16 @@
           </div>
        </div>
     </div>
+    <!-- add this after the device boxes -->
+<!--<div class="sensor-relay-mapping">
+  <select id="sensor-relay-mapping">
+    <option value="none">Select Sensor-Relay Mapping</option>
+    <option value="sensor1-relay1">Sensor 1 - Relay 1</option>
+   
+     add more options as needed... 
+  </select>
+</div>
+-->
 
   </div>  
 
