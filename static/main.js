@@ -13,57 +13,36 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
 
-    //function to send relay1_update
-    const sendUpdate1 = (action) => {
-      socket.emit('relay1_update', { action: action });
-    };
-    //When the Relay1-input (slider) is changed / pressed, send action to the server
-    document.querySelector('#relay1-input').addEventListener('change', (e) => {
-      e.preventDefault();
-      if (e.target.checked) {
-        sendUpdate1('on');
-      } else {
-        sendUpdate1('off');
-      }
-    });
-
-    //Server sends back infromation if it is on (1) of off (0), and slider is changed accordingly
-      socket.on('relay1_status', (data) => {
-      const relay1Status = data.Relay1;
-      if(relay1Status === 1) {
-        document.querySelector('#relay1-input').checked = true;
-      }
-      else {
-      document.querySelector('#relay1-input').checked = false;
-      }
-    });
-
-
-      //function to send relay2_update
-        const sendUpdate2 = (action) => {
-          socket.emit('relay2_update', { action: action });
-        };
-        //When the Relay2-input (slider) is changed / pressed, send action to the server
-        document.querySelector('#relay2-input').addEventListener('change', (e) => {
+      const sendUpdate = (device_key, action) => {
+        socket.emit('device_update', { device_key: device_key, action: action });
+      };
+      
+      // Add the device keys of devices with type 'output'
+      //const outputDeviceKeys = Object.keys(deviceData).filter((device_key) => deviceData[device_key].type === 'output');
+      const outputDeviceKeys = ['relay1', 'relay2'];
+      
+      outputDeviceKeys.forEach((device_key) => {
+        document.querySelector(`#${device_key}-input`).addEventListener('change', (e) => {
           e.preventDefault();
           if (e.target.checked) {
-            sendUpdate2('on');
+            sendUpdate(device_key, 'on');
           } else {
-            sendUpdate2('off');
+            sendUpdate(device_key, 'off');
           }
         });
-    
-        //Server sends back infromation if it is on (1) of off (0), and slider is changed accordingly
-          socket.on('relay2_status', (data) => {
-          const relay2Status = data.Relay2;
-          if(relay2Status === 1) {
-            document.querySelector('#relay2-input').checked = true;
-          }
-          else {
-          document.querySelector('#relay2-input').checked = false;
+      
+        socket.on('device_status', (data) => {
+          if (data.device_key === device_key) {
+            const deviceStatus = data.status;
+            if (deviceStatus === 1) {
+              document.querySelector(`#${device_key}-input`).checked = true;
+            } else {
+              document.querySelector(`#${device_key}-input`).checked = false;
+            }
           }
         });
-
+      });
+      
 
     //function to update sensor box
     function updateSensorStatus(sensorBox, sensorStatus) {

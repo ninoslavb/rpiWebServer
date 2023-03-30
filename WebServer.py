@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 from flask import Flask, render_template, make_response
 from flask_socketio import SocketIO, emit
-from database_handler import load_devices, save_devices, get_device_status, update_device_status, get_device_name, update_device_name, get_device_gpio_id, get_device_box_id, get_device_type, add_device
+from database_handler import load_devices, save_devices, get_device_status, update_device_status, get_device_name, update_device_name, get_device_gpio_id, get_device_box_id, get_device_type, add_device, get_device_gpio_pin
 import json
 import os
 
@@ -37,12 +37,12 @@ GPIO.setup(Sensor4, GPIO.IN)
 
 
 
-add_device('relay1',  'Relay1', 0,  'DO1', 0, 'output')
-add_device('relay2',  'Relay2', 0,  'DO2', 1, 'output')
-add_device('sensor1', 'Sensor1', 0, 'DI1', 2, 'input')
-add_device('sensor2', 'Sensor2', 0, 'DI2', 3, 'input')
-add_device('sensor3', 'Sensor3', 0, 'DI3', 4, 'input')
-add_device('sensor4', 'Sensor4', 0, 'DI4', 5, 'input')
+add_device('relay1',  'Relay1', 0,  'DO1', 0, 'output',40)
+add_device('relay2',  'Relay2', 0,  'DO2', 1, 'output',12)
+add_device('sensor1', 'Sensor1', 0, 'DI1', 2, 'input', 35)
+add_device('sensor2', 'Sensor2', 0, 'DI2', 3, 'input', 22)
+add_device('sensor3', 'Sensor3', 0, 'DI3', 4, 'input', 33)
+add_device('sensor4', 'Sensor4', 0, 'DI4', 5, 'input', 37)
 
 
 def init_device_data():
@@ -55,6 +55,7 @@ def init_device_data():
             'gpio_id': device['device_gpio_id'],
             'box_id': device['device_box_id'],
             'type': device['device_type'],
+            'gpio_pin': device['device_gpio_pin'],
         }
     return device_data
 
@@ -101,33 +102,23 @@ def update_device_name_socketio(data):
     emit('device_name_updated', {'device_key': device_key, 'device_name': device_name}, broadcast=True)
     update_device_name(device_key, device_name) #update database with the new name
 
-#When the button for change the relay1 state is pressed, execute the action, check the state of the relay1 and send update to the client
-@socketio.on('relay1_update')
-def handle_relay1_update(data):
+#When the button for change the relay state is pressed, execute the action, check the state of the relay and send update to the client
+@socketio.on('device_update')
+def relay_update(data):
+    device_key = data['device_key']
     action = data['action']
-    if action == 'on':
-        GPIO.output(Relay1, GPIO.HIGH)
-    elif action == 'off':
-        GPIO.output(Relay1, GPIO.LOW)
+    print(f"Received device_update: device_key = {device_key}, action = {action}")  # Add this print statement
 
-    Relay1Sts = GPIO.input(Relay1)
-    device_data['relay1']['status'] = Relay1Sts
-    update_device_status('relay1', Relay1Sts)
-    emit('relay1_status', {'Relay1': Relay1Sts}, broadcast=True)
+    if device_key in device_data:
+        if action == 'on':
+            GPIO.output(device_data[device_key]['gpio_pin'], GPIO.HIGH)
+        elif action == 'off':
+            GPIO.output(device_data[device_key]['gpio_pin'], GPIO.LOW)
+            
+        device_data[device_key]['status'] = GPIO.input(device_data[device_key]['gpio_pin'])
+        update_device_status(device_key, device_data[device_key]['status'])
+        emit('device_status', {'device_key': device_key, 'status': device_data[device_key]['status']}, broadcast=True)
 
-#When the button for change the relay2 state is pressed, execute the action, check the state of the relay2 and send update to the client
-@socketio.on('relay2_update')
-def handle_relay2_update(data):
-    action = data['action']
-    if action == 'on':
-        GPIO.output(Relay2, GPIO.HIGH)
-    elif action == 'off':
-        GPIO.output(Relay2, GPIO.LOW)
-
-    Relay2Sts = GPIO.input(Relay2)
-    device_data['relay2']['status'] = Relay1Sts
-    update_device_status('relay2', Relay2Sts)
-    emit('relay2_status', {'Relay2': Relay2Sts}, broadcast=True)
 
 def sensor1_callback(channel):
     Sensor1Sts = GPIO.input(channel)

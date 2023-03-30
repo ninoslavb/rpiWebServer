@@ -1,7 +1,7 @@
 import os
 import json
 
-def add_device(device_key, device_name, device_status, device_gpio_id, device_box_id, device_type):
+def add_device(device_key, device_name, device_status, device_gpio_id, device_box_id, device_type,device_gpio_pin):
     devices = load_devices()
     if device_key not in devices:
         devices[device_key] = {
@@ -9,7 +9,8 @@ def add_device(device_key, device_name, device_status, device_gpio_id, device_bo
             'device_status': device_status,
             'device_gpio_id': device_gpio_id,
             'device_box_id': device_box_id,
-            'device_type': device_type
+            'device_type': device_type,
+            'device_gpio_pin': device_gpio_pin
         }
         save_devices(devices)
     else:
@@ -73,6 +74,11 @@ def get_device_box_id(device_key):
 def get_device_type(device_key):
     devices = load_devices()
     return devices.get(device_key, {}).get('device_type', None)
+
+def get_device_gpio_pin(device_key):
+    devices = load_devices()
+    return devices.get(device_key, {}).get('gpio_pin', None)
+
 
 
 
