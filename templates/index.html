@@ -3,8 +3,8 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/sidebar.css?v=119111213334440090009124" />
-    <link rel="stylesheet" href="/static/master.css?v=14111332213323144122375001" />
+    <link rel="stylesheet" href="/static/sidebar.css?v=119122126009124" />
+    <link rel="stylesheet" href="/static/master.css?v=1411140113323144122375001" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
@@ -32,85 +32,41 @@
       <div id="dashboard">    
         <h1>Dashboard</h1>
         <div class="device-container">  
-          <div class="device-box" data-id="0"> 
-            <div class="device-label">DO1</div>
-              <div class="device-top">
-                <div class="device-name">
-                  <input class="device-input" type="text" placeholder="Enter name" id="relay1-name" value="{{ device_names['relay1'] }}">
-                </div>
-                <div class="device-icon">
-                <i class="fas fa-lightbulb" style="color: #FFFFFF;"></i>
-                </div>
-                <label class="device-switch">
-                <input type="checkbox" id="relay1-input">
-                <span class="slider round"></span>
-              </label>
-            </div>
-          </div>
 
-            <div class="device-box" data-id="1"> 
-              <div class="device-label">DO2</div>
+           {% for device_key, device in device_data.items() if device['type'] == 'output' %}
+              <div class="device-box" data-id="{{ device['box_id'] }}">
+                <div class="device-label">{{ device['gpio_id'] }}</div>
                 <div class="device-top">
                   <div class="device-name">
-                    <input class="device-input" type="text" placeholder="Enter name" id="relay2-name" value="{{ device_names['relay2'] }}">
+                    <input class="device-input" type="text" placeholder="Enter name" id="{{ device_key }}-name" value="{{ device['name'] }}">
                   </div>
                   <div class="device-icon">
-                  <i class="fas fa-lightbulb" style="color: #FFFFFF;"></i>
+                    <i class="fas fa-lightbulb" style="color: #FFFFFF;"></i>
                   </div>
                   <label class="device-switch">
-                  <input type="checkbox" id="relay2-input">
-                  <span class="slider round"></span>
-                </label>
+                    <input type="checkbox" id="{{ device_key }}-input">
+                    <span class="slider round"></span>
+                  </label>
+                </div>
               </div>
-            </div>
+            {% endfor %}
+
           
-          <div class="device-box" data-id="2">
-            <div class="device-label">DI1</div>
-              <div class="device-top">
-                <div class="device-name">
-                  <input class="device-input" type="text" placeholder="Enter name" id="sensor1-name" value="{{ device_names['sensor1'] }}">
+            {% for device_key, device in device_data.items() if device['type'] == 'input' %}
+              <div class="device-box" data-id="{{ device['box_id'] }}">
+                <div class="device-label">{{ device['gpio_id'] }}</div>
+                <div class="device-top">
+                  <div class="device-name">
+                    <input class="device-input" type="text" placeholder="Enter name" id="{{ device_key }}-name" value="{{ device['name'] }}">
+                  </div>
+                  <div class="device-icon">
+                    <i class="fa-solid fa-door-open" style="color: #FFFFFF;"></i>
+                  </div>
                 </div>
-                <div class="device-icon">
-                  <i class="fa-solid fa-door-open" style="color: #FFFFFF;"></i>
-                </div>
-            </div>
-          </div>
+              </div>
+            {% endfor %}
 
-          <div class="device-box" data-id="3">
-            <div class="device-label">DI2</div>
-              <div class="device-top">
-                <div class="device-name">
-                  <input class="device-input" type="text" placeholder="Enter name" id="sensor2-name" value="{{ device_names['sensor2'] }}">
-                </div>
-                <div class="device-icon">
-                  <i class="fa-solid fa-door-open" style="color: #FFFFFF;"></i>
-                </div>
-            </div>
-          </div>
 
-          <div class="device-box" data-id="4">
-            <div class="device-label">DI3</div>
-              <div class="device-top">
-                <div class="device-name">
-                  <input class="device-input" type="text" placeholder="Enter name" id="sensor3-name" value="{{ device_names['sensor3'] }}">
-                </div>
-                <div class="device-icon">
-                  <i class="fa-solid fa-door-open" style="color: #FFFFFF;"></i>
-                </div>
-            </div>
-          </div>
-
-          <div class="device-box" data-id="5">
-            <div class="device-label">DI4</div>
-              <div class="device-top">
-                <div class="device-name">
-                  <input class="device-input" type="text" placeholder="Enter name" id="sensor4-name" value="{{ device_names['sensor4'] }}">
-                </div>
-                <div class="device-icon">
-                  <i class="fa-solid fa-door-open" style="color: #FFFFFF;"></i>
-                </div>
-            </div>
-          </div>
         </div>  
       </div>     
 
@@ -120,72 +76,22 @@
 
 
       <div id="if-this-then-this" style="display:none;">
-      <!-- Your If This Then This page code goes here -->
-        <select id="sensor-relay-mapping">
-          <option value="none">Select Sensor-Relay Mapping</option>
-          <option value="sensor1-relay1">Sensor 1 - Relay 1</option>
-            <!-- Add more options as needed -->
-        </select>
+        <!-- Your If This Then This page code goes here -->
+          <select id="sensor-relay-mapping">
+            <option value="none">Select Sensor-Relay Mapping</option>
+            <option value="sensor1-relay1">Sensor 1 - Relay 1</option>
+            <option value="sensor2-relay1">Sensor 2 - Relay 1</option> 
+            <option value="sensor3-relay1">Sensor 3 - Relay 1</option>
+            <option value="sensor4-relay1">Sensor 4 - Relay 1</option>
+          </select>
       </div>
+      
 </div>
 </div>
 
 
-  <script> 
-  const deviceContainer = document.querySelector('.device-container');
-  const sortable = Sortable.create(deviceContainer, {
-  animation: 150,
-  delay: 100,
-  delayOnTouchOnly: true,
-  store: {
-    get: function (sortable) {
-      const order = localStorage.getItem('device-order');
-      return order ? order.split('|') : [];
-    },
-    set: function (sortable) {
-      const order = sortable.toArray();
-      localStorage.setItem('device-order', order.join('|'));
-    }
-  }
-});
-  </script>
-
-
-<script>
-function toggleSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  const mainContent = document.getElementById("main-content");
-  const sidebarToggle = document.querySelector('.sidebar-toggle');
-
-  sidebar.classList.toggle("collapsed");
-  mainContent.classList.toggle("expanded");
-
-  if (sidebar.classList.contains("collapsed")) {
-    sidebarToggle.style.left = '0';
-  } else {
-    sidebarToggle.style.left = '250px';
-  }
-}
-
-
-function navigate(pageId) {
-  const pages = ['dashboard', 'groups', 'if-this-then-this'];
-  
-  pages.forEach(page => {
-    const pageElement = document.getElementById(page);
-    
-    if (page === pageId) {
-      pageElement.style.display = 'block';
-    } else {
-      pageElement.style.display = 'none';
-    }
-  });
-}
-
-
-
-  
-</script>
+<script src="/static/sortBoxes_handler.js"></script>
+<script src="/static/sidebar_handler.js"></script>
   
 </body>
 </html>

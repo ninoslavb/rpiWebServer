@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     //if this, then this example
-   /* socket.on('sensor1_status', (data) => {
+    /*socket.on('sensor1_status', (data) => {
     const mapping = document.querySelector(`option[value="sensor1-relay1"]`);
     if (mapping) {
       if(data.Sensor1===0) //if sensor is closed
@@ -105,9 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
       else 
       sendUpdate1('off')
     }
-  });*/
-  
+  });
+  */
 
   });
 
- 

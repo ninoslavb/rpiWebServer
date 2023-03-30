@@ -1,7 +1,9 @@
 import RPi.GPIO as GPIO
 from flask import Flask, render_template, make_response
 from flask_socketio import SocketIO, emit
-from database_handler import get_device_status, update_device_status, get_device_name, update_device_name, get_database_connection, create_table
+from database_handler import load_devices, save_devices, get_device_status, update_device_status, get_device_name, update_device_name, get_device_gpio_id, get_device_box_id, get_device_type, add_device
+import json
+import os
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -33,36 +35,40 @@ GPIO.setup(Sensor2, GPIO.IN)
 GPIO.setup(Sensor3, GPIO.IN)
 GPIO.setup(Sensor4, GPIO.IN)
 
+
+
+add_device('relay1',  'Relay1', 0,  'DO1', 0, 'output')
+add_device('relay2',  'Relay2', 0,  'DO2', 1, 'output')
+add_device('sensor1', 'Sensor1', 0, 'DI1', 2, 'input')
+add_device('sensor2', 'Sensor2', 0, 'DI2', 3, 'input')
+add_device('sensor3', 'Sensor3', 0, 'DI3', 4, 'input')
+add_device('sensor4', 'Sensor4', 0, 'DI4', 5, 'input')
+
+
 def init_device_data():
-    device_names = {
-        'relay1': get_device_name('relay1'),
-        'relay2': get_device_name('relay2'),
-        'sensor1': get_device_name('sensor1'),
-        'sensor2': get_device_name('sensor2'),
-        'sensor3': get_device_name('sensor3'),
-        'sensor4': get_device_name('sensor4'),
-    }
-    device_status = {
-        'relay1': get_device_status('relay1'),
-        'relay2': get_device_status('relay2'),
-        'sensor1': get_device_status('sensor1'),
-        'sensor2': get_device_status('sensor2'),
-        'sensor3': get_device_status('sensor3'),
-        'sensor4': get_device_status('sensor4'),
-    }
-    return device_names, device_status
+    device_data = {}
+    devices = load_devices()
+    for device_key, device in devices.items():
+        device_data[device_key] = {
+            'name': device['device_name'],
+            'status': device['device_status'],
+            'gpio_id': device['device_gpio_id'],
+            'box_id': device['device_box_id'],
+            'type': device['device_type'],
+        }
+    return device_data
 
 if __name__ == '__main__':
-    create_table()
-    device_names, device_status = init_device_data()
+  
+    device_data = init_device_data()
 
-GPIO.output(Relay1, GPIO.HIGH if device_status['relay1'] else GPIO.LOW)
-GPIO.output(Relay2, GPIO.HIGH if device_status['relay2'] else GPIO.LOW)
+GPIO.output(Relay1, GPIO.HIGH if device_data['relay1']['status'] else GPIO.LOW)
+GPIO.output(Relay2, GPIO.HIGH if device_data['relay2']['status'] else GPIO.LOW)
 
 
 @app.route("/")
 def index():
-    return render_template('index.html', device_names=device_names, device_status=device_status)
+    return render_template('index.html', device_data=device_data)
 
 
 #When the socket connection is established, send all relay and sensor statuses and device names
@@ -82,8 +88,8 @@ def handle_connect():
     emit('sensor4_status', {'Sensor4': Sensor4Sts})
 
     # Emit device names
-    for device_key, device_name in device_names.items():
-        emit('device_name_updated', {'device_key': device_key, 'device_name': device_name})   
+    for device_key, device in device_data.items():
+        emit('device_name_updated', {'device_key': device_key, 'device_name': device['name']})   
 
 
 #When the name of device is changed, update the name and send feedback to the client
@@ -91,7 +97,7 @@ def handle_connect():
 def update_device_name_socketio(data):
     device_key = data['device_key']
     device_name = data['device_name']
-    device_names[device_key] = device_name
+    device_data[device_key]['name'] = device_name 
     emit('device_name_updated', {'device_key': device_key, 'device_name': device_name}, broadcast=True)
     update_device_name(device_key, device_name) #update database with the new name
 
@@ -105,6 +111,7 @@ def handle_relay1_update(data):
         GPIO.output(Relay1, GPIO.LOW)
 
     Relay1Sts = GPIO.input(Relay1)
+    device_data['relay1']['status'] = Relay1Sts
     update_device_status('relay1', Relay1Sts)
     emit('relay1_status', {'Relay1': Relay1Sts}, broadcast=True)
 
@@ -118,12 +125,14 @@ def handle_relay2_update(data):
         GPIO.output(Relay2, GPIO.LOW)
 
     Relay2Sts = GPIO.input(Relay2)
+    device_data['relay2']['status'] = Relay1Sts
     update_device_status('relay2', Relay2Sts)
     emit('relay2_status', {'Relay2': Relay2Sts}, broadcast=True)
 
 def sensor1_callback(channel):
     Sensor1Sts = GPIO.input(channel)
     print("Sensor1Sts:", Sensor1Sts)
+    
     update_device_status('sensor1', Sensor1Sts)
     socketio.emit('sensor1_status', {'Sensor1': Sensor1Sts}, namespace='/')
 

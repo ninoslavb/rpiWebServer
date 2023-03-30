@@ -1,71 +1,78 @@
-import sqlite3
-from sqlite3 import Error
+import os
+import json
 
-def get_database_connection():
-    print("get_database_connection called")
-    conn = None
-    try:
-        conn = sqlite3.connect('devices66.db')
-    except Error as e:
-        print(e)
-    return conn
+def add_device(device_key, device_name, device_status, device_gpio_id, device_box_id, device_type):
+    devices = load_devices()
+    if device_key not in devices:
+        devices[device_key] = {
+            'device_name': device_name,
+            'device_status': device_status,
+            'device_gpio_id': device_gpio_id,
+            'device_box_id': device_box_id,
+            'device_type': device_type
+        }
+        save_devices(devices)
+    else:
+        print(f"Device key {device_key} already exists.")
 
-def create_table():
-    conn = get_database_connection()
-    if conn is not None:
-        c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS devices
-                     (device_key TEXT PRIMARY KEY, device_name TEXT, device_status INTEGER)''')
-        conn.commit()
 
-        # Insert default data if the table is empty
-        c.execute('SELECT COUNT(*) FROM devices')
-        count = c.fetchone()[0]
-        if count == 0:
-            c.execute('INSERT INTO devices (device_key, device_name, device_status) VALUES (?, ?, ?)', ('relay1', 'Relay 1', 0))
-            c.execute('INSERT INTO devices (device_key, device_name, device_status) VALUES (?, ?, ?)', ('relay2', 'Relay 2', 0))
-            c.execute('INSERT INTO devices (device_key, device_name, device_status) VALUES (?, ?, ?)', ('sensor1', 'Sensor 1', 0))
-            c.execute('INSERT INTO devices (device_key, device_name, device_status) VALUES (?, ?, ?)', ('sensor2', 'Sensor 2', 0))
-            c.execute('INSERT INTO devices (device_key, device_name, device_status) VALUES (?, ?, ?)', ('sensor3', 'Sensor 3', 0))
-            c.execute('INSERT INTO devices (device_key, device_name, device_status) VALUES (?, ?, ?)', ('sensor4', 'Sensor 4', 0))
-            conn.commit()
+def load_devices():
+    if not os.path.exists('devices.json'):
+        with open('devices.json', 'w') as f:
+            json.dump({}, f, indent=2)
 
-        conn.close()
+    with open('devices.json', 'r') as f:
+        return json.load(f)
+
+
+
+def save_devices(devices):
+    with open('devices.json', 'w') as f:
+        json.dump(devices, f, indent=2)
+
+
+
 
 def get_device_status(device_key):
-    conn = get_database_connection()
-    if conn is not None:
-        c = conn.cursor()
-        c.execute('SELECT device_status FROM devices WHERE device_key=?', (device_key,))
-        status = c.fetchone()
-        conn.close()
-        return status[0] if status is not None else None
-    return None
+    devices = load_devices()
+    return devices.get(device_key, {}).get('device_status', None)
+
 
 def update_device_status(device_key, device_status):
-    conn = get_database_connection()
-    if conn is not None:
-        c = conn.cursor()
-        c.execute('UPDATE devices SET device_status=? WHERE device_key=?', (device_status, device_key))
-        conn.commit()
-        conn.close()
+    devices = load_devices()
+    if device_key in devices:
+        devices[device_key]['device_status'] = device_status
+        save_devices(devices)
+
+
+
 
 def get_device_name(device_key):
-    conn = get_database_connection()
-    if conn is not None:
-        c = conn.cursor()
-        c.execute('SELECT device_name FROM devices WHERE device_key=?', (device_key,))
-        name = c.fetchone()
-        conn.close()
-        print(f"Name for {device_key}: {name[0] if name is not None else None}")
-        return name[0] if name is not None else None
-    return None
+    devices = load_devices()
+    return devices.get(device_key, {}).get('device_name', None)
 
 
 def update_device_name(device_key, device_name):
-    conn = get_database_connection()
-    if conn is not None:
-        c = conn.cursor()
-        c.execute('UPDATE devices SET device_name=? WHERE device_key=?', (device_name, device_key))
-        conn.commit()
-        conn.close()
+    devices = load_devices()
+    if device_key in devices:
+        devices[device_key]['device_name'] = device_name
+        save_devices(devices)
+
+
+
+def get_device_gpio_id(device_key):
+    devices = load_devices()
+    return devices.get(device_key, {}).get('device_gpio_id', None)
+
+
+def get_device_box_id(device_key):
+    devices = load_devices()
+    return devices.get(device_key, {}).get('device_box_id', None)
+
+
+def get_device_type(device_key):
+    devices = load_devices()
+    return devices.get(device_key, {}).get('device_type', None)
+
+
+
