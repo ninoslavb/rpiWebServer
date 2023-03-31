@@ -3,13 +3,14 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/sidebar.css?v=11911211131345222126009124" />
+    <link rel="stylesheet" href="/static/sidebar.css?v=1191980026009124" />
     <link rel="stylesheet" href="/static/master.css?v=1411140113323144122375001" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
     <script>
-      const deviceData = JSON.parse('{{ device_data | tojson | safe }}');
+      //Parse device_data rendered in WebServer.py to json file so it is acessible in .js files throuh deviceData
+      const deviceData = JSON.parse('{{ device_data | tojson | safe }}'); 
     </script>
     
     <script type="module" src="/static/main.js"></script>

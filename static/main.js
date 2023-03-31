@@ -53,26 +53,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     }
 
-    //when the sensor status is updated, update sensor box with the new info (this means the box will be transparent)
-    socket.on('sensor1_status', (data) => {
-    const sensor1Box = document.querySelector('.device-box[data-id="2"]');
-    updateSensorStatus(sensor1Box, data.Sensor1);
-    });
-
-    socket.on('sensor2_status', (data) => {
-    const sensor2Box = document.querySelector('.device-box[data-id="3"]');
-    updateSensorStatus(sensor2Box, data.Sensor2);
-    });
-
-    socket.on('sensor3_status', (data) => {
-    const sensor3Box = document.querySelector('.device-box[data-id="4"]');
-    updateSensorStatus(sensor3Box, data.Sensor3);
-    });
-
-    socket.on('sensor4_status', (data) => {
-    const sensor4Box = document.querySelector('.device-box[data-id="5"]');
-    updateSensorStatus(sensor4Box, data.Sensor4);
-    });
+    // listens information from the Server side about sensor status (digital input status)
+    socket.on('sensorStatus', (data) => {
+      const deviceKey = data.device_key;
+      const deviceStatus = data.status;
+      const boxID= deviceData[deviceKey].box_id;
+      const deviceBox = document.querySelector(`.device-box[data-id="${boxID}"]`);
+      updateSensorStatus(deviceBox, deviceStatus);
+      });
 
 
     //if this, then this example
