@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       
       // Add the device keys of devices with type 'output'
-      //const outputDeviceKeys = Object.keys(deviceData).filter((device_key) => deviceData[device_key].type === 'output');
-      const outputDeviceKeys = ['relay1', 'relay2'];
+      const outputDeviceKeys = Object.keys(deviceData).filter((device_key) => deviceData[device_key].type === 'output');
+      //const outputDeviceKeys = ['relay1', 'relay2'];
       
       outputDeviceKeys.forEach((device_key) => {
         document.querySelector(`#${device_key}-input`).addEventListener('change', (e) => {
@@ -62,18 +62,15 @@ document.addEventListener('DOMContentLoaded', () => {
       updateSensorStatus(deviceBox, deviceStatus);
       });
 
+  });
 
-    //if this, then this example
-    /*socket.on('sensor1_status', (data) => {
-    const mapping = document.querySelector(`option[value="sensor1-relay1"]`);
-    if (mapping) {
-      if(data.Sensor1===0) //if sensor is closed
-      sendUpdate1('on')
-      else 
-      sendUpdate1('off')
+  function navigate(tabName) {
+    var tabContents = document.getElementsByClassName("tab-content");
+    for (var i = 0; i < tabContents.length; i++) {
+        tabContents[i].style.display = "none";
     }
-  });
-  */
 
-  });
+    document.getElementById(tabName).style.display = "block";
+}
+
 

@@ -1,7 +1,8 @@
 import RPi.GPIO as GPIO
-from flask import Flask, render_template, make_response
+from flask import Flask, render_template, make_response, request, jsonify
 from flask_socketio import SocketIO, emit
 from database_handler import load_devices, save_devices, get_device_status, update_device_status, get_device_name, update_device_name, get_device_gpio_id, get_device_box_id, get_device_type, add_device, get_device_gpio_pin
+from rule_handler import add_rule, load_rules, delete_rule
 import json
 import os
 
@@ -42,9 +43,20 @@ def init_device_data():
         }
     return device_data
 
+def init_rules():
+    rule_data = {}
+    rules = load_rules()
+    for rule_key, rule in rules.items():
+        rule_data[rule_key] = {
+            'input_device_key': rule['input_device_key'],
+            'output_device_key': rule['output_device_key'],
+        }
+    return rule_data
+
 if __name__ == '__main__':
   
     device_data = init_device_data()
+    rule_data = init_rules()
 
 # set GPIOs according to its type
 GPIO.setmode(GPIO.BOARD)
@@ -64,7 +76,7 @@ for device_key, device in device_data.items():
 #render device_data in index.html
 @app.route("/")
 def index():
-    return render_template('index.html', device_data=device_data)
+    return render_template('index.html', device_data=device_data, rule_data=rule_data)
 
 
 #When the socket connection is established, send all relay and sensor statuses and device names
@@ -79,6 +91,10 @@ def handle_connect():
     # Emit device names
     for device_key, device in device_data.items():
         emit('device_name_updated', {'device_key': device_key, 'device_name': device['name']})   
+
+    # Emit current rules
+    emit('rules_updated', rule_data, broadcast=True)  # Send the entire rule_data object
+
 
 
 #When the name of device is changed, update the name and send feedback to the client
@@ -120,6 +136,31 @@ def sensor_callback(channel, device_key):
     socketio.emit('sensorStatus', {'device_key': device_key, 'status': device_data[device_key]['status']}, namespace='/')
 
 
+#add_rule_handler
+@socketio.on('add_rule')
+def update_rule_handler(data):
+    rule_key = f"{data['input_key']}-{data['output_key']}"
+    input_device_key = data['input_key']
+    output_device_key = data['output_key']
+    if rule_key not in rule_data:
+        if input_device_key and output_device_key:
+            add_rule(rule_key, input_device_key, output_device_key)
+            rule_data[rule_key] = { #update rules dictionary
+                'input_device_key': input_device_key,
+                'output_device_key': output_device_key
+            }
+            emit('rules_updated', rule_data, broadcast=True)  # Send the entire rule_data object
+            return 'success'
+    return 'error'
+
+#delete_rule_handler
+@socketio.on('delete_rule')
+def delete_rule_handler(data):
+    rule_key = data['rule_key']
+    if rule_key in rule_data:
+        delete_rule(rule_key)
+        del rule_data[rule_key]
+        emit('rules_updated', rule_data, broadcast=True)
 
 
 #@app.route('/static/<path:path>')

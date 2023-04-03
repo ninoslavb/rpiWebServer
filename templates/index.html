@@ -3,17 +3,19 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/sidebar.css?v=1191980026009124" />
-    <link rel="stylesheet" href="/static/master.css?v=1411140113323144122375001" />
+    <link rel="stylesheet" href="/static/sidebar.css?v=11232766667788124" />
+    <link rel="stylesheet" href="/static/master.css?v=1411140113311144122375001" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
     <script>
       //Parse device_data rendered in WebServer.py to json file so it is acessible in .js files throuh deviceData
       const deviceData = JSON.parse('{{ device_data | tojson | safe }}'); 
+      let ruleData = JSON.parse('{{ rule_data | tojson | safe }}'); 
     </script>
     
     <script type="module" src="/static/main.js"></script>
+    <script type="module" src="/static/rules.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
@@ -80,16 +82,28 @@
       </div>
 
 
-      <div id="if-this-then-this" style="display:none;">
-        <!-- Your If This Then This page code goes here -->
-          <select id="sensor-relay-mapping">
-            <option value="none">Select Sensor-Relay Mapping</option>
-            <option value="sensor1-relay1">Sensor 1 - Relay 1</option>
-            <option value="sensor2-relay1">Sensor 2 - Relay 1</option> 
-            <option value="sensor3-relay1">Sensor 3 - Relay 1</option>
-            <option value="sensor4-relay1">Sensor 4 - Relay 1</option>
+      <!-- RULES -->
+    <div id="if-this-then-this" class="tab-content" style="display:none;">
+      <div id="rules">
+        <h2>Rules</h2>
+        <form id="add-rule-form">
+          <label for="input">Input:</label>
+          <select name="input" id="input">
+            <!-- Input device options will be added via JavaScript -->
           </select>
+          <label for="output">Output:</label>
+          <select name="output" id="output">
+            <!-- Output device options will be added via JavaScript -->
+          </select>
+          <button type="submit">Add Rule</button>
+        </form>
+        <h3>Current Rules:</h3>
+        <ul id="rule-list">
+          <!-- Rules will be added here via JavaScript -->
+        </ul>
       </div>
+</div>
+
       
 </div>
 </div>

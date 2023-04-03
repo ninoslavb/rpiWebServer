@@ -22,8 +22,12 @@ def load_devices():
         with open('devices.json', 'w') as f:
             json.dump({}, f, indent=2)
 
-    with open('devices.json', 'r') as f:
-        return json.load(f)
+    try:
+        with open('devices.json', 'r') as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        return {}
+
 
 
 
