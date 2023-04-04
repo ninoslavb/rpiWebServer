@@ -3,8 +3,8 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/sidebar.css?v=11232766667788124" />
-    <link rel="stylesheet" href="/static/master.css?v=1411140113311144122375001" />
+    <link rel="stylesheet" href="/static/sidebar.css?v=112341230001091231231199012312324" />
+    <link rel="stylesheet" href="/static/master.css?v=14111401133111441123122375001" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
@@ -89,11 +89,19 @@
         <form id="add-rule-form">
           <label for="input">Input:</label>
           <select name="input" id="input">
+            <!-- Input devices will be added via JavaScript -->
+          </select>
+          <label for="input_option">Option:</label>
+          <select name="input_option" id="input_option">
             <!-- Input device options will be added via JavaScript -->
           </select>
           <label for="output">Output:</label>
           <select name="output" id="output">
-            <!-- Output device options will be added via JavaScript -->
+            <!-- Output devices will be added via JavaScript -->
+          </select>
+          <label for="output_action">Output_action:</label>
+          <select name="output_action" id="output_action">
+            <!-- Output devices will be added via JavaScript -->
           </select>
           <button type="submit">Add Rule</button>
         </form>
