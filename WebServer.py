@@ -181,6 +181,7 @@ def update_rule_handler(data):
                 'output_device_action': output_device_action
             }
             emit('rules_updated', rule_data, broadcast=True)  # Send the entire rule_data object
+            emit('lock_device', {'device_key': output_device_key, 'isLocked': True}, broadcast=True)  # Lock the output device
             return 'success'
     return 'error'
 
@@ -189,9 +190,21 @@ def update_rule_handler(data):
 def delete_rule_handler(data):
     rule_key = data['rule_key']
     if rule_key in rule_data:
+        output_device_key = rule_data[rule_key]['output_device_key']
         delete_rule(rule_key)
         del rule_data[rule_key]
         emit('rules_updated', rule_data, broadcast=True)
+
+        # Unlock the output device if it is not in any other rule
+        is_output_device_used = False
+        for remaining_rule_key, remaining_rule in rule_data.items():
+            if remaining_rule['output_device_key'] == output_device_key:
+                is_output_device_used = True
+                break
+
+        if not is_output_device_used:
+            print(f"Unlocking device {output_device_key}")  # Add a console log
+            emit('lock_device', {'device_key': output_device_key, 'isLocked': False}, broadcast=True)
 
 
 #@app.route('/static/<path:path>')
