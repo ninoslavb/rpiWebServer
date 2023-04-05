@@ -1,81 +1,97 @@
   // DOM elements
   const addRuleForm = document.getElementById("add-rule-form");
-  const inputSelect = document.getElementById("input");
-  const outputSelect = document.getElementById("output");
-  const inputStateSelect = document.getElementById("input_option");
-  const outputActionSelect = document.getElementById("output_action");
+  const logicOperatorSelect = document.getElementById("logic-operator-select");
+  const outputSelect = document.getElementById("output-select");
+  const outputActionSelect = document.getElementById("output-action-select");
   const ruleList = document.getElementById("rule-list");
-  
-  // Function to update device options in the form
+
+  /*##############################################################################################################################
+  This function updates the options in all input device selects by first querying all elements with the class 'input-device-select'. 
+  Then, for each input device select element, it stores the current value, resets its inner HTML, and repopulates it with the updated input devices. 
+  Finally, it restores the original value of the select element. 
+  This function is used when we want to update the input device options, for example, when a new input device is added or when an input device name is updated
+  */
   function updateDeviceOptions() {
-    // Clear the current options
-    inputSelect.innerHTML         = "";
-    outputSelect.innerHTML        = "";
-    inputStateSelect.innerHTML    = "";
-    outputActionSelect.innerHTML  = "";
-  
-    // Rebuild the options with the updated device names
-    for (const deviceKey in deviceData) {
-      const device = deviceData[deviceKey];
-      const optionDevice = document.createElement("option");
-      optionDevice.value = deviceKey;
-      optionDevice.textContent = device.name;
-      // Add options for input and output devices
-      if (device.type === "input") {
-        inputSelect.appendChild(optionDevice.cloneNode(true));
-      } else if (device.type === "output") {
-        outputSelect.appendChild(optionDevice.cloneNode(true));
+    // Query all elements with the class 'input-device-select'
+    const inputDeviceSelects = document.querySelectorAll('.input-device-select');
+   
+    inputDeviceSelects.forEach((inputDeviceSelect) => {   // Iterate through each input device select element
+      const currentValue = inputDeviceSelect.value;       // Store the current value of the select element
+      inputDeviceSelect.innerHTML = `<option disabled>Select Input Device</option>`; // Reset the inner HTML of the select element, keeping only the disabled option
+      for (const deviceKey in deviceData) {               // Iterate through the deviceData object
+        const device = deviceData[deviceKey];             
+        if (device.type === 'input') {                           // Check if the current device is an input device
+          const optionDevice = document.createElement("option"); // Create a new option element for the input device
+          optionDevice.value = deviceKey;
+          optionDevice.textContent = device.name;
+          inputDeviceSelect.appendChild(optionDevice);          // Add the new option element to the select elemement
+        }
       }
-    }
-  
-    // Add input state options
-    for (const state of [0, 1]) {
-      const optionInputState = document.createElement("option");
-      optionInputState.value = state;
-      optionInputState.textContent = state;
-  
-      inputStateSelect.appendChild(optionInputState);
-    }
-  
-    // Add output action options
-    for (const action of [0, 1]) {
-      const optionOutputAction = document.createElement("option");
-      optionOutputAction.value = action;
-      optionOutputAction.textContent = action;
-  
-      outputActionSelect.appendChild(optionOutputAction);
-    }
+      inputDeviceSelect.value = currentValue;                   // Restore the original value of the select element
+    });
   }
   
   const socket = io();
-  
-  // Add an event listener for the form submission
-  addRuleForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-    
-      // Send the form data to the server
-      socket.emit('add_rule', {
-        rule_key: `${inputSelect.value}-${outputSelect.value}`,
-        input_key: inputSelect.value,
-        output_key: outputSelect.value,
-        input_option: inputStateSelect.value,
-        output_action: outputActionSelect.value
-      }, (response) => {
-        if (response === 'error') { //handle the server response
-          alert("Rule already exists for these devices!"); //show an error message if the rule already exists for these devices
-        } else {
-          // Update the ruleData object with the new rule
-            ruleData[`${inputSelect.value}-${outputSelect.value}`] = {
-            input_device_key: inputSelect.value,
-            output_device_key: outputSelect.value,
-            input_device_option: inputStateSelect.value,
-            output_device_action: outputActionSelect.value
-          };
-          updateRuleList(); // Update the rule list displayed on the page
-        }
-      });
-  });
 
+  /* 
+  ####################################################################################################################################################################################
+  The following code is an event listener for the form submission. When the form is submitted, it prevents the default form submission behavior and processes the form data as follows:
+ --> It selects all input device rows and creates an array of input devices, where each device object contains the selected input device key and its option value.
+ --> It creates a rule key by combining all input device keys and the output device key.
+ --> It sends the form data to the server using the 'add_rule' event via the socket connection.
+ -->The server responds with either 'error' or 'success'. If there is an error, it alerts the user that the rule already exists for that output. 
+  If the response is successful, it updates the ruleData object and calls the updateRuleList() function to update the list of rules displayed on the page.
+  After the rule is successfully added, it removes all existing input device rows from the form, allowing the user to start fresh when adding a new rule.
+  
+  */
+  addRuleForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+  
+    // Get the selected input devices from the input device rows
+    const inputDeviceRows = document.querySelectorAll('.input-device-row');
+    const inputDevices = Array.from(inputDeviceRows).map((row) => ({
+      input_device_key: row.querySelector('.input-device-select').value,
+      input_device_option: row.querySelector('.input-device-option').value,
+    }));
+  
+    // Create a rule key by combining all the input device keys and the output device key
+    const rule_key = inputDevices.map((inputDevice) => inputDevice.input_device_key).join('-') + '-' + outputSelect.value;
+  
+    // Send the form data to the server
+    socket.emit('add_rule', {
+      rule_key,
+      input_devices: inputDevices,
+      logic_operator: logicOperatorSelect.value,
+      output_key: outputSelect.value,
+      output_action: outputActionSelect.value
+    }, (response) => {
+      if (response === 'error') {
+        alert("Rule already exists for that output!!");
+      } else {
+        ruleData[rule_key] = {
+          input_devices: inputDevices,
+          logic_operator: logicOperatorSelect.value,
+          output_device_key: outputSelect.value,
+          output_device_action: outputActionSelect.value
+        };
+        updateRuleList();
+        // Remove all existing input device rows once when rule is added
+      inputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));  
+      }
+    });
+  });
+  
+
+  
+
+  /* #############################################################################################################################################
+  This function, updateLockStates(), is responsible for locking or unlocking devices based on whether they are used as output devices in any rules.
+  - The function starts by creating a Set called outputDeviceKeys to store the output device keys of the rules. 
+  - It then iterates through the ruleData object to extract each rule and adds the output_device_key of the rule to the outputDeviceKeys set.
+  - Next, it iterates through the deviceData object to get each device. 
+    For each device, it checks if its key is present in the outputDeviceKeys set. If it is, it means that the device is used in a rule and should be locked. The isLocked variable stores this information as a boolean value.
+  - Finally, it calls the lockDevice function with the device key and the isLocked value. The lockDevice function is responsible for locking or unlocking the device based on the isLocked value.
+  */
   function updateLockStates() {
     // Create a set to store the output device keys of the rules
     const outputDeviceKeys = new Set();
@@ -97,7 +113,12 @@
   
 
 
-//check if device name is updated to update it in rules sector
+
+
+
+/*##############################################################################
+add event listener to check if name is updated. If the name is updated, update displayed rules in rule list and options in dropdown menu
+*/
 socket.on("device_name_updated", (data) => {
   const deviceKey = data.device_key;
   const deviceName = data.device_name;
@@ -108,21 +129,37 @@ socket.on("device_name_updated", (data) => {
   updateDeviceOptions();  //Call the updateDeviceOptions to update the options in dropdown menu when the name is updated
 });
 
-// FUnction to update the list of current rules
+
+
+
+
+
+/* ################################################################################################
+The updateRuleList function is responsible for updating the displayed list of rules on the web page.
+It first clears the inner HTML of the ruleList element. 
+Then, it iterates through the ruleData object and extracts information about each rule, such as the input devices, logic operator, output device, and output action.
+For each rule, it creates a text string that represents the input devices and their options, connected by the logic operator. 
+It then creates a list item element, sets its text content to display the rule, and creates a delete button for the rule. 
+When the delete button is clicked, it emits the "delete_rule" event with the rule key to delete the rule on the server.
+After the rule list is updated, the updateLockStates() function is called to update the lock states of the input devices.
+The socket.on("rules_updated") event listener is called when the server sends updated rules data. 
+It updates the ruleData object with the new data and calls the updateRuleList() function to update the displayed list of rules.
+*/
+
 function updateRuleList() {
   ruleList.innerHTML = "";
   for (const ruleKey in ruleData) {
     const rule = ruleData[ruleKey];
-    const input = rule.input_device_key;
+    const inputDevices = rule.input_devices;
+    const logicOperator = rule.logic_operator;
     const output = rule.output_device_key;
-    const input_option = rule.input_device_option;
     const output_action = rule.output_device_action;
 
-    //list the rule with input device name, input option, output device name, output option
-    const listItem = document.createElement("li");
-    listItem.textContent = `If ${deviceData[input].name} is ${input_option}, then ${deviceData[output].name} is ${output_action}`;
+    const inputDevicesText = inputDevices.map((inputDevice) => `${deviceData[inputDevice.input_device_key].name} is ${inputDevice.input_device_option}`).join(` ${logicOperator} `);
 
-    // Add a delete button for each rule
+    const listItem = document.createElement("li");
+    listItem.textContent = `If ${inputDevicesText}, then ${deviceData[output].name} is ${output_action}`;
+
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "Delete";
     deleteButton.addEventListener("click", () => {
@@ -135,7 +172,6 @@ function updateRuleList() {
   updateLockStates();
 }
 
-
 // Load the current rules and display them
 socket.on("rules_updated", (rules) => {
   ruleData = rules; // Update the ruleData object with the new data
@@ -144,6 +180,9 @@ socket.on("rules_updated", (rules) => {
 
 
 
+
+/* #################################################################### 
+function to lock unlock device*/
 // Lock device if it is used in rules
 function lockDevice(device_key, isLocked) {
  // console.log('Device key:', device_key); // Log the device key for debugging purposes
@@ -176,7 +215,22 @@ function lockDevice(device_key, isLocked) {
 }
 
 
-
+/*###################################################################
+This event listener listens for the 'lock_device' event from the server. 
+When this event is received, it will call the lockDevice function with the device_key and isLocked properties from the data object.
+The lockDevice function is responsible for updating the lock state of the specified device on the client side.
+*/
 socket.on('lock_device', (data) => {
   lockDevice(data.device_key, data.isLocked);
+});
+
+
+/* ##########################################################################################################
+This event listener is added to the "Add Input Device" button (which has a CSS class of btn-outline-secondary). 
+When the button is clicked, the event listener will prevent the default action of the button click (using event.preventDefault()). 
+Then, it will call the addInputDeviceRow() function, which is responsible for adding a new input device row to the form.
+*/
+document.querySelector("button.btn-outline-secondary").addEventListener("click", (event) => {
+  event.preventDefault();
+  addInputDeviceRow();
 });
