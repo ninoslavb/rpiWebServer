@@ -3,8 +3,8 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/sidebar.css?v=112323133112312324" />
-    <link rel="stylesheet" href="/static/master.css?v=1422290918221999001" />
+    <link rel="stylesheet" href="/static/sidebar.css?v=1123231331123123312324" />
+    <link rel="stylesheet" href="/static/master.css?v=14212312312312311221999001" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
@@ -99,7 +99,7 @@ function addInputDeviceRow() {
   // Create a dropdown to select an input device
   const inputDeviceSelect = document.createElement('select');
   inputDeviceSelect.classList.add('input-device-select');
-  inputDeviceSelect.innerHTML = `<option disabled selected>Select Input Device</option>`;
+  inputDeviceSelect.innerHTML = `<option disabled selected hidden>Select Input Device</option>`;
   for (const deviceKey in deviceData) {
     const device = deviceData[deviceKey];
     if (device.type === 'input') {

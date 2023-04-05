@@ -17,7 +17,7 @@
    
     inputDeviceSelects.forEach((inputDeviceSelect) => {   // Iterate through each input device select element
       const currentValue = inputDeviceSelect.value;       // Store the current value of the select element
-      inputDeviceSelect.innerHTML = `<option disabled>Select Input Device</option>`; // Reset the inner HTML of the select element, keeping only the disabled option
+      inputDeviceSelect.innerHTML = `<option disabled selected>Select Input Device</option>`; // Reset the inner HTML of the select element, keeping only the disabled option
       for (const deviceKey in deviceData) {               // Iterate through the deviceData object
         const device = deviceData[deviceKey];             
         if (device.type === 'input') {                           // Check if the current device is an input device
@@ -53,6 +53,14 @@
       input_device_key: row.querySelector('.input-device-select').value,
       input_device_option: row.querySelector('.input-device-option').value,
     }));
+
+  // Validation check: If an input device is not selected, show an alert and return early
+  for (const inputDevice of inputDevices) {
+    if (inputDevice.input_device_key === 'Select Input Device') {
+      alert('Please select a valid input device.');
+      return;
+    }
+  }
   
     // Create a rule key by combining all the input device keys and the output device key
     const rule_key = inputDevices.map((inputDevice) => inputDevice.input_device_key).join('-') + '-' + outputSelect.value;
