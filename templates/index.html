@@ -3,8 +3,9 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/sidebar.css?v=1123231331123123312324" />
-    <link rel="stylesheet" href="/static/master.css?v=14212312312312311221999001" />
+    <link rel="stylesheet" href="/static/sidebar.css?v=1122311333133231222324" />
+    <link rel="stylesheet" href="/static/master.css?v=142212112312312224141234231231" />
+    <link rel="stylesheet" href="/static/rules.css?v=121112312356711212312355233" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
@@ -29,7 +30,7 @@
       <ul>
         <li><button onclick="navigate('dashboard')">Dashboard</button></li>
         <li><button onclick="navigate('groups')">Groups</button></li>
-        <li><button onclick="navigate('if-this-then-this')">If This Then This</button></li>
+        <li><button onclick="navigate('if-this-then-this')">Rules</button></li>
       </ul>
     </div>
     
@@ -99,7 +100,9 @@ function addInputDeviceRow() {
   // Create a dropdown to select an input device
   const inputDeviceSelect = document.createElement('select');
   inputDeviceSelect.classList.add('input-device-select');
-  inputDeviceSelect.innerHTML = `<option disabled selected hidden>Select Input Device</option>`;
+  //inputDeviceSelect.innerHTML = `<option disabled selected>Select Input Device</option>`;
+  //inputDeviceSelect.innerHTML = `<option disabled selected data-placeholder>Select Input Device</option>`;
+  inputDeviceSelect.innerHTML = `<option disabled selected class="placeholder-option">Select Input Device</option>`;
   for (const deviceKey in deviceData) {
     const device = deviceData[deviceKey];
     if (device.type === 'input') {
@@ -115,6 +118,7 @@ function addInputDeviceRow() {
   const inputDeviceOption = document.createElement('select');
   inputDeviceOption.classList.add('input-device-option');
   inputDeviceOption.innerHTML = `
+    <option disabled selected>Select State</option>
     <option value="0">0</option>
     <option value="1">1</option>
   `;
@@ -124,7 +128,7 @@ function addInputDeviceRow() {
   const removeButton = document.createElement('button');
   removeButton.type = 'button';
   removeButton.textContent = 'Remove';
-  removeButton.classList.add('btn', 'btn-sm', 'btn-outline-danger');
+  removeButton.classList.add('btn', 'btn-sm', 'custom-delete-input-button');
   removeButton.addEventListener('click', () => {
     inputDeviceWrapper.removeChild(inputDeviceRow);
     updateInputDeviceOptions();
@@ -134,6 +138,7 @@ function addInputDeviceRow() {
   // Add the input device row to the inputDeviceWrapper and update the input device options
   inputDeviceWrapper.appendChild(inputDeviceRow);
   updateInputDeviceOptions();
+  //updateLogicOperatorVisibility();
 }
 
 // This function updates the input device options to disable the options that are already selected
@@ -149,15 +154,19 @@ function updateInputDeviceOptions() {
   }
 
   // Loop through all input device selects and disable the options that are already selected
-  for (const selectElement of inputDeviceSelectElements) {
-    for (const optionElement of selectElement.options) {
-      if (optionElement.value !== "" && selectedInputDevices.has(optionElement.value)) {
-        optionElement.disabled = selectElement.value !== optionElement.value;
-      } else {
-        optionElement.disabled = false;
-      }
+for (const selectElement of inputDeviceSelectElements) {
+  for (const optionElement of selectElement.options) {
+    // Check if the optionElement has the custom class
+    const isPlaceholder = optionElement.classList.contains("placeholder-option");
+
+    if (!isPlaceholder && optionElement.value !== "" && selectedInputDevices.has(optionElement.value)) {
+      optionElement.disabled = selectElement.value !== optionElement.value;
+    } else {
+      optionElement.disabled = isPlaceholder;
     }
   }
+}
+//updateLogicOperatorVisibility();
 }
 
 // Event listener to update the input device options when a dropdown value changes
@@ -168,51 +177,83 @@ document.addEventListener('change', (event) => {
 });
 
 
+/*
+function updateLogicOperatorVisibility() {
+  const inputDeviceSelectElements = document.getElementsByClassName('input-device-select');
+  const logicOperatorSelect = document.getElementById('logic-operator-select');
+  
+  let selectedDevicesCount = 0;
+  for (const selectElement of inputDeviceSelectElements) {
+    if (selectElement.value !== "") {
+      selectedDevicesCount++;
+    }
+  }
+  
+  if (selectedDevicesCount > 1) {
+    logicOperatorSelect.style.display = 'block';
+  } else {
+    logicOperatorSelect.style.display = 'none';
+  }
+}
+*/
+
 
 
      </script>
 
       <!-- RULES -->
-      <div id="if-this-then-this" class="tab-content" style="display:none;">
-        <div id="rules">
-          <h2>Rules</h2>
-          <form id="add-rule-form">
-                <div id="inputDeviceWrapper">
-                   <!-- The input-device-row elements will be added here when the "Add Input Device" button is clicked -->
-                </div>
-            </div>
-            <br>
-            <button type="button" id="addInputDeviceButton" class="btn btn-sm btn-outline-secondary">Add Input Device</button>
-            <br><br>
-            <label for="logicOperator">Logic Operator:</label>
-            <select id="logic-operator-select">
-              <option value="AND">AND</option>
-              <option value="OR">OR</option>
-            </select>
-            <br><br>
-            <label for="output">Output device:</label>
-            <select id="output-select">
-              {% for device_key, device in device_data.items() %}
-              {% if device.type == 'output' %}
-              <option value="{{ device_key }}">{{ device.name }}</option>
-              {% endif %}
-              {% endfor %}
-            </select>
-            <br><br>
-            <label for="output_action">Output action:</label>
-            <select id="output-action-select">
-              <option value="0">0</option>
-              <option value="1">1</option>
-            </select>
-            <br><br>
-            <button type="submit">Add Rule</button>
-          </form>
-          <h3>Current Rules:</h3>
-          <ul id="rule-list">
-            <!-- Rules will be added here via JavaScript -->
-          </ul>
+<!-- RULES -->
+<div id="if-this-then-this" class="tab-content" style="display:none;">
+  <div id="rules">
+    <h2>Rules</h2>
+    <button type="button" id="add-new-rule-button" class="custom-add-new-rule-button">ADD NEW RULE</button>
+    <div id="add-rule-container" style="display: none;">
+      <form id="add-rule-form">
+        <div id="inputDeviceWrapper">
+          <label for="input">Input devices:</label>
+          <!-- The input-device-row elements will be added here when the "Add Input Device" button is clicked -->
+          <button type="button" id="addInputDeviceButton" class="custom-add-input-device-button">Add Input Device</button>
+        </div>
+
+        <div id="logicOperatorWrapper">
+          <label for="logicOperator">Logic operation between inputs:</label>
+          <select class="logic-operator-select">
+            <option disabled selected>Select Logic</option>
+            <option value="AND">AND</option>
+            <option value="OR">OR</option>
+          </select>
+        </div>
+
+        <div id="outputWrapper">  
+          <label for="output">Output device:</label>
+          <div class="output-device-row">
+          <select class="output-select">
+            <option disabled selected>Select Output Device</option>
+            {% for device_key, device in device_data.items() %}
+            {% if device.type == 'output' %}
+            <option value="{{ device_key }}">{{ device.name }}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+          <select class="output-action-select">
+            <option disabled selected>Select Action</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+          </select>
         </div>
       </div>
+        <br><br>
+        <button type="submit" class="custom-submit-rule-button">Submit rule</button>
+      </form>
+    </div>
+    <h3>Current Rules:</h3>
+    <ul id="rule-list">
+      <!-- Rules will be added here via JavaScript -->
+    </ul>
+  </div>
+</div>
+
+ </div>
       
 </div>
 

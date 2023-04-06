@@ -1,9 +1,23 @@
   // DOM elements
   const addRuleForm = document.getElementById("add-rule-form");
-  const logicOperatorSelect = document.getElementById("logic-operator-select");
-  const outputSelect = document.getElementById("output-select");
-  const outputActionSelect = document.getElementById("output-action-select");
+  //const logicOperatorSelect = document.getElementById("logic-operator-select");
+  const logicOperatorSelect = document.querySelector(".logic-operator-select");
+  //const outputSelect = document.getElementById("output-select");
+  const outputSelect = document.querySelector(".output-select");
+  //const outputActionSelect = document.getElementById("output-action-select");
+  const outputActionSelect = document.querySelector(".output-action-select");
   const ruleList = document.getElementById("rule-list");
+
+
+  // Show/hide the add-rule-container when the "ADD NEW RULE" button is clicked
+  const addNewRuleButton = document.getElementById('add-new-rule-button');
+  const addRuleContainer = document.getElementById('add-rule-container');
+  
+  addNewRuleButton.addEventListener('click', () => {
+    addRuleContainer.style.display = addRuleContainer.style.display === 'none' ? 'block' : 'none';
+  });
+
+
 
   /*##############################################################################################################################
   This function updates the options in all input device selects by first querying all elements with the class 'input-device-select'. 
@@ -14,21 +28,41 @@
   function updateDeviceOptions() {
     // Query all elements with the class 'input-device-select'
     const inputDeviceSelects = document.querySelectorAll('.input-device-select');
-   
+    const outputDeviceSelects = document.querySelectorAll('.output-select');
+  
     inputDeviceSelects.forEach((inputDeviceSelect) => {   // Iterate through each input device select element
-      const currentValue = inputDeviceSelect.value;       // Store the current value of the select element
+      const currentValueInput = inputDeviceSelect.value;       // Store the current value of the select element
       inputDeviceSelect.innerHTML = `<option disabled selected>Select Input Device</option>`; // Reset the inner HTML of the select element, keeping only the disabled option
+      //inputDeviceOption.innerHTML = `<option disabled selected>Select State</option>`; // Reset the inner HTML of the select element, keeping only the disabled option
       for (const deviceKey in deviceData) {               // Iterate through the deviceData object
         const device = deviceData[deviceKey];             
         if (device.type === 'input') {                           // Check if the current device is an input device
-          const optionDevice = document.createElement("option"); // Create a new option element for the input device
-          optionDevice.value = deviceKey;
-          optionDevice.textContent = device.name;
-          inputDeviceSelect.appendChild(optionDevice);          // Add the new option element to the select elemement
+          const optionDeviceInput = document.createElement("option"); // Create a new option element for the input device
+          optionDeviceInput.value = deviceKey;
+          optionDeviceInput.textContent = device.name;
+          inputDeviceSelect.appendChild(optionDeviceInput);          // Add the new option element to the select elemement
         }
       }
-      inputDeviceSelect.value = currentValue;                   // Restore the original value of the select element
+      inputDeviceSelect.value = currentValueInput;                   // Restore the original value of the select element
     });
+
+    outputDeviceSelects.forEach((outputDeviceSelect) => {
+      const currentValueOutput = outputDeviceSelect.value;
+      outputDeviceSelect.innerHTML = `<option disabled selected>Select Output Device</option>`;
+  
+      for (const deviceKey in deviceData) {
+        const device = deviceData[deviceKey];
+        if (device.type === 'output') {
+          const optionDeviceOutput = document.createElement("option");
+          optionDeviceOutput.value = deviceKey;
+          optionDeviceOutput.textContent = device.name;
+          outputDeviceSelect.appendChild(optionDeviceOutput);
+        }
+      }
+      outputDeviceSelect.value = currentValueOutput;
+    });
+
+
   }
   
   const socket = io();
@@ -60,7 +94,28 @@
       alert('Please select a valid input device.');
       return;
     }
+    else if(inputDevice.input_device_option === 'Select State') {
+      alert('Please select a valid input device state.');
+      return;
+    }
   }
+  
+  if(outputActionSelect.value === 'Select Action' ) {
+    alert('Please select a valid output device action.');
+    return;
+  }
+
+  if(outputSelect.value === 'Select Output Device' ) {
+    alert('Please select a valid output device.');
+    return;
+  }
+
+  if(logicOperatorSelect.value === 'Select Logic') {
+    alert('Please select a valid logic operator.');
+    return;
+  }
+
+
   
     // Create a rule key by combining all the input device keys and the output device key
     const rule_key = inputDevices.map((inputDevice) => inputDevice.input_device_key).join('-') + '-' + outputSelect.value;
@@ -85,6 +140,8 @@
         updateRuleList();
         // Remove all existing input device rows once when rule is added
       inputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));  
+        // Hide the add-rule-container after submitting the form
+      addRuleContainer.style.display = 'none';
       }
     });
   });
@@ -234,11 +291,11 @@ socket.on('lock_device', (data) => {
 
 
 /* ##########################################################################################################
-This event listener is added to the "Add Input Device" button (which has a CSS class of btn-outline-secondary). 
+This event listener is added to the "Add Input Device" button (which has a CSS class of custom-add-input-device-button). 
 When the button is clicked, the event listener will prevent the default action of the button click (using event.preventDefault()). 
 Then, it will call the addInputDeviceRow() function, which is responsible for adding a new input device row to the form.
 */
-document.querySelector("button.btn-outline-secondary").addEventListener("click", (event) => {
+document.querySelector("button.custom-add-input-device-button").addEventListener("click", (event) => {
   event.preventDefault();
   addInputDeviceRow();
 });
