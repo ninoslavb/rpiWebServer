@@ -81,39 +81,39 @@
   addRuleForm.addEventListener("submit", (event) => {
     event.preventDefault();
   
-    // Get the selected input devices from the input device rows
-    const inputDeviceRows = document.querySelectorAll('.input-device-row');
-    const inputDevices = Array.from(inputDeviceRows).map((row) => ({
-      input_device_key: row.querySelector('.input-device-select').value,
-      input_device_option: row.querySelector('.input-device-option').value,
-    }));
+          // Get the selected input devices from the input device rows
+          const inputDeviceRows = document.querySelectorAll('.input-device-row');
+          const inputDevices = Array.from(inputDeviceRows).map((row) => ({
+            input_device_key: row.querySelector('.input-device-select').value,
+            input_device_option: row.querySelector('.input-device-option').value,
+          }));
 
-  // Validation check: If an input device is not selected, show an alert and return early
-  for (const inputDevice of inputDevices) {
-    if (inputDevice.input_device_key === 'Select Input Device') {
-      alert('Please select a valid input device.');
-      return;
-    }
-    else if(inputDevice.input_device_option === 'Select State') {
-      alert('Please select a valid input device state.');
-      return;
-    }
-  }
-  
-  if(outputActionSelect.value === 'Select Action' ) {
-    alert('Please select a valid output device action.');
-    return;
-  }
+        // Validation check: If an input device is not selected, show an alert and return early
+        for (const inputDevice of inputDevices) {
+          if (inputDevice.input_device_key === 'Select Input Device') {
+            alert('Please select a valid input device.');
+            return;
+          }
+          else if(inputDevice.input_device_option === 'Select State') {
+            alert('Please select a valid input device state.');
+            return;
+          }
+        }
+        
+          if(outputActionSelect.value === 'Select Action' ) {
+            alert('Please select a valid output device action.');
+            return;
+          }
 
-  if(outputSelect.value === 'Select Output Device' ) {
-    alert('Please select a valid output device.');
-    return;
-  }
+          if(outputSelect.value === 'Select Output Device' ) {
+            alert('Please select a valid output device.');
+            return;
+          }
 
-  if (logicOperatorSelect.value === 'Select Logic') {
-    alert('Please select a valid logic operator.');
-    return;
-  }
+          if (logicOperatorSelect.value === 'Select Logic') {
+            alert('Please select a valid logic operator.');
+            return;
+          }
 
 
         // Create a rule key by combining all the input device keys and the output device key
@@ -139,6 +139,7 @@
             // Remove all existing input device rows once when rule is added
           inputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));  
           updateLogicOperatorVisibility() // update logic OperatorVisibility
+          inputDeviceRowCount = 0;        // reset / set input DeviceRow Count to 0
               // Reset the logic operator, output select, and output action select to their default values
           logicOperatorSelect.value = 'Select Logic';
           outputSelect.value = 'Select Output Device';
@@ -148,7 +149,7 @@
           addRuleContainer.style.display = 'none';
           }
         });
-      });
+  });
 
   
 
