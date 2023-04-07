@@ -226,9 +226,11 @@ function updateRuleList() {
     const inputDevicesText = inputDevices.map((inputDevice) => `${deviceData[inputDevice.input_device_key].name} is ${inputDevice.input_device_option}`).join(` ${logicOperator} `);
 
     const listItem = document.createElement("li");
+    listItem.classList.add("rule-list-item");
     listItem.textContent = `If ${inputDevicesText}, then ${deviceData[output].name} is ${output_action}`;
 
     const deleteButton = document.createElement("button");
+    deleteButton.classList.add("delete-rule-button");
     deleteButton.textContent = "Delete";
     deleteButton.addEventListener("click", () => {
       socket.emit("delete_rule", { rule_key: ruleKey });
@@ -300,5 +302,9 @@ Then, it will call the addInputDeviceRow() function, which is responsible for ad
 */
 document.querySelector("button.custom-add-input-device-button").addEventListener("click", (event) => {
   event.preventDefault();
-  addInputDeviceRow();
+  
+  // Check if a row was added
+  if (!addInputDeviceRow()) {
+    alert("No more devices available!");
+  }
 });

@@ -3,9 +3,9 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/sidebar.css?v=112231133311312312331222324" />
-    <link rel="stylesheet" href="/static/master.css?v=1422123123123331231" />
-    <link rel="stylesheet" href="/static/rules.css?v=1211123123212345355233" />
+    <link rel="stylesheet" href="/static/sidebar.css?v=112231111312331222324" />
+    <link rel="stylesheet" href="/static/master.css?v=1422123222312123133123221" />
+    <link rel="stylesheet" href="/static/rules.css?v=121112310011230021323212345355233" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
@@ -91,11 +91,21 @@ The updateInputDeviceOptions function disables the input device options that are
 This is done by first collecting all the selected input devices in a set and then looping through all the input device selects and disabling the options that are already selected.
 The event listener at the end of the code listens for changes in the input device
 */
+
+let inputDeviceRowCount = 0;
+
 // This function creates a new input device row and adds it to the inputDeviceWrapper
 function addInputDeviceRow() {
   const inputDeviceWrapper = document.getElementById('inputDeviceWrapper');
   const inputDeviceRow = document.createElement('div');
   inputDeviceRow.classList.add('input-device-row');
+
+
+    // Check if the number of rows is equal to the number of input devices
+  const inputDeviceCount = Object.values(deviceData).filter(device => device.type === 'input').length;
+  if (inputDeviceRowCount >= inputDeviceCount) {
+    return false; // Row was not added
+  }
 
   // Create a dropdown to select an input device
   const inputDeviceSelect = document.createElement('select');
@@ -132,6 +142,9 @@ function addInputDeviceRow() {
   removeButton.addEventListener('click', () => {
     inputDeviceWrapper.removeChild(inputDeviceRow);
     updateInputDeviceOptions();
+
+  // Decrement the inputDeviceRowCount since a row was removed
+  inputDeviceRowCount--;
   });
   inputDeviceRow.appendChild(removeButton);
 
@@ -140,6 +153,10 @@ function addInputDeviceRow() {
   updateInputDeviceOptions();
 
   updateLogicOperatorVisibility();
+
+  // Increment the inputDeviceRowCount since a row was added
+  inputDeviceRowCount++;
+  return true; // Row was added
 }
 
 // This function updates the input device options to disable the options that are already selected

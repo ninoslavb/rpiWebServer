@@ -97,6 +97,40 @@
   }
 
 
+  .delete-rule-button {
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    background-color: transparent;
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+    background-color: transparent;
+    border: 2px solid black;
+    color: black;
+    border-radius: 5px;
+    font-size: 12px;
+    padding: 5px 2px; /* padding around the text */
+    width: 100%;
+    min-width: 60px;
+    max-width: 60px;
+    margin-bottom: 5px;
+    margin-right: 10px;
+    margin-left: 10px; /* Add some spacing between the text and the button */
+    align-self: center;
+  }
+  
+  .delete-rule-button:hover {
+    box-shadow: 0px 0px 20px red;
+  }
+
+  .rule-list-item {
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 16px;
+    color: white;
+    list-style-type: none; /* Remove the dot at the beginning */
+    margin-bottom: 8px; /* Add some spacing between list items */
+    font-weight: bold; /* Make the text bold, you can adjust this as needed */
+  }
+
+
 
   #add-rule-container {
     display: flex;
