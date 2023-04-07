@@ -110,42 +110,45 @@
     return;
   }
 
-  if(logicOperatorSelect.value === 'Select Logic') {
+  if (logicOperatorSelect.value === 'Select Logic') {
     alert('Please select a valid logic operator.');
     return;
   }
 
 
-  
-    // Create a rule key by combining all the input device keys and the output device key
-    const rule_key = inputDevices.map((inputDevice) => inputDevice.input_device_key).join('-') + '-' + outputSelect.value;
-  
-    // Send the form data to the server
-    socket.emit('add_rule', {
-      rule_key,
-      input_devices: inputDevices,
-      logic_operator: logicOperatorSelect.value,
-      output_key: outputSelect.value,
-      output_action: outputActionSelect.value
-    }, (response) => {
-      if (response === 'error') {
-        alert("Rule already exists for that output!!");
-      } else {
-        ruleData[rule_key] = {
+        // Create a rule key by combining all the input device keys and the output device key
+        const rule_key = inputDevices.map((inputDevice) => inputDevice.input_device_key).join('-') + '-' + outputSelect.value;
+
+        socket.emit('add_rule', {
+          rule_key,
           input_devices: inputDevices,
           logic_operator: logicOperatorSelect.value,
-          output_device_key: outputSelect.value,
-          output_device_action: outputActionSelect.value
-        };
-        updateRuleList();
-        // Remove all existing input device rows once when rule is added
-      inputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));  
-        // Hide the add-rule-container after submitting the form
-      addRuleContainer.style.display = 'none';
-      }
-    });
-  });
-  
+          output_key: outputSelect.value,
+          output_action: outputActionSelect.value
+        }, (response) => {
+          if (response === 'error') {
+            alert("Rule already exists for that output!");
+          } else {
+            ruleData[rule_key] = {
+              input_devices: inputDevices,
+              logic_operator: logicOperatorSelect.value,
+              output_device_key: outputSelect.value,
+              output_device_action: outputActionSelect.value
+            };
+            updateRuleList();
+            // Remove all existing input device rows once when rule is added
+          inputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));  
+          updateLogicOperatorVisibility() // update logic OperatorVisibility
+              // Reset the logic operator, output select, and output action select to their default values
+          logicOperatorSelect.value = 'Select Logic';
+          outputSelect.value = 'Select Output Device';
+          outputActionSelect.value = 'Select Action';
+
+            // Hide the add-rule-container after submitting the form
+          addRuleContainer.style.display = 'none';
+          }
+        });
+      });
 
   
 

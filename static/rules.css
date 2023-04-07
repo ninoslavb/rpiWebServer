@@ -227,7 +227,14 @@
     max-width: 120px;
     margin-bottom: 5px;
     margin-right: 5px;
+    display: none; /* Hide dropwdown when the page is rendered first time */
   }
+
+    /* Remove "Logic operation between inputs" text when the page is rendered first time */
+  .logic-operator-select-text {
+    display: none;
+  }
+  
   
   /* Change the text color of the dropdown menu */
   select:focus option, select:active option {

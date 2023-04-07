@@ -3,9 +3,9 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/sidebar.css?v=1122311333133231222324" />
-    <link rel="stylesheet" href="/static/master.css?v=142212112312312224141234231231" />
-    <link rel="stylesheet" href="/static/rules.css?v=121112312356711212312355233" />
+    <link rel="stylesheet" href="/static/sidebar.css?v=112231133311312312331222324" />
+    <link rel="stylesheet" href="/static/master.css?v=1422123123123331231" />
+    <link rel="stylesheet" href="/static/rules.css?v=1211123123212345355233" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
@@ -138,7 +138,8 @@ function addInputDeviceRow() {
   // Add the input device row to the inputDeviceWrapper and update the input device options
   inputDeviceWrapper.appendChild(inputDeviceRow);
   updateInputDeviceOptions();
-  //updateLogicOperatorVisibility();
+
+  updateLogicOperatorVisibility();
 }
 
 // This function updates the input device options to disable the options that are already selected
@@ -166,7 +167,7 @@ for (const selectElement of inputDeviceSelectElements) {
     }
   }
 }
-//updateLogicOperatorVisibility();
+updateLogicOperatorVisibility();
 }
 
 // Event listener to update the input device options when a dropdown value changes
@@ -177,10 +178,10 @@ document.addEventListener('change', (event) => {
 });
 
 
-/*
 function updateLogicOperatorVisibility() {
   const inputDeviceSelectElements = document.getElementsByClassName('input-device-select');
   const logicOperatorSelect = document.getElementById('logic-operator-select');
+  const logicOperatorLabel = document.getElementById('logic-operator-label');
   
   let selectedDevicesCount = 0;
   for (const selectElement of inputDeviceSelectElements) {
@@ -190,14 +191,15 @@ function updateLogicOperatorVisibility() {
   }
   
   if (selectedDevicesCount > 1) {
-    logicOperatorSelect.style.display = 'block';
+    logicOperatorSelect.style.display = 'block'; //if there is more than 1 input device show the logic operator dropdown
+    logicOperatorLabel.style.display = 'block';  //if there is more than 1 input device show "Logic operation between inputs text"
+    logicOperatorSelect.value = 'Select Logic';
   } else {
-    logicOperatorSelect.style.display = 'none';
+    logicOperatorSelect.style.display = 'none';   // hide dropdown
+    logicOperatorSelect.value = 'OR'; // Set the the logic operator to OR by default when there is only one input device selected
+    logicOperatorLabel.style.display = 'none';    // hide text
   }
 }
-*/
-
-
 
      </script>
 
@@ -216,8 +218,8 @@ function updateLogicOperatorVisibility() {
         </div>
 
         <div id="logicOperatorWrapper">
-          <label for="logicOperator">Logic operation between inputs:</label>
-          <select class="logic-operator-select">
+          <label id="logic-operator-label" class="logic-operator-select-text" for="logicOperator">Logic operation between inputs:</label>
+          <select id="logic-operator-select" class="logic-operator-select">
             <option disabled selected>Select Logic</option>
             <option value="AND">AND</option>
             <option value="OR">OR</option>
