@@ -1,4 +1,9 @@
+
+import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount} from './rulesInputDeviceRow_handler.js';
+
   // DOM elements
+  document.addEventListener('DOMContentLoaded', () => {
+
   const addRuleForm = document.getElementById("add-rule-form");
   //const logicOperatorSelect = document.getElementById("logic-operator-select");
   const logicOperatorSelect = document.querySelector(".logic-operator-select");
@@ -20,10 +25,10 @@
 
 
   /*##############################################################################################################################
-  This function updates the options in all input device selects by first querying all elements with the class 'input-device-select'. 
-  Then, for each input device select element, it stores the current value, resets its inner HTML, and repopulates it with the updated input devices. 
+  This function updates the options in all input device selects and output device select by first querying all elements with the class 'input-device-select' and 'output-select'. 
+  Then, for each input and output device select element, it stores the current value, resets its inner HTML, and repopulates it with the updated devices. 
   Finally, it restores the original value of the select element. 
-  This function is used when we want to update the input device options, for example, when a new input device is added or when an input device name is updated
+  This function is used when we want to update the input or output device options, for example, when a new device is added or when device name is updated
   */
   function updateDeviceOptions() {
     // Query all elements with the class 'input-device-select'
@@ -139,7 +144,7 @@
             // Remove all existing input device rows once when rule is added
           inputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));  
           updateLogicOperatorVisibility() // update logic OperatorVisibility
-          inputDeviceRowCount = 0;        // reset / set input DeviceRow Count to 0
+          setInputDeviceRowCount(0); // Reset / set input DeviceRow Count to 0
               // Reset the logic operator, output select, and output action select to their default values
           logicOperatorSelect.value = 'Select Logic';
           outputSelect.value = 'Select Output Device';
@@ -173,13 +178,56 @@
    // Iterate through the deviceData object to get each device
     for (const deviceKey in deviceData) {
       // Check if the current deviceKey is present in the outputDeviceKeys set
-      // If true, it means the device is used in a rule and should be locked
+      // If true, it means the device is used in a rule and should be locked or unlocked
       const isLocked = outputDeviceKeys.has(deviceKey);
      // Call the lockDevice function to lock or unlock the device based on the isLocked value
       lockDevice(deviceKey, isLocked);
     }
   }
   
+
+/* #################################################################### 
+function to lock unlock device*/
+// Lock device if it is used in rules
+function lockDevice(device_key, isLocked) {
+  // console.log('Device key:', device_key); // Log the device key for debugging purposes
+   const deviceInput = document.querySelector(`#${device_key}-input`);           // Select the input element for the device using its unique ID
+   const box_id = deviceData[device_key].box_id;                                 // Get the box_id of the device from the deviceData object
+   const deviceBox = document.querySelector(`.device-box[data-id="${box_id}"]`); // Select the device box element using its data-id attribute
+   const existingLockIcon = deviceBox.querySelector('.lock-icon');               // Check if there's an existing lock icon within the deviceBox element
+ 
+   // If the device input or box is not found, log a warning and return early
+   if (!deviceInput || !deviceBox) {
+     //console.warn(`Device with key ${device_key} not found.`);
+     return;
+   }
+   // If the device should be locked (isLocked is true)
+   if (isLocked) {
+     deviceInput.setAttribute('disabled', 'disabled'); // Disable the device input by setting the 'disabled' attribute
+     // If there isn't an existing lock icon, create and add one to the deviceBox
+     if (!existingLockIcon) {                          
+       const lockIcon = document.createElement('i');
+       lockIcon.className = 'lock-icon fa fa-lock';
+       deviceBox.appendChild(lockIcon);
+     }
+   } else {
+     //if the device should not be locked (isLocked is false)
+     deviceInput.removeAttribute('disabled');  // Remove 'disable' attribute
+     if (existingLockIcon) {
+       deviceBox.removeChild(existingLockIcon); // If there is existing icon, remove it
+     }
+   }
+ }
+ 
+ 
+ /*###################################################################
+ This event listener listens for the 'lock_device' event from the server. 
+ When this event is received, it will call the lockDevice function with the device_key and isLocked properties from the data object.
+ The lockDevice function is responsible for updating the lock state of the specified device on the client side.
+ */
+ socket.on('lock_device', (data) => {
+   lockDevice(data.device_key, data.isLocked);
+ });
 
 
 
@@ -252,49 +300,6 @@ socket.on("rules_updated", (rules) => {
 
 
 
-/* #################################################################### 
-function to lock unlock device*/
-// Lock device if it is used in rules
-function lockDevice(device_key, isLocked) {
- // console.log('Device key:', device_key); // Log the device key for debugging purposes
-  const deviceInput = document.querySelector(`#${device_key}-input`);           // Select the input element for the device using its unique ID
-  const box_id = deviceData[device_key].box_id;                                 // Get the box_id of the device from the deviceData object
-  const deviceBox = document.querySelector(`.device-box[data-id="${box_id}"]`); // Select the device box element using its data-id attribute
-  const existingLockIcon = deviceBox.querySelector('.lock-icon');               // Check if there's an existing lock icon within the deviceBox element
-
-  // If the device input or box is not found, log a warning and return early
-  if (!deviceInput || !deviceBox) {
-    //console.warn(`Device with key ${device_key} not found.`);
-    return;
-  }
-  // If the device should be locked (isLocked is true)
-  if (isLocked) {
-    deviceInput.setAttribute('disabled', 'disabled'); // Disable the device input by setting the 'disabled' attribute
-    // If there isn't an existing lock icon, create and add one to the deviceBox
-    if (!existingLockIcon) {                          
-      const lockIcon = document.createElement('i');
-      lockIcon.className = 'lock-icon fa fa-lock';
-      deviceBox.appendChild(lockIcon);
-    }
-  } else {
-    //if the device should not be locked (isLocked is false)
-    deviceInput.removeAttribute('disabled');  // Remove 'disable' attribute
-    if (existingLockIcon) {
-      deviceBox.removeChild(existingLockIcon); // If there is existing icon, remove it
-    }
-  }
-}
-
-
-/*###################################################################
-This event listener listens for the 'lock_device' event from the server. 
-When this event is received, it will call the lockDevice function with the device_key and isLocked properties from the data object.
-The lockDevice function is responsible for updating the lock state of the specified device on the client side.
-*/
-socket.on('lock_device', (data) => {
-  lockDevice(data.device_key, data.isLocked);
-});
-
 
 /* ##########################################################################################################
 This event listener is added to the "Add Input Device" button (which has a CSS class of custom-add-input-device-button). 
@@ -309,3 +314,6 @@ document.querySelector("button.custom-add-input-device-button").addEventListener
     alert("No more devices available!");
   }
 });
+
+
+  });

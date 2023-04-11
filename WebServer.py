@@ -3,6 +3,7 @@ from flask import Flask, render_template, make_response, request, jsonify
 from flask_socketio import SocketIO, emit
 from database_handler import load_devices, save_devices, get_device_status, update_device_status, get_device_name, update_device_name, get_device_gpio_id, get_device_box_id, get_device_type, add_device, get_device_gpio_pin
 from rule_handler import add_rule, load_rules, delete_rule
+from group_handler import add_group, load_groups, delete_group
 import json
 import os
 import time
@@ -27,7 +28,7 @@ add_device('sensor1', 'Sensor1', 0, 'DI1', 2, 'input', 35)
 add_device('sensor2', 'Sensor2', 0, 'DI2', 3, 'input', 22)
 add_device('sensor3', 'Sensor3', 0, 'DI3', 4, 'input', 33)
 add_device('sensor4', 'Sensor4', 0, 'DI4', 5, 'input', 37)
-add_device('motion', 'Sensor5', 0, 'DI5', 6, 'input', 16)
+add_device('sensor5', 'Sensor5', 0, 'DI5', 6, 'input', 16)
 
 
 def init_device_data():
@@ -56,11 +57,21 @@ def init_rules():
         }
     return rule_data
 
+def init_groups():
+    group_data = {}
+    groups = load_groups()
+    for group_key, group in groups.items():
+        group_data[group_key] = {
+            'group_name': group['group_name'],
+            'group_devices': group['group_devices'],
+        }
+    return group_data
 
 if __name__ == '__main__':
   
     device_data = init_device_data()
     rule_data = init_rules()
+    group_data = init_groups()
 
 # set GPIOs according to its type
 GPIO.setmode(GPIO.BOARD)
@@ -77,10 +88,10 @@ for device_key, device in device_data.items():
         GPIO.output(device['gpio_pin'], GPIO.HIGH if device['status'] else GPIO.LOW)        
 
 
-#render device_data in index.html
+#render device_data, rule data and group data in index.html
 @app.route("/")
 def index():
-    return render_template('index.html', device_data=device_data, rule_data=rule_data)
+    return render_template('index.html', device_data=device_data, rule_data=rule_data, group_data=group_data)
 
 
 #When the socket connection is established, send all relay and sensor statuses and device names
@@ -98,6 +109,14 @@ def handle_connect():
 
     # Emit current rules
     emit('rules_updated', rule_data, broadcast=True)  # Send the entire rule_data object
+
+    
+    # Emit current groups
+    emit('groups_updated', group_data, broadcast=True)  # Send the entire group_data object
+
+    # Emit group names
+    for group_key, group in group_data.items():
+        emit('group_name_updated', {'group_key': group_key, 'group_name': group['group_name']})  
 
 
 
@@ -140,6 +159,73 @@ def sensor_callback(channel, device_key):
     socketio.emit('sensorStatus', {'device_key': device_key, 'status': device_data[device_key]['status']})
     #print(f"Sensor callback triggered for {device_key}, status: {device_data[device_key]['status']}")  # Add this print statement
 
+
+#add/update group handler
+@socketio.on('add_group')
+def update_group_handler(data):
+    print('Received add_group event', data)
+    groupKey = data['group_key']
+    groupName = data['group_name']
+    groupDevices = data['group_devices']
+
+    existing_group_key = None
+    existing_group_device_key = None
+    existing_group_name = None
+    existing_device_name = None
+
+    # Check if the group name already exists
+    for group in group_data.values():
+        if group['group_name'] == groupName:
+            return {'error': f"Group name {groupName} already exists!"}
+
+    # Check if the device is already assigned to some group
+    for group_key, group_details in group_data.items():
+        for group_device in group_details['group_devices']:
+            for new_group_device in groupDevices:
+                if group_device['group_device_key'] == new_group_device['group_device_key']:
+                    existing_group_key = group_key
+                    existing_group_device_key = group_device['group_device_key']
+                    existing_group_name = group_details['group_name']
+                    existing_device_name = device_data[existing_group_device_key]['name']
+                    break  # Exit the inner loop if a match is found
+            if existing_group_device_key is not None:
+                break  # Exit the middle loop if a match is found
+        if existing_group_device_key is not None:
+            break  # Exit the outer loop if a match is found
+
+    if existing_group_device_key is None:
+        # Add the new group if no match was found
+        add_group(groupKey, groupDevices, groupName)
+        group_data[groupKey] = {
+            'group_name': groupName,
+            'group_devices': groupDevices
+        }
+    else:
+        return {'error': f"Device {existing_device_name} already assigned to the group {existing_group_name}."}
+
+
+
+
+#When the name of group is changed, update the name and send feedback to the client
+@socketio.on('update_group_name')
+def update_group_name_socketio(data):
+    group_key = data['group_key']
+    group_name = data['group_name']
+    group_data[group_key]['group_name'] = group_name 
+    emit('group_name_updated', {'group_key': group_key, 'group_name': group_name}, broadcast=True)
+    update_group_name(group_key, group_name) #update database with the new name
+
+
+#delete_rule_handler
+@socketio.on('delete_group')
+def delete_group_handler(data):
+    group_key = data['group_key']
+    if group_key in group_data:
+        delete_group(group_key)
+        del group_data[group_key]
+        emit('groups_updated', group_data, broadcast=True)
+
+            
 
 
 #add/update rule handler
@@ -230,7 +316,7 @@ def check_input_devices_and_apply_rules():
             update_device_status(output_device_key, device_data[output_device_key]['status'])
             socketio.emit('device_status', {'device_key': output_device_key, 'status': device_data[output_device_key]['status']}, namespace='/')
 
-        time.sleep(0.5)  # Check every half second
+        time.sleep(1)  # Check every second
 
 
 

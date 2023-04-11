@@ -1,10 +1,30 @@
 import { updateDeviceName, attachDeviceNameUpdateListener } from './deviceName_handler.js';
+import { createOutputDeviceBox, createInputDeviceBox } from './deviceBoxTemplates.js';
 
 
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io.connect(); //connect the socket
 
-    
+
+    //Add device boxes
+      const deviceContainer = document.querySelector(".device-container");
+      const DeviceKeys = Object.keys(deviceData)
+
+      DeviceKeys.forEach((device_key) => {
+        const device = deviceData[device_key];
+        let deviceBox;
+        if (device.type === 'output') {
+          deviceBox = createOutputDeviceBox(device_key, device);
+          //deviceContainer.appendChild(deviceBox);
+        } else if (device.type === 'input') {
+          deviceBox = createInputDeviceBox(device_key, device);
+          //deviceContainer.appendChild(deviceBox);
+        } else {
+          return; // Skip the device if it has an unrecognized type
+        }
+        deviceContainer.appendChild(deviceBox);
+      });
+
 
     // Handle device name updates from the server and send the name update to the server when it is changed
       socket.on('device_name_updated', (data) => {
@@ -21,14 +41,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const outputDeviceKeys = Object.keys(deviceData).filter((device_key) => deviceData[device_key].type === 'output');
       //const outputDeviceKeys = ['relay1', 'relay2'];
       
+    
       outputDeviceKeys.forEach((device_key) => {
+      
         document.querySelector(`#${device_key}-input`).addEventListener('change', (e) => {
           e.preventDefault();
-          if (e.target.checked) {
-            sendUpdate(device_key, 'on');
-          } else {
-            sendUpdate(device_key, 'off');
-          }
+
+              if (e.target.checked) {
+                sendUpdate(device_key, 'on');
+              } else {
+                sendUpdate(device_key, 'off');
+              }
+           
         });
       
         socket.on('device_status', (data) => {
