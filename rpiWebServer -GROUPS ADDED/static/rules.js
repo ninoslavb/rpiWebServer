@@ -1,12 +1,8 @@
 
 import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount} from './rulesInputDeviceRow_handler.js';
 
-
   // DOM elements
   document.addEventListener('DOMContentLoaded', () => {
-
-
-  const socket = io();
 
   const addRuleForm = document.getElementById("add-rule-form");
   //const logicOperatorSelect = document.getElementById("logic-operator-select");
@@ -25,16 +21,6 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
   addNewRuleButton.addEventListener('click', () => {
     addRuleContainer.style.display = addRuleContainer.style.display === 'none' ? 'block' : 'none';
   });
-
-
-  //container for adding rule name      
-const ruleNameContainer = document.getElementById("rule-name-container");
-const input = document.createElement("input");
-input.className = "rule-input";
-input.type = "text";
-input.placeholder = "Enter name";
-input.id = "new-rule-name";
-ruleNameContainer.appendChild(input);
 
 
 
@@ -84,7 +70,7 @@ ruleNameContainer.appendChild(input);
 
   }
   
-  
+  const socket = io();
 
   /* 
   ####################################################################################################################################################################################
@@ -106,8 +92,6 @@ ruleNameContainer.appendChild(input);
             input_device_key: row.querySelector('.input-device-select').value,
             input_device_option: row.querySelector('.input-device-option').value,
           }));
-          const ruleNameInput = document.getElementById("new-rule-name");
-          const ruleName = ruleNameInput.value;
 
         // Validation check: If an input device is not selected, show an alert and return early
         for (const inputDevice of inputDevices) {
@@ -136,28 +120,21 @@ ruleNameContainer.appendChild(input);
             return;
           }
 
-          if (ruleName === '') {
-            alert('Please enter a valid group name.');
-            return;
-        }
-
 
         // Create a rule key by combining all the input device keys and the output device key
         const rule_key = inputDevices.map((inputDevice) => inputDevice.input_device_key).join('-') + '-' + outputSelect.value;
 
         socket.emit('add_rule', {
           rule_key,
-          rule_name: ruleName,
           input_devices: inputDevices,
           logic_operator: logicOperatorSelect.value,
           output_key: outputSelect.value,
           output_action: outputActionSelect.value
         }, (response) => {
-          if (response && response.error) {
-            alert(response.error);
+          if (response === 'error') {
+            alert("Rule already exists for that output!");
           } else {
             ruleData[rule_key] = {
-              rule_name: ruleName,
               input_devices: inputDevices,
               logic_operator: logicOperatorSelect.value,
               output_device_key: outputSelect.value,
@@ -172,7 +149,6 @@ ruleNameContainer.appendChild(input);
           logicOperatorSelect.value = 'Select Logic';
           outputSelect.value = 'Select Output Device';
           outputActionSelect.value = 'Select Action';
-          ruleNameInput.value = ""; // Reset the rule name input field
 
             // Hide the add-rule-container after submitting the form
           addRuleContainer.style.display = 'none';
@@ -294,14 +270,13 @@ function updateRuleList() {
     const inputDevices = rule.input_devices;
     const logicOperator = rule.logic_operator;
     const output = rule.output_device_key;
-    const output_action = rule.output_device_action
-    const ruleName = rule.rule_name;;
+    const output_action = rule.output_device_action;
 
     const inputDevicesText = inputDevices.map((inputDevice) => `${deviceData[inputDevice.input_device_key].name} is ${inputDevice.input_device_option}`).join(` ${logicOperator} `);
 
     const listItem = document.createElement("li");
     listItem.classList.add("rule-list-item");
-    listItem.textContent = `Rule Name: ${ruleName}: If ${inputDevicesText}, then ${deviceData[output].name} is ${output_action}`;
+    listItem.textContent = `If ${inputDevicesText}, then ${deviceData[output].name} is ${output_action}`;
 
     const deleteButton = document.createElement("button");
     deleteButton.classList.add("delete-rule-button");

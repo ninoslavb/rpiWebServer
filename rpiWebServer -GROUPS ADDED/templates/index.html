@@ -3,10 +3,10 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/sidebar.css?v=1122321322312312324" />
-    <link rel="stylesheet" href="/static/master.css?v=142231232311232321" />
-    <link rel="stylesheet" href="/static/rules.css?v=12112232321312123123312331231233" />
-    <link rel="stylesheet" href="/static/groups.css?v=1211231123211231123112323233" />
+    <link rel="stylesheet" href="/static/sidebar.css?v=112211123212324322312324" />
+    <link rel="stylesheet" href="/static/master.css?v=142212112123132422311232321" />
+    <link rel="stylesheet" href="/static/rules.css?v=121121121235232412231231233" />
+    <link rel="stylesheet" href="/static/groups.css?v=121123212331113234122312323132355233" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
@@ -30,7 +30,6 @@
           <ul>
             <li><button onclick="navigate('dashboard')">Dashboard</button></li>
             <li><button onclick="navigate('groups')">Groups</button></li>
-          <!--   <ul id="group-sidebar-list"></ul> -->
             <li><button onclick="navigate('if-this-then-this')">Rules</button></li>
           </ul>
         </div>
@@ -54,13 +53,7 @@
           <button type="button" id="add-new-rule-button" class="custom-add-new-rule-button">ADD NEW RULE</button>
           <div id="add-rule-container" style="display: none;">
             <form id="add-rule-form">
-              <div id="ruleWrapper">
-                <label>Rule Name:</label>
-                    <div class="rule-name" id="rule-name-container">
-                    <!-- The input element will be created by JavaScript -->
-                    </div>
               <div id="inputDeviceWrapper">
-                 <!-- The rule name input element will be created by JavaScript -->
                 <label for="input">Input devices:</label>
                 <!-- The input-device-row elements will be added here when the "Add Input Device" button is clicked. rulesInputDeviceRow_handler.js -->
                 <button type="button" id="addInputDeviceButton" class="custom-add-input-device-button">Add Input Device</button>
@@ -93,7 +86,6 @@
                       </select>
                   </div>
                </div>
-              </div>
               <br><br>
               <button type="submit" class="custom-submit-rule-button">Submit rule</button>
             </form>

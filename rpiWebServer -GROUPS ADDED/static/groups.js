@@ -204,13 +204,19 @@ socket.on("device_name_updated", (data) => {
             // Create a rule key by combining all device keys 
             const group_key = groupDevices.map((groupDevice) => groupDevice.group_device_key).join('-');
     
+            console.log('Emitting add_group event', {
+                group_key,
+                group_name: groupName,
+                group_devices: groupDevices
+              });
+
 
             socket.emit('add_group', {
               group_key,
               group_name: groupName,
               group_devices: groupDevices
             }, (response) => {
-               // console.log('Response from server', response);
+                console.log('Response from server', response);
                 if (response && response.error) {
                     alert(response.error);
                 } else {
@@ -239,7 +245,10 @@ It first clears the inner HTML of the ruleList element.
 Then, it iterates through the groupData object and extracts information about each group, such as the group devices and group name.
 For each group, it creates a text string that represents devices in the list separated with ",". 
 It then creates a list item element, sets its text content to display the group, and creates a delete button for the group. 
-When the delete button is clicked, it emits the "delete_group" event with the group key to delete the group on the server.
+When the delete button is clicked, it emits the "delete_rule" event with the rule key to delete the rule on the server.
+
+The socket.on("groups_updated") event listener is called when the server sends updated groups data. 
+It updates the groupData object with the new data and calls the updateGroupList() function to update the displayed list of rules.
 */
       const groupList = document.getElementById("group-list");
 
@@ -268,20 +277,14 @@ When the delete button is clicked, it emits the "delete_group" event with the gr
           groupList.appendChild(listItem);
         }
       }
-
       
-
-/*##########################################################################################################################
-The socket.on("groups_updated") event listener is called when the server sends updated groups data. 
-It updates the groupData object with the new data and calls the updateGroupList( function to update the displayed list of rules.
-*/
-
       // Load the current groups and display them
       socket.on("groups_updated", (groups) => {
         groupData = groups; // Update the groupData object with the new data
-        updateGroupList(); // update group list in Groups page
+        updateGroupList();
       });
-      
+    
+
 
 
 /* ##########################################################################################################
@@ -297,6 +300,8 @@ document.querySelector("button.custom-add-device-to-group-button").addEventListe
       alert("No more devices available!");
     }
   });
+
+
 
 
 });

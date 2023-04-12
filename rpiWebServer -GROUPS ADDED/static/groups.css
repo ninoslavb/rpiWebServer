@@ -17,8 +17,8 @@
   }
 
   
- /* Add New Rule Button */
-.custom-add-new-rule-button {
+ /* Add New Group Button */
+.custom-add-new-group-button {
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     text-align: center;
     border: 2px solid black;
@@ -29,12 +29,11 @@
     padding: 8px 16px;
   }
   
-  .custom-add-new-rule-button:hover {
+  .custom-add-new-group-button:hover {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.54);
   }
 
-   /* Rule name input */
-  .rule-input {
+  .group-input {
     background-color: transparent;
     border: 2px solid white;
     border-radius: 5px;
@@ -51,8 +50,8 @@
 
 
 
- /* Add Input Device Button */
- .custom-add-input-device-button {
+ /* Add Device to Group Button */
+ .custom-add-device-to-group-button {
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     text-align: center;
     border: 2px solid black;
@@ -65,13 +64,13 @@
     padding: 6px 12px;
   }
   
-  .custom-add-input-device-button:hover {
+  .custom-add-device-to-group-button:hover {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.54);
   }
 
   
-   /* Add Input Device Button */
- .custom-delete-input-button {
+   /* Delete devoce form selection button */
+ .custom-delete-device-button {
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     text-align: center;
     background-color: transparent;
@@ -90,12 +89,12 @@
     align-self: center;
   }
   
-  .custom-delete-input-button:hover {
+  .custom-delete-device-button:hover {
     box-shadow: 0px 0px 20px red;
   }
 
 
-  .custom-submit-rule-button {
+  .custom-submit-group-button {
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     text-align: center;
     border: 2px solid black;
@@ -108,12 +107,12 @@
     padding: 6px 12px;
   }
   
-  .custom-submit-rule-button:hover {
+  .custom-submit-group-button:hover {
     box-shadow: 0px 0px 20px rgb(56, 252, 7);
   }
 
 
-  .delete-rule-button {
+  .delete-group-button {
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     text-align: center;
     background-color: transparent;
@@ -133,11 +132,11 @@
     align-self: center;
   }
   
-  .delete-rule-button:hover {
+  .delete-group-button:hover {
     box-shadow: 0px 0px 20px red;
   }
 
-  .rule-list-item {
+  .group-list-item {
     font-family: 'Poppins', Arial, sans-serif;
     font-size: 16px;
     color: white;
@@ -148,7 +147,7 @@
 
 
 
-  #add-rule-container {
+  #add-group-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -160,7 +159,7 @@
     border-radius: 5px;
   }
   
-  #add-rule-form {
+  #add-group-form {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -169,17 +168,16 @@
     width: 100%;
   }
 
-  #ruleWrapper,
-  #inputDeviceWrapper,
-  #logicOperatorWrapper,
-  #outputWrapper {
+
+
+  #groupWrapper {
     display: flex;
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
   }
   
-  .input-device-row {
+  .group-device-row {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
@@ -187,15 +185,8 @@
     margin-bottom: 10px;
   }
 
-  .output-device-row {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
 
-  #addInputDeviceButton {
+  #addDeviceToGroupButton {
     align-self: flex-start;
   }
   
@@ -204,7 +195,7 @@
   }
   
   
-  .input-device-select {
+  .device-select {
     background-color: transparent; /* background color */
     border: 2px solid white; /* border color and size */
     border-radius: 5px; /* rounded corners */
@@ -219,72 +210,7 @@
     margin-right: 10px;
   }
   
-  .input-device-option {
-    background-color: transparent; /* background color */
-    border: 2px solid white; /* border color and size */
-    border-radius: 5px; /* rounded corners */
-    color: white; /* text color */
-    font-family: Arial, sans-serif; /* font */
-    font-size: 12px; /* font size */
-    padding: 5px 10px; /* padding around the text */
-    width: 100%;
-    min-width: 120px;
-    max-width: 120px;
-    margin-bottom: 5px;
-    margin-right: 5px;
-  }
-  
-  .output-select {
-    background-color: transparent; /* background color */
-    border: 2px solid white; /* border color and size */
-    border-radius: 5px; /* rounded corners */
-    color: white; /* text color */
-    font-family: Arial, sans-serif; /* font */
-    font-size: 12px; /* font size */
-    padding: 5px 5px; /* padding around the text */
-    width: 100%;
-    min-width: 150px;
-    max-width: 150px;
-    margin-bottom: 5px;
-    margin-right: 10px;
-  }
 
-  .output-action-select {
-    background-color: transparent; /* background color */
-    border: 2px solid white; /* border color and size */
-    border-radius: 5px; /* rounded corners */
-    color: white; /* text color */
-    font-family: Arial, sans-serif; /* font */
-    font-size: 12px; /* font size */
-    padding: 5px 10px; /* padding around the text */
-    width: 100%;
-    min-width: 120px;
-    max-width: 120px;
-    margin-bottom: 5px;
-    margin-right: 5px;
-  }
-
-  .logic-operator-select {
-    background-color: transparent; /* background color */
-    border: 2px solid white; /* border color and size */
-    border-radius: 5px; /* rounded corners */
-    color: white; /* text color */
-    font-family: Arial, sans-serif; /* font */
-    font-size: 12px; /* font size */
-    padding: 5px 10px; /* padding around the text */
-    width: 100%;
-    min-width: 120px;
-    max-width: 120px;
-    margin-bottom: 5px;
-    margin-right: 5px;
-    display: none; /* Hide dropwdown when the page is rendered first time */
-  }
-
-    /* Remove "Logic operation between inputs" text when the page is rendered first time */
-  .logic-operator-select-text {
-    display: none;
-  }
-  
   
   /* Change the text color of the dropdown menu */
   select:focus option, select:active option {

@@ -50,7 +50,6 @@ def init_rules():
     rules = load_rules()
     for rule_key, rule in rules.items():
         rule_data[rule_key] = {
-            'rule_name': rule['rule_name'],
             'input_devices': rule['input_devices'],
             'logic_operator': rule['logic_operator'],
             'output_device_key': rule['output_device_key'],
@@ -111,10 +110,6 @@ def handle_connect():
     # Emit current rules
     emit('rules_updated', rule_data, broadcast=True)  # Send the entire rule_data object
 
-    # Emit rule names
-    for rule_key, rule in rule_data.items():
-        emit('rule_name_updated', {'rule_key': rule_key, 'rule_name': rule['rule_name']})  
-
     
     # Emit current groups
     emit('groups_updated', group_data, broadcast=True)  # Send the entire group_data object
@@ -168,7 +163,7 @@ def sensor_callback(channel, device_key):
 #add/update group handler
 @socketio.on('add_group')
 def update_group_handler(data):
-    #print('Received add_group event', data)
+    print('Received add_group event', data)
     groupKey = data['group_key']
     groupName = data['group_name']
     groupDevices = data['group_devices']
@@ -205,13 +200,23 @@ def update_group_handler(data):
             'group_name': groupName,
             'group_devices': groupDevices
         }
-        emit('groups_updated', group_data, broadcast=True) # Notify the frontend to update the group list on the sidebar
     else:
         return {'error': f"Device {existing_device_name} already assigned to the group {existing_group_name}."}
 
 
 
-#delete_grouo_handler
+
+#When the name of group is changed, update the name and send feedback to the client
+@socketio.on('update_group_name')
+def update_group_name_socketio(data):
+    group_key = data['group_key']
+    group_name = data['group_name']
+    group_data[group_key]['group_name'] = group_name 
+    emit('group_name_updated', {'group_key': group_key, 'group_name': group_name}, broadcast=True)
+    update_group_name(group_key, group_name) #update database with the new name
+
+
+#delete_rule_handler
 @socketio.on('delete_group')
 def delete_group_handler(data):
     group_key = data['group_key']
@@ -227,33 +232,20 @@ def delete_group_handler(data):
 @socketio.on('add_rule')
 def update_rule_handler(data):
     rule_key = data['rule_key']
-    rule_name = data['rule_name']
     input_devices = data['input_devices']
     logic_operator = data['logic_operator']
     output_device_key = data['output_key']
     output_device_action = data['output_action']
 
-    existing_output_rule_name = None
-    existing_output_device_name = None
-
-
     # Check if the output device is already used in existing rules
     for existing_rule_key, existing_rule in rule_data.items():
         if existing_rule['output_device_key'] == output_device_key:
-            existing_output_device_name = device_data[existing_rule['output_device_key']]['name']
-            existing_output_rule_name = existing_rule['rule_name']
-            return {'error': f"Output {existing_output_device_name} already assigned to the rule {existing_output_rule_name}."}
-
-    # Check if the rule name already exists
-    for rule in rule_data.values():
-        if rule['rule_name'] == rule_name:
-            return {'error': f"Rule name {rule_name} already exists!"}
+            return 'error'
 
     if rule_key not in rule_data:
         if input_devices and output_device_key:
-            add_rule(rule_key, rule_name, input_devices, logic_operator, output_device_key, output_device_action)
+            add_rule(rule_key, input_devices, logic_operator, output_device_key, output_device_action)
             rule_data[rule_key] = {
-                'rule_name': rule_name,
                 'input_devices': input_devices,
                 'logic_operator': logic_operator,
                 'output_device_key': output_device_key,
