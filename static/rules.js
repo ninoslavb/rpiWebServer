@@ -109,7 +109,15 @@ ruleNameContainer.appendChild(input);
           const ruleNameInput = document.getElementById("new-rule-name");
           const ruleName = ruleNameInput.value;
 
-        // Validation check: If an input device is not selected, show an alert and return early
+
+          // Validation check: If no devices are selected, show an alert and return early
+          if (inputDevices.length === 0) {
+          alert('Please add at least one input device to the rule.');
+          return;
+          }
+
+
+        // Validation check: If an input device is not selected from the dropdown, show an alert and return early
         for (const inputDevice of inputDevices) {
           if (inputDevice.input_device_key === 'Select Input Device') {
             alert('Please select a valid input device.');
@@ -137,7 +145,7 @@ ruleNameContainer.appendChild(input);
           }
 
           if (ruleName === '') {
-            alert('Please enter a valid group name.');
+            alert('Please enter a valid rule name.');
             return;
         }
 
@@ -216,8 +224,7 @@ function to lock unlock device*/
 function lockDevice(device_key, isLocked) {
   // console.log('Device key:', device_key); // Log the device key for debugging purposes
    const deviceInput = document.querySelector(`#${device_key}-input`);           // Select the input element for the device using its unique ID
-   const box_id = deviceData[device_key].box_id;                                 // Get the box_id of the device from the deviceData object
-   const deviceBox = document.querySelector(`.device-box[data-id="${box_id}"]`); // Select the device box element using its data-id attribute
+   const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`); // Select the device box element using its device-id attribute
    const existingLockIcon = deviceBox.querySelector('.lock-icon');               // Check if there's an existing lock icon within the deviceBox element
  
    // If the device input or box is not found, log a warning and return early

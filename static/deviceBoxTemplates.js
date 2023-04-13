@@ -4,7 +4,7 @@ function createOutputDeviceBox(device_key, device) {
  
     const deviceBox = document.createElement('div');
     deviceBox.classList.add('device-box');
-    deviceBox.setAttribute('data-id', device.box_id);
+    deviceBox.setAttribute('device-id', device_key);
   
     const deviceLabel = document.createElement('div');
     deviceLabel.classList.add('device-label');
@@ -59,7 +59,7 @@ function createOutputDeviceBox(device_key, device) {
  
     const deviceBox = document.createElement('div');
     deviceBox.classList.add('device-box');
-    deviceBox.setAttribute('data-id', device.box_id);
+    deviceBox.setAttribute('device-id', device_key);
   
     const deviceLabel = document.createElement('div');
     deviceLabel.classList.add('device-label');

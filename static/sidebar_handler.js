@@ -14,8 +14,8 @@ function toggleSidebar() {
   }
   
   
-  function navigate(pageId) {
-    const pages = ['dashboard', 'groups', 'if-this-then-this'];
+  function navigate(pageId, title) {
+    const pages = ['dashboard', 'groups', 'rules'];
     
     pages.forEach(page => {
       const pageElement = document.getElementById(page);
@@ -26,6 +26,21 @@ function toggleSidebar() {
         pageElement.style.display = 'none';
       }
     });
-  }
   
- 
+    // Update the page title if a new title is provided
+    if (title) {
+      document.querySelector("h1.page-title").textContent = title;
+    }
+
+     // If navigating back to the Dashboard, show all devices
+  if (pageId==='dashboard' && title === 'Dashboard') {
+    const allDevices = document.querySelectorAll(".device-box");
+    allDevices.forEach((device) => {
+      device.style.display = "block";
+    });
+  }
+}
+
+    
+  
+  

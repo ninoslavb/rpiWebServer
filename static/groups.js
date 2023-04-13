@@ -58,6 +58,14 @@ function addDeviceRow() {
       DeviceSelect.appendChild(optionDevice);
     
     }
+    // Add an event listener to call updateGroupDeviceOptions when the selected device changes
+    /*when you select a device from the dropdown menu, the updateGroupDeviceOptions() function will be called, 
+    and the selected device will be disabled in the other dropdown menus. */
+  DeviceSelect.addEventListener('change', () => {
+  updateGroupDeviceOptions();
+  });
+
+
     DeviceRow.appendChild(DeviceSelect);
   
 
@@ -178,7 +186,7 @@ socket.on("device_name_updated", (data) => {
     const addGroupForm = document.getElementById("add-group-form");
 
      addGroupForm.addEventListener("submit", (event) => {
-        console.log('Form submit event triggered');
+        //console.log('Form submit event triggered');
         event.preventDefault();
       
               // Get the selected input devices from group device rows
@@ -188,8 +196,14 @@ socket.on("device_name_updated", (data) => {
               }));
               const groupNameInput = document.getElementById("new-group-name");
               const groupName = groupNameInput.value;
+
+              // Validation check: If no devices are selected, show an alert and return early
+              if (groupDevices.length === 0) {
+               alert('Please add at least one device to the group.');
+              return;
+              }
     
-            // Validation check: If device is not selected, show an alert and return early
+            // Validation check: If device is not selected from the dropdown, show an alert and return early
             for (const groupDevice of groupDevices) {
               if (groupDevice.group_device_key === 'Select Device') {
                 alert('Please select a valid  device.');
@@ -218,7 +232,7 @@ socket.on("device_name_updated", (data) => {
                         group_name: groupName,
                         group_devices: groupDevices
                     };
-                    
+                updateSidebarGroupLinks();
                 updateGroupList();
                 // Remove all existing device rows once group is added
               groupDeviceRows.forEach(row => groupWrapper.removeChild(row));  
@@ -269,6 +283,62 @@ When the delete button is clicked, it emits the "delete_group" event with the gr
         }
       }
 
+
+
+/*
+This function populates sidebar list of added groups. When the user clicks on the group name it will navigate to the dashboard, but hide all devices except devices that are
+assigned to the group. Since navigate() function includes the part where we check if the pageId='dashboard' and title = 'Dashboard' it will repopulate the page with all devices back again
+once when Dashboard button is clicked
+*/
+
+// Update the sidebar with group links
+function updateSidebarGroupLinks() {
+  const groupSidebarList = document.getElementById("group-sidebar-list");
+  groupSidebarList.innerHTML = "";
+
+  for (const groupKey in groupData) {
+    const group = groupData[groupKey];
+    const groupName = group.group_name;
+
+    //create list and list button with the name of the group in it
+    const groupLinkLi = document.createElement("li");
+   // groupLinkLi.classList.add("group-li");
+    const groupLink = document.createElement("button");
+    groupLink.classList.add("group-button");
+    groupLink.textContent = groupName;
+    groupLink.dataset.groupKey = groupKey;
+   
+    groupLink.addEventListener("click", () => {
+      
+      // Hide all devices
+      const allDevices = document.querySelectorAll(".device-box");
+      allDevices.forEach((device) => {
+        device.style.display = "none";
+      });
+
+      // Show only devices belonging to the clicked group
+      const groupDevices = group.group_devices;
+      groupDevices.forEach((groupDevice) => {
+        const deviceKey = groupDevice.group_device_key;
+        const deviceElement = document.querySelector(`[device-id='${deviceKey}']`);
+        if (deviceElement) {
+          deviceElement.style.display = "block";
+        }
+      });
+
+      // Navigate to the dashboard but with changed name to the groupName and hidden all elements except the elements from the group
+     navigate('dashboard', groupName);
+     toggleSidebar(); // toggle the sidevar when the group is selected
+    });
+
+    groupLinkLi.appendChild(groupLink);
+    groupSidebarList.appendChild(groupLinkLi);
+  }
+}
+
+// Call the function to initially populate the sidebar
+updateSidebarGroupLinks();
+
       
 
 /*##########################################################################################################################
@@ -279,6 +349,7 @@ It updates the groupData object with the new data and calls the updateGroupList(
       // Load the current groups and display them
       socket.on("groups_updated", (groups) => {
         groupData = groups; // Update the groupData object with the new data
+        updateSidebarGroupLinks();
         updateGroupList(); // update group list in Groups page
       });
       

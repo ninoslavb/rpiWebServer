@@ -3,10 +3,10 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/sidebar.css?v=1122321322312312324" />
-    <link rel="stylesheet" href="/static/master.css?v=142231232311232321" />
-    <link rel="stylesheet" href="/static/rules.css?v=12112232321312123123312331231233" />
-    <link rel="stylesheet" href="/static/groups.css?v=1211231123211231123112323233" />
+    <link rel="stylesheet" href="/static/sidebar.css?v=1122333112123221123123321231233212312312123321231231231234" />
+    <link rel="stylesheet" href="/static/master.css?v=1422312231232321123123112311231223312312311232331112323312321231" />
+    <link rel="stylesheet" href="/static/rules.css?v=12111231212332323121123231231231233312321223661233211232123312333" />
+    <link rel="stylesheet" href="/static/groups.css?v=121121123121232331231123321123123122323233" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
@@ -25,22 +25,26 @@
 
   <body>
   <div id="wrapper">
-      <button class="sidebar-toggle" onclick="toggleSidebar()">&#9776;</button>
-        <div class="sidebar collapsed" id="sidebar">
-          <ul>
-            <li><button onclick="navigate('dashboard')">Dashboard</button></li>
-            <li><button onclick="navigate('groups')">Groups</button></li>
-          <!--   <ul id="group-sidebar-list"></ul> -->
-            <li><button onclick="navigate('if-this-then-this')">Rules</button></li>
-          </ul>
-        </div>
+
+    <button class="sidebar-toggle" onclick="toggleSidebar()">&#9776;</button>
+      <div class="sidebar collapsed" id="sidebar">
+        <ul>
+          <li><button onclick="navigate('dashboard', 'Dashboard'); toggleSidebar();">Dashboard</button></li>
+          <li id="groups-li">
+            <button onclick="navigate('groups', 'Groups'); toggleSidebar();">Groups</button>
+            <ul id="group-sidebar-list" class="group-sidebar-list"></ul>
+          </li>
+          <li><button onclick="navigate('rules', 'Rules'); toggleSidebar();">Rules</button></li>
+        </ul>
+      </div>
+
     
 
 
     <div class="main-content expanded" id="main-content">
 
       <div id="dashboard">    
-        <h1>Dashboard</h1>
+        <h1 class="page-title">Dashboard</h1> <!-- Inital page title is Dashboard-->
         <div class="device-container">  
               <!-- Device boxes are added here at the beginning of main.js -->
         </div>  
@@ -48,9 +52,9 @@
 
 
       <!-- RULES -->
-      <div id="if-this-then-this" class="tab-content" style="display:none;">
+      <div id="rules" class="tab-content" style="display:none;">
         <div id="rules">
-          <h2>Rules</h2>
+          <h1 class="page-title">Rules</h1> 
           <button type="button" id="add-new-rule-button" class="custom-add-new-rule-button">ADD NEW RULE</button>
           <div id="add-rule-container" style="display: none;">
             <form id="add-rule-form">
@@ -108,7 +112,7 @@
 
 
       <div id="groups" style="display:none;">
-        <h2>Groups</h2>
+        <h1 class="page-title">Groups</h1>
         <button type="button" id="add-new-group-button" class="custom-add-new-group-button">ADD NEW GROUP</button>
         <div id="add-group-container" style="display: none;">
           <form id="add-group-form">

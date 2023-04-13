@@ -1,14 +1,13 @@
 import os
 import json
 
-def add_device(device_key, device_name, device_status, device_gpio_id, device_box_id, device_type,device_gpio_pin):
+def add_device(device_key, device_name, device_gpio_status, device_gpio_id, device_type,device_gpio_pin):
     devices = load_devices()
     if device_key not in devices:
         devices[device_key] = {
             'device_name': device_name,
-            'device_status': device_status,
+            'device_gpio_status': device_gpio_status,
             'device_gpio_id': device_gpio_id,
-            'device_box_id': device_box_id,
             'device_type': device_type,
             'device_gpio_pin': device_gpio_pin
         }
@@ -40,13 +39,13 @@ def save_devices(devices):
 
 def get_device_status(device_key):
     devices = load_devices()
-    return devices.get(device_key, {}).get('device_status', None)
+    return devices.get(device_key, {}).get('device_gpio_status', None)
 
 
-def update_device_status(device_key, device_status):
+def update_device_gpio_status(device_key, device_gpio_status):
     devices = load_devices()
     if device_key in devices:
-        devices[device_key]['device_status'] = device_status
+        devices[device_key]['device_gpio_status'] = device_gpio_status
         save_devices(devices)
 
 
@@ -69,10 +68,6 @@ def get_device_gpio_id(device_key):
     devices = load_devices()
     return devices.get(device_key, {}).get('device_gpio_id', None)
 
-
-def get_device_box_id(device_key):
-    devices = load_devices()
-    return devices.get(device_key, {}).get('device_box_id', None)
 
 
 def get_device_type(device_key):

@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 from flask import Flask, render_template, make_response, request, jsonify
 from flask_socketio import SocketIO, emit
-from database_handler import load_devices, save_devices, get_device_status, update_device_status, get_device_name, update_device_name, get_device_gpio_id, get_device_box_id, get_device_type, add_device, get_device_gpio_pin
+from database_handler import load_devices, save_devices, get_device_status, update_device_gpio_status, get_device_name, update_device_name, get_device_gpio_id, get_device_type, add_device, get_device_gpio_pin
 from rule_handler import add_rule, load_rules, delete_rule
 from group_handler import add_group, load_groups, delete_group
 import json
@@ -22,13 +22,13 @@ def my_route():
 GPIO.setwarnings(False)
 
 # Define devices
-add_device('relay1',  'Relay1', 0,  'DO1', 0, 'output',40)
-add_device('relay2',  'Relay2', 0,  'DO2', 1, 'output',12)
-add_device('sensor1', 'Sensor1', 0, 'DI1', 2, 'input', 35)
-add_device('sensor2', 'Sensor2', 0, 'DI2', 3, 'input', 22)
-add_device('sensor3', 'Sensor3', 0, 'DI3', 4, 'input', 33)
-add_device('sensor4', 'Sensor4', 0, 'DI4', 5, 'input', 37)
-add_device('sensor5', 'Sensor5', 0, 'DI5', 6, 'input', 16)
+add_device('digout1',  'DO1', 0,  'DO1', 'output',40)
+add_device('digout2',  'DO2', 0,  'DO2', 'output',12)
+add_device('digin1', 'DI1', 0, 'DI1', 'input', 35)
+add_device('digin2', 'DI2', 0, 'DI2', 'input', 22)
+add_device('digin3', 'DI3', 0, 'DI3', 'input', 33)
+add_device('digin4', 'DI4', 0, 'DI4', 'input', 37)
+add_device('digin5', 'DI5', 0, 'DI5', 'input', 16)
 
 
 def init_device_data():
@@ -37,9 +37,8 @@ def init_device_data():
     for device_key, device in devices.items():
         device_data[device_key] = {
             'name': device['device_name'],
-            'status': device['device_status'],
+            'gpio_status': device['device_gpio_status'],
             'gpio_id': device['device_gpio_id'],
-            'box_id': device['device_box_id'],
             'type': device['device_type'],
             'gpio_pin': device['device_gpio_pin'],
         }
@@ -83,10 +82,10 @@ for device_key, device in device_data.items():
     elif device['type'] == 'input':
         GPIO.setup(device['gpio_pin'], GPIO.IN)
 
-# set relay initial states
+# set digital outputs initial states
 for device_key, device in device_data.items():
     if device['type'] == 'output':
-        GPIO.output(device['gpio_pin'], GPIO.HIGH if device['status'] else GPIO.LOW)        
+        GPIO.output(device['gpio_pin'], GPIO.HIGH if device['gpio_status'] else GPIO.LOW)        
 
 
 #render device_data, rule data and group data in index.html
@@ -95,13 +94,13 @@ def index():
     return render_template('index.html', device_data=device_data, rule_data=rule_data, group_data=group_data)
 
 
-#When the socket connection is established, send all relay and sensor statuses and device names
+#When the socket connection is established, send all digital input and output statuses and device names
 @socketio.on('connect')
 def handle_connect():
     # Emit device state for each device
     for device_key, device in device_data.items():
-        device['status'] = GPIO.input(device['gpio_pin'])
-        emit('device_status', {'device_key': device_key, 'status': device['status']}, broadcast=True)
+        device['gpio_status'] = GPIO.input(device['gpio_pin'])
+        emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True)
 
 
     # Emit device names
@@ -134,9 +133,9 @@ def update_device_name_socketio(data):
     emit('device_name_updated', {'device_key': device_key, 'device_name': device_name}, broadcast=True)
     update_device_name(device_key, device_name) #update database with the new name
 
-#When the button for change the relay state is pressed, execute the action, check the state of the relay and send update to the client
-@socketio.on('device_update')
-def relay_update(data):
+#When the button for change the output device is pressed, execute the action, check the state of the output and send update to the client
+@socketio.on('device_output_update')
+def digital_output_update(data):
     device_key = data['device_key']
     action = data['action']
     print(f"Received device_update: device_key = {device_key}, action = {action}")  # Add this print statement
@@ -147,22 +146,22 @@ def relay_update(data):
         elif action == 'off':
             GPIO.output(device_data[device_key]['gpio_pin'], GPIO.LOW)
             
-        device_data[device_key]['status'] = GPIO.input(device_data[device_key]['gpio_pin'])
-        update_device_status(device_key, device_data[device_key]['status'])
-        emit('device_status', {'device_key': device_key, 'status': device_data[device_key]['status']}, broadcast=True)
+        device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
+        update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
+        emit('device_output_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']}, broadcast=True)
 
 
 
 # Add event detect for all digital inputs
 for device_key, device in device_data.items():
     if device['type'] == 'input':
-        GPIO.add_event_detect(device['gpio_pin'], GPIO.BOTH, callback=lambda channel, dk=device_key: sensor_callback(channel, dk), bouncetime=50)
+        GPIO.add_event_detect(device['gpio_pin'], GPIO.BOTH, callback=lambda channel, dk=device_key: input_device_callback(channel, dk), bouncetime=50)
 
-def sensor_callback(channel, device_key):
-    device_data[device_key]['status'] = GPIO.input(device_data[device_key]['gpio_pin'])
-    update_device_status(device_key, device_data[device_key]['status'])
-    socketio.emit('sensorStatus', {'device_key': device_key, 'status': device_data[device_key]['status']})
-    #print(f"Sensor callback triggered for {device_key}, status: {device_data[device_key]['status']}")  # Add this print statement
+def input_device_callback(channel, device_key):
+    device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
+    update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
+    socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']})
+    #print(f"Input device callback triggered for {device_key}, gpio_status: {device_data[device_key]['gpio_status']}")  # Add this print statement
 
 
 #add/update group handler
@@ -292,12 +291,12 @@ def check_input_devices_and_apply_rules():
     applied_rules = set()
 
     while True:
-        # Read and update the status of input devices
+        # Read and update the gpio_status of input devices
         for device_key, device in device_data.items():
             if device['type'] == 'input':
-                device_data[device_key]['status'] = GPIO.input(device_data[device_key]['gpio_pin'])
-                update_device_status(device_key, device_data[device_key]['status'])
-                socketio.emit('sensorStatus', {'device_key': device_key, 'status': device_data[device_key]['status']})
+                device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
+                update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
+                socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']})
 
         # Iterate over the rules and apply them if conditions are met
         for rule_key, rule in rule_data.items():
@@ -307,7 +306,7 @@ def check_input_devices_and_apply_rules():
             output_device_action = int(rule['output_device_action'])
 
             # Check if the input devices match the rule conditions
-            matching_input_devices = [str(device_data[input_device['input_device_key']]['status']) == input_device['input_device_option'] for input_device in input_devices]
+            matching_input_devices = [str(device_data[input_device['input_device_key']]['gpio_status']) == input_device['input_device_option'] for input_device in input_devices]
 
             # If the rule conditions are met, apply the rule
             if (logic_operator == 'AND' and all(matching_input_devices)) or (logic_operator == 'OR' and any(matching_input_devices)):
@@ -319,10 +318,10 @@ def check_input_devices_and_apply_rules():
                 GPIO.output(device_data[output_device_key]['gpio_pin'], opposite_action)
                 applied_rules.discard(rule_key)
 
-            # Update the status of the output device
-            device_data[output_device_key]['status'] = GPIO.input(device_data[output_device_key]['gpio_pin'])
-            update_device_status(output_device_key, device_data[output_device_key]['status'])
-            socketio.emit('device_status', {'device_key': output_device_key, 'status': device_data[output_device_key]['status']}, namespace='/')
+            # Update the gpio_status of the output device
+            device_data[output_device_key]['gpio_status'] = GPIO.input(device_data[output_device_key]['gpio_pin'])
+            update_device_gpio_status(output_device_key, device_data[output_device_key]['gpio_status'])
+            socketio.emit('device_status', {'device_key': output_device_key, 'gpio_status': device_data[output_device_key]['gpio_status']}, namespace='/')
 
         time.sleep(1)  # Check every second
 

@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
       const sendUpdate = (device_key, action) => {
-        socket.emit('device_update', { device_key: device_key, action: action });
+        socket.emit('device_output_update', { device_key: device_key, action: action });
       };
       
       // Add the device keys of devices with type 'output'
@@ -55,10 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
            
         });
       
-        socket.on('device_status', (data) => {
+        socket.on('device_output_status', (data) => {
           if (data.device_key === device_key) {
-            const deviceStatus = data.status;
-            if (deviceStatus === 1) {
+            const deviceOutputStatus = data.gpio_status;
+            if (deviceOutputStatus === 1) {
               document.querySelector(`#${device_key}-input`).checked = true;
             } else {
               document.querySelector(`#${device_key}-input`).checked = false;
@@ -68,22 +68,21 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       
 
-    //function to update sensor box
-    function updateSensorStatus(sensorBox, sensorStatus) {
-    if (sensorStatus === 0) {
-    sensorBox.classList.add('sensor-connected');
+    //function to update deviceInput box
+    function updateDeviceInputStatus(deviceInputBox, deviceInputStatus) {
+    if (deviceInputStatus === 0) {
+    deviceInputBox.classList.add('device-input-connected');
      } else {
-    sensorBox.classList.remove('sensor-connected');
+    deviceInputBox.classList.remove('device-input-connected');
     }
     }
 
-    // listens information from the Server side about sensor status (digital input status)
-    socket.on('sensorStatus', (data) => {
+    // listens information from the Server side about digital input statu
+    socket.on('device_input_status', (data) => {
       const deviceKey = data.device_key;
-      const deviceStatus = data.status;
-      const boxID= deviceData[deviceKey].box_id;
-      const deviceBox = document.querySelector(`.device-box[data-id="${boxID}"]`);
-      updateSensorStatus(deviceBox, deviceStatus);
+      const deviceInputStatus = data.gpio_status;
+      const deviceBox = document.querySelector(`.device-box[device-id="${deviceKey}"]`);
+      updateDeviceInputStatus(deviceBox, deviceInputStatus);
       });
 
   });

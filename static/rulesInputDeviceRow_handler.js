@@ -43,6 +43,14 @@ function addInputDeviceRow() {
       inputDeviceSelect.appendChild(optionDevice);
     }
   }
+    // Add an event listener to call updateInputDeviceOptions when the selected device changes
+    /*when you select a device from the dropdown menu, the updateInputDeviceOptions() function will be called, 
+    and the selected device will be disabled in the other dropdown menus. */
+    inputDeviceSelect.addEventListener('change', () => {
+      updateInputDeviceDeviceOptions();
+      });
+    
+
   inputDeviceRow.appendChild(inputDeviceSelect);
 
   // Create a dropdown to select the input device state (0 or 1)
