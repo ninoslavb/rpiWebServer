@@ -34,18 +34,20 @@ function navigate(pageId, title) {
   }
 
    // If navigating back to the Dashboard, show all devices
-if (pageId==='dashboard' && title === 'Dashboard') {
-  const allDevices = document.querySelectorAll(".device-box");
-  allDevices.forEach((device) => {
-    device.style.display = "block";
-  });
+   if (pageId === 'dashboard' && title === 'Dashboard') {
+    const allDevices = document.querySelectorAll(".device-box");
+    allDevices.forEach((device) => {
+      device.style.display = "block";
+    });
+ 
+  // Set the data-group-key attribute for the dashboard
+    const deviceContainer = document.querySelector('.device-container');  // Select the device container element
+    deviceContainer.setAttribute('data-group-key', 'dashboard');          // Set the 'data-group-key' attribute of the device container to 'dashboard'
+    const newOrder = sortable.options.store.get(sortable);                // Get the stored order for the current group key from the 'store' object of the sortable instance
+    sortable.sort(newOrder);                                              // Sort the devices in the device container according to the retrieved order
 
-    // Set the data-group-key attribute for the dashboard
-    const deviceContainer = document.querySelector('.device-container');
-    deviceContainer.setAttribute('data-group-key', 'dashboard');
-    const newOrder = sortable.options.store.get(sortable);
-    sortable.sort(newOrder);
-}
+  }
+  
 }
 
   

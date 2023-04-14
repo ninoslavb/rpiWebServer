@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     }
 
-    // listens information from the Server side about digital input statu
+    // listens information from the Server side about digital input status
     socket.on('device_input_status', (data) => {
       const deviceKey = data.device_key;
       const deviceInputStatus = data.gpio_status;
@@ -90,10 +90,31 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
 
-      //Set the data-group-key attribute for the dashboard and reload the sort order
-      deviceContainer.setAttribute('data-group-key', 'dashboard');
-      const newOrder = sortable.options.store.get(sortable);
-      sortable.sort(newOrder); // This will ensure the Dashboard devices are sorted on page load
+
+     /*################################################################################################################################
+     These lines of code set the 'data-group-key' attribute of the device container, 
+     retrieve the stored dashboard order from localStorage, and sort the devices according to the stored order. 
+     If the initial sort order has not been stored yet, it stores the initial order for the dashboard and each group in localStorage.*/
+
+      deviceContainer.setAttribute('data-group-key', 'dashboard'); // Set the 'data-group-key' attribute of the deviceContainer to 'dashboard'
+      const storedDashboardOrder = localStorage.getItem('device-order-dashboard'); // Get the stored dashboard order from localStorage
+      if (storedDashboardOrder) { // Check if the stored dashboard order exists
+        const dashboardOrder = storedDashboardOrder.split('|'); // Split the stored dashboard order string into an array of device IDs
+        sortable.sort(dashboardOrder); // Sort the devices in the device container according to the stored dashboard order
+      }
+      
+      // Check if initialSortOrderStored is set to 'true' in localStorage
+      if (!localStorage.getItem('initialSortOrderStored')) { // Check if the initial sort order has not been stored yet
+        localStorage.setItem('initialSortOrderStored', 'true'); // Set 'initialSortOrderStored' to 'true' in localStorage
+        const initialOrder = Array.from(document.querySelectorAll('.device-box')).map(device => device.getAttribute('device-id')).join('|'); // Get the initial order of the devices as a string of device IDs separated by '|'
+        localStorage.setItem('device-order-dashboard', initialOrder); // Store the initial order for the dashboard
+      
+        // Iterate through groupData and store the initial order for each group
+        for (const groupKey in groupData) { // Loop through the keys of the groupData object
+          localStorage.setItem('device-order-' + groupKey, initialOrder); // Store the initial order for the current group in localStorage
+        }
+      }
+      
 
 
 
