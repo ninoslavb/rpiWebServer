@@ -2,6 +2,7 @@ import { updateDeviceName, attachDeviceNameUpdateListener } from './deviceName_h
 import { createOutputDeviceBox, createInputDeviceBox } from './deviceBoxTemplates.js';
 
 
+
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io.connect(); //connect the socket
 
@@ -13,17 +14,20 @@ document.addEventListener('DOMContentLoaded', () => {
       DeviceKeys.forEach((device_key) => {
         const device = deviceData[device_key];
         let deviceBox;
-        if (device.type === 'output') {
-          deviceBox = createOutputDeviceBox(device_key, device);
-          //deviceContainer.appendChild(deviceBox);
-        } else if (device.type === 'input') {
+        if (device.type === 'input') {
           deviceBox = createInputDeviceBox(device_key, device);
+          //deviceContainer.appendChild(deviceBox);
+        } else if (device.type === 'output') {
+          deviceBox = createOutputDeviceBox(device_key, device);
           //deviceContainer.appendChild(deviceBox);
         } else {
           return; // Skip the device if it has an unrecognized type
         }
         deviceContainer.appendChild(deviceBox);
       });
+
+
+
 
 
     // Handle device name updates from the server and send the name update to the server when it is changed
@@ -55,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
            
         });
       
-        socket.on('device_output_status', (data) => {
+        socket.on('device_gpio_status', (data) => {
           if (data.device_key === device_key) {
             const deviceOutputStatus = data.gpio_status;
             if (deviceOutputStatus === 1) {
@@ -85,15 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
       updateDeviceInputStatus(deviceBox, deviceInputStatus);
       });
 
+
+      //Set the data-group-key attribute for the dashboard and reload the sort order
+      deviceContainer.setAttribute('data-group-key', 'dashboard');
+      const newOrder = sortable.options.store.get(sortable);
+      sortable.sort(newOrder); // This will ensure the Dashboard devices are sorted on page load
+
+
+
   });
-
-  function navigate(tabName) {
-    var tabContents = document.getElementsByClassName("tab-content");
-    for (var i = 0; i < tabContents.length; i++) {
-        tabContents[i].style.display = "none";
-    }
-
-    document.getElementById(tabName).style.display = "block";
-}
 
 

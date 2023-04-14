@@ -148,7 +148,7 @@ def digital_output_update(data):
             
         device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
         update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
-        emit('device_output_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']}, broadcast=True)
+        emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']}, broadcast=True)
 
 
 
@@ -321,7 +321,7 @@ def check_input_devices_and_apply_rules():
             # Update the gpio_status of the output device
             device_data[output_device_key]['gpio_status'] = GPIO.input(device_data[output_device_key]['gpio_pin'])
             update_device_gpio_status(output_device_key, device_data[output_device_key]['gpio_status'])
-            socketio.emit('device_status', {'device_key': output_device_key, 'gpio_status': device_data[output_device_key]['gpio_status']}, namespace='/')
+            socketio.emit('device_gpio_status', {'device_key': output_device_key, 'gpio_status': device_data[output_device_key]['gpio_status']}, namespace='/')
 
         time.sleep(1)  # Check every second
 
