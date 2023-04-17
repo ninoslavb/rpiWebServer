@@ -1,5 +1,5 @@
 import { updateDeviceName, attachDeviceNameUpdateListener } from './deviceName_handler.js';
-import { createOutputDeviceBox, createInputDeviceBox } from './deviceBoxTemplates.js';
+import { createOutputDeviceBox, createInputDeviceBox, createTHDSensorDeviceBox } from './deviceBoxTemplates.js';
 
 
 
@@ -14,12 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
       DeviceKeys.forEach((device_key) => {
         const device = deviceData[device_key];
         let deviceBox;
-        if (device.type === 'input') {
+        if (device.type === 'digital-input') {
           deviceBox = createInputDeviceBox(device_key, device);
-          //deviceContainer.appendChild(deviceBox);
-        } else if (device.type === 'output') {
+         
+        } else if (device.type === 'digital-output') {
           deviceBox = createOutputDeviceBox(device_key, device);
-          //deviceContainer.appendChild(deviceBox);
+        
+        } else if (device.type === 'sensor' && device.sensor_type1 === 'temp') {
+          deviceBox = createTHDSensorDeviceBox(device_key, device);
+        
         } else {
           return; // Skip the device if it has an unrecognized type
         }
@@ -41,10 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('device_output_update', { device_key: device_key, action: action });
       };
       
-      // Add the device keys of devices with type 'output'
-      const outputDeviceKeys = Object.keys(deviceData).filter((device_key) => deviceData[device_key].type === 'output');
-      //const outputDeviceKeys = ['relay1', 'relay2'];
-      
+      // Add the device keys of devices with type 'digital-output'
+      const outputDeviceKeys = Object.keys(deviceData).filter((device_key) => deviceData[device_key].type === 'digital-output');
+    
     
       outputDeviceKeys.forEach((device_key) => {
       
@@ -88,6 +90,41 @@ document.addEventListener('DOMContentLoaded', () => {
       const deviceBox = document.querySelector(`.device-box[device-id="${deviceKey}"]`);
       updateDeviceInputStatus(deviceBox, deviceInputStatus);
       });
+
+
+
+
+
+    // Add the event listener for the 'device_sensor_status' event
+    socket.on('device_sensor_status', (data) => {
+      updateSensorValues(data.device_key,data.device_type, data.sensor_type1, data.sensor_type2, data.sensor_value1, data.sensor_value2);
+    });
+
+
+// Function to update the temperature and humidity values inside the box
+function updateSensorValues(device_key, device_type, sensor_type1, sensor_type2, sensor_value1, sensor_value2) {
+  
+  if (device_type === 'sensor' && sensor_type1 === 'temp' && sensor_type2 === 'humid') {
+    const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`);
+    const temperatureValue = deviceBox.querySelector('.temperature-value');
+    const humidityValue = deviceBox.querySelector('.humidity-value');
+
+    temperatureValue.textContent = `${sensor_value1} °C`;
+    humidityValue.textContent = `${sensor_value2}% RH`;
+  }
+  else if(device_type === 'sensor' && sensor_type1 === 'temp' && sensor_type2 === 'N/A') {
+    const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`);
+    const temperatureValue = deviceBox.querySelector('.temperature-value');
+
+    temperatureValue.textContent = `${sensor_value1} °C`;
+
+  }
+  
+  //else for other type sensors
+}
+
+
+
 
 
 

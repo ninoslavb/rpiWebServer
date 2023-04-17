@@ -7,6 +7,7 @@ from group_handler import add_group, load_groups, delete_group
 import json
 import os
 import time
+from cpu_temp import get_cpu_temperature
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -22,14 +23,15 @@ def my_route():
 GPIO.setwarnings(False)
 
 # Define devices
-add_device('digout1',  'DO1', 0,  'DO1', 'output',40)
-add_device('digout2',  'DO2', 0,  'DO2', 'output',12)
-add_device('digin1', 'DI1', 0, 'DI1', 'input', 35)
-add_device('digin2', 'DI2', 0, 'DI2', 'input', 22)
-add_device('digin3', 'DI3', 0, 'DI3', 'input', 33)
-add_device('digin4', 'DI4', 0, 'DI4', 'input', 37)
-add_device('digin5', 'DI5', 0, 'DI5', 'input', 16)
+add_device('digout1',  'DO1', 0,  'DO1', 40, 'digital-output', 'N/A', 'N/A',  -1, -1, -1, 'rpi')
+add_device('digout2',  'DO2', 0,  'DO2', 12,'digital-output' , 'N/A', 'N/A',  -1, -1, -1, 'rpi')
+add_device('digin1',   'DI1', 0, 'DI1', 35, 'digital-input'  , 'N/A', 'N/A',  -1, -1, -1, 'rpi')
+add_device('digin2',   'DI2', 0, 'DI2', 22, 'digital-input'  , 'N/A', 'N/A',  -1, -1, -1, 'rpi')
+add_device('digin3',   'DI3', 0, 'DI3', 33, 'digital-input'  , 'N/A', 'N/A',  -1, -1, -1, 'rpi')
+add_device('digin4',   'DI4', 0, 'DI4', 37, 'digital-input'  , 'N/A', 'N/A',  -1, -1, -1, 'rpi')
+add_device('digin5',   'DI5', 0, 'DI5', 16, 'digital-input'  , 'N/A', 'N/A',  -1, -1, -1, 'rpi')
 
+add_device('TCPU', 'TEMP CPU', 0,'TCPU',0,'sensor','temp','N/A',0,-1,-1,'cpu')
 
 def init_device_data():
     device_data = {}
@@ -39,8 +41,14 @@ def init_device_data():
             'name': device['device_name'],
             'gpio_status': device['device_gpio_status'],
             'gpio_id': device['device_gpio_id'],
-            'type': device['device_type'],
             'gpio_pin': device['device_gpio_pin'],
+            'type': device['device_type'],  
+            'sensor_type1': device['device_sensor_type1'],
+            'sensor_type2': device['device_sensor_type2'],
+            'sensor_value1': device['device_sensor_value1'],
+            'sensor_value2': device['device_sensor_value2'],
+            'bat_stat': device['device_bat_stat'],
+            'source': device['device_source'],
         }
     return device_data
 
@@ -77,15 +85,17 @@ if __name__ == '__main__':
 GPIO.setmode(GPIO.BOARD)
 
 for device_key, device in device_data.items():
-    if device['type'] == 'output':
-        GPIO.setup(device['gpio_pin'], GPIO.OUT)
-    elif device['type'] == 'input':
-        GPIO.setup(device['gpio_pin'], GPIO.IN)
+    if device['source'] == 'rpi':
+        if device['type'] == 'digital-output':
+            GPIO.setup(device['gpio_pin'], GPIO.OUT)
+        elif device['type'] == 'digital-input':
+            GPIO.setup(device['gpio_pin'], GPIO.IN)
 
 # set digital outputs initial states
 for device_key, device in device_data.items():
-    if device['type'] == 'output':
-        GPIO.output(device['gpio_pin'], GPIO.HIGH if device['gpio_status'] else GPIO.LOW)        
+    if device['source'] == 'rpi':
+        if device['type'] == 'digital-output':
+            GPIO.output(device['gpio_pin'], GPIO.HIGH if device['gpio_status'] else GPIO.LOW)        
 
 
 #render device_data, rule data and group data in index.html
@@ -99,9 +109,11 @@ def index():
 def handle_connect():
     # Emit device state for each device
     for device_key, device in device_data.items():
-        device['gpio_status'] = GPIO.input(device['gpio_pin'])
-        emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True)
-
+        if device['source'] == 'rpi':
+            if (device['type'] == 'digital-input' or device['type'] == 'digital-output'):
+                device['gpio_status'] = GPIO.input(device['gpio_pin'])
+                emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True)
+        #else for future use if device has different source
 
     # Emit device names
     for device_key, device in device_data.items():
@@ -141,27 +153,33 @@ def digital_output_update(data):
     print(f"Received device_update: device_key = {device_key}, action = {action}")  # Add this print statement
 
     if device_key in device_data:
-        if action == 'on':
-            GPIO.output(device_data[device_key]['gpio_pin'], GPIO.HIGH)
-        elif action == 'off':
-            GPIO.output(device_data[device_key]['gpio_pin'], GPIO.LOW)
-            
-        device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
-        update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
-        emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']}, broadcast=True)
-
+        if device_data[device_key]['source'] == 'rpi':
+            if action == 'on':
+                GPIO.output(device_data[device_key]['gpio_pin'], GPIO.HIGH)
+            elif action == 'off':
+                GPIO.output(device_data[device_key]['gpio_pin'], GPIO.LOW)
+                
+            device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
+            update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
+            emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']}, broadcast=True)
+        #else for future use if output has different source
 
 
 # Add event detect for all digital inputs
 for device_key, device in device_data.items():
-    if device['type'] == 'input':
-        GPIO.add_event_detect(device['gpio_pin'], GPIO.BOTH, callback=lambda channel, dk=device_key: input_device_callback(channel, dk), bouncetime=50)
+    if device['source'] == 'rpi':
+        if device['type'] == 'digital-input':
+            GPIO.add_event_detect(device['gpio_pin'], GPIO.BOTH, callback=lambda channel, dk=device_key: input_device_callback(channel, dk), bouncetime=50)
 
 def input_device_callback(channel, device_key):
-    device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
-    update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
-    socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']})
-    #print(f"Input device callback triggered for {device_key}, gpio_status: {device_data[device_key]['gpio_status']}")  # Add this print statement
+    if device_data[device_key]['source'] == 'rpi':
+        device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
+        update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
+        socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']})
+        #print(f"Input device callback triggered for {device_key}, gpio_status: {device_data[device_key]['gpio_status']}")  # Add this print statement
+    #else for future use if device has different source
+
+
 
 
 #add/update group handler
@@ -210,7 +228,7 @@ def update_group_handler(data):
 
 
 
-#delete_grouo_handler
+#delete_group_handler
 @socketio.on('delete_group')
 def delete_group_handler(data):
     group_key = data['group_key']
@@ -293,10 +311,11 @@ def check_input_devices_and_apply_rules():
     while True:
         # Read and update the gpio_status of input devices
         for device_key, device in device_data.items():
-            if device['type'] == 'input':
-                device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
-                update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
-                socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']})
+            if device['source'] == 'rpi':
+                if device['type'] == 'digital-input':
+                    device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
+                    update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
+                    socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']})
 
         # Iterate over the rules and apply them if conditions are met
         for rule_key, rule in rule_data.items():
@@ -310,20 +329,52 @@ def check_input_devices_and_apply_rules():
 
             # If the rule conditions are met, apply the rule
             if (logic_operator == 'AND' and all(matching_input_devices)) or (logic_operator == 'OR' and any(matching_input_devices)):
-                GPIO.output(device_data[output_device_key]['gpio_pin'], output_device_action)
-                applied_rules.add(rule_key)
+                if device_data[output_device_key]['source'] == 'rpi':
+                    GPIO.output(device_data[output_device_key]['gpio_pin'], output_device_action)
+                    applied_rules.add(rule_key)
+                #elif for future use if source is different than rpi
+
             # If the rule conditions are not met and the rule was previously applied, set the relay to the opposite state
             elif rule_key in applied_rules:
-                opposite_action = 1 - output_device_action
-                GPIO.output(device_data[output_device_key]['gpio_pin'], opposite_action)
-                applied_rules.discard(rule_key)
+                if device_data[output_device_key]['source'] == 'rpi':
+                    opposite_action = 1 - output_device_action
+                    GPIO.output(device_data[output_device_key]['gpio_pin'], opposite_action)
+                    applied_rules.discard(rule_key)
+                #elif for future use
 
             # Update the gpio_status of the output device
-            device_data[output_device_key]['gpio_status'] = GPIO.input(device_data[output_device_key]['gpio_pin'])
-            update_device_gpio_status(output_device_key, device_data[output_device_key]['gpio_status'])
-            socketio.emit('device_gpio_status', {'device_key': output_device_key, 'gpio_status': device_data[output_device_key]['gpio_status']}, namespace='/')
+            if device_data[output_device_key]['source'] == 'rpi':
+                device_data[output_device_key]['gpio_status'] = GPIO.input(device_data[output_device_key]['gpio_pin'])
+                update_device_gpio_status(output_device_key, device_data[output_device_key]['gpio_status'])
+                socketio.emit('device_gpio_status', {'device_key': output_device_key, 'gpio_status': device_data[output_device_key]['gpio_status']}, namespace='/')
+            #elif for future use if device source is different
 
         time.sleep(1)  # Check every second
+
+
+
+
+###############################################################################################################################################
+########################################## CPU TEMPERATURE EXAMPLE #############################################################################
+###############################################################################################################################################
+
+
+
+#check_sensor_value
+def check_sensor_value():
+    while True:
+        for device_key, device in device_data.items():
+    
+            if (device['type'] == 'sensor' and device['sensor_type1'] == 'temp' and device['source'] == 'cpu'):
+                device['sensor_value1'] = get_cpu_temperature()
+                socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'sensor_type1': device['sensor_type1'], 'sensor_type2': device['sensor_type2'], 'sensor_value1': device['sensor_value1'], 'sensor_value2': device['sensor_value2'],'device_bat_stat':device['bat_stat']}, namespace='/')
+            #elif for future device types
+        time.sleep(5)
+
+###############################################################################################################################################
+########################################## CPU TEMPERATURE EXAMPLE #############################################################################
+################################################################################################################################################
+                   
 
 
 
@@ -334,5 +385,6 @@ def check_input_devices_and_apply_rules():
 if __name__ == "__main__":
     app.env="development"
     socketio.start_background_task(check_input_devices_and_apply_rules)
+    socketio.start_background_task(check_sensor_value)
     socketio.run(app, host='0.0.0.0', port=80, debug=True, allow_unsafe_werkzeug=True)
    

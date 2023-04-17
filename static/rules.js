@@ -55,7 +55,7 @@ ruleNameContainer.appendChild(input);
       //inputDeviceOption.innerHTML = `<option disabled selected>Select State</option>`; // Reset the inner HTML of the select element, keeping only the disabled option
       for (const deviceKey in deviceData) {               // Iterate through the deviceData object
         const device = deviceData[deviceKey];             
-        if (device.type === 'input') {                           // Check if the current device is an input device
+        if (device.type === 'digital-input') {                           // Check if the current device is an input device
           const optionDeviceInput = document.createElement("option"); // Create a new option element for the input device
           optionDeviceInput.value = deviceKey;
           optionDeviceInput.textContent = device.name;
@@ -71,7 +71,7 @@ ruleNameContainer.appendChild(input);
   
       for (const deviceKey in deviceData) {
         const device = deviceData[deviceKey];
-        if (device.type === 'output') {
+        if (device.type === 'digital-output') {
           const optionDeviceOutput = document.createElement("option");
           optionDeviceOutput.value = deviceKey;
           optionDeviceOutput.textContent = device.name;

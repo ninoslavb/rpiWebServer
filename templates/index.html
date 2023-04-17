@@ -3,10 +3,10 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/sidebar.css?v=112312312312311222312123314" />
-    <link rel="stylesheet" href="/static/master.css?v=1423221212234432123123131" />
-    <link rel="stylesheet" href="/static/rules.css?v=1212332321321235511232323" />
-    <link rel="stylesheet" href="/static/groups.css?v=1212332244221233121132333" />
+    <link rel="stylesheet" href="/static/sidebar.css?v=11231231242122255412323323441452441231523223445314" />
+    <link rel="stylesheet" href="/static/master.css?v=142322121224344323312343252322553512345445251234422112331" />
+    <link rel="stylesheet" href="/static/rules.css?v=1212332321321423551244123324155524442251233" />
+    <link rel="stylesheet" href="/static/groups.css?v=121233224421241234421233122311234312324554214532333" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
@@ -85,7 +85,7 @@
                     <select class="output-select">
                       <option disabled selected>Select Output Device</option>
                       {% for device_key, device in device_data.items() %}
-                      {% if device.type == 'output' %}
+                      {% if device.type == 'digital-output' %}
                       <option value="{{ device_key }}">{{ device.name }}</option>
                       {% endif %}
                       {% endfor %}
