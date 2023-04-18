@@ -105,17 +105,20 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
 
   // Get the selected input devices from the input device rows
             const inputDeviceRows = document.querySelectorAll('.input-device-row');
-              const inputDevices = Array.from(inputDeviceRows).map((row) => {
+            const inputDevices = Array.from(inputDeviceRows).map((row) => {
               const input_device_key = row.querySelector('.input-device-select').value;
               const input_device_option = row.querySelector('.input-device-option') ? row.querySelector('.input-device-option').value : null;
-
-              const temperatureRow = document.querySelector('.temperature-row');  
-              const tempOption = temperatureRow ? temperatureRow.querySelector('.temp-option').value : null;
-              const tempValue = temperatureRow ? temperatureRow.querySelector('.temp-value').value : null;
+            
+              const device = deviceData[input_device_key];
+              let tempOption = null;
+              let tempValue = null;
               
-
-              
-
+              if (device.type === 'sensor' && device.sensor_type1 === 'temp') {
+                const temperatureRow = document.querySelector('.temperature-row');  
+                tempOption = temperatureRow ? temperatureRow.querySelector('.temp-option').value : null;
+                tempValue = temperatureRow ? temperatureRow.querySelector('.temp-value').value : null;
+              }
+            
               return {
                 input_device_key,
                 input_device_option,
@@ -123,6 +126,7 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
                 temp_value: tempValue
               };
             });
+            
           
           const ruleNameInput = document.getElementById("new-rule-name");
           const ruleName = ruleNameInput.value;
@@ -150,7 +154,7 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
             alert('Please enter a valid sensor value.');
             return;
           } else if (temperatureRow && temperatureRow.parentNode && (inputDevice.temp_value < -20 || inputDevice.temp_value > 80 || inputDevice.temp_value % 1 !== 0)) {
-            alert('Please enter a valid sensor value between -20 and 40°C with the step of 1°C.');
+            alert('Please enter a valid sensor value between -20 and 80°C with the step of 1°C.');
             return;
           }
   

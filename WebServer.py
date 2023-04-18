@@ -20,6 +20,7 @@ def my_route():
     response.headers['Expires'] = '0'
     return response
 
+
 GPIO.setwarnings(False)
 
 # Define devices
@@ -304,6 +305,8 @@ def delete_rule_handler(data):
 
 
 
+
+
 def check_input_devices_and_apply_rules():
     # Keep track of the rules that have been applied
     applied_rules = set()
@@ -333,6 +336,8 @@ def check_input_devices_and_apply_rules():
                             matching_input_devices.append(sensor_value < temp_value)
                         elif temp_option == 'greater':
                             matching_input_devices.append(sensor_value > temp_value)
+                        elif temp_option == 'equal':
+                            matching_input_devices.append(sensor_value == temp_value)
 
             # If the rule conditions are met, apply the rule
             if (logic_operator == 'AND' and all(matching_input_devices)) or (logic_operator == 'OR' and any(matching_input_devices)):
@@ -357,6 +362,7 @@ def check_input_devices_and_apply_rules():
             # elif for future use if device source is different
 
         time.sleep(1)  # Check every second
+
 
 
 
