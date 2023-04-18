@@ -264,13 +264,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const group = groupData[groupKey];
             const groupDevices = group.group_devices;
             const groupName = group.group_name;
-     
         
             const DevicesText = groupDevices.map((groupDevice) => deviceData[groupDevice.group_device_key].name).join(', ');
         
             const listItem = document.createElement("li");
             listItem.classList.add("group-list-item");
-            listItem.textContent = `Group Name: ${groupName} - Devices: ${DevicesText}`; // Updated the format here
+        
+            // Create separate elements for group name, devices, and delete button
+            const groupNameElement = document.createElement("div");
+            groupNameElement.textContent = `Group Name: ${groupName}`;
+            listItem.appendChild(groupNameElement);
+        
+            const groupDevicesElement = document.createElement("div");
+            groupDevicesElement.textContent = `Devices: ${DevicesText}`;
+            listItem.appendChild(groupDevicesElement);
         
             const deleteGroupButton = document.createElement("button");
             deleteGroupButton.classList.add("delete-group-button");
@@ -278,11 +285,12 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteGroupButton.addEventListener("click", () => {
               socket.emit("delete_group", { group_key: groupKey });
             });
-        
             listItem.appendChild(deleteGroupButton);
+        
             groupList.appendChild(listItem);
           }
         }
+        
   
   
   

@@ -82,79 +82,123 @@ The event listener at the end of the code listens for changes in the input devic
 */
 
 
-// This function creates a new input device row and adds it to the inputDeviceWrapper
+function createRow(className) {
+  const row = document.createElement('div');
+  row.classList.add(className);
+  return row;
+}
+
+function createLabel(textContent) {
+  const label = document.createElement('label');
+  label.textContent = textContent;
+  return label;
+}
+
+function createSelect(className, optionsHTML) {
+  const select = document.createElement('select');
+  select.classList.add(className);
+  select.innerHTML = optionsHTML;
+  return select;
+}
+
+function createInput(type, className, placeholder) {
+  const input = document.createElement('input');
+  input.type = type;
+  input.classList.add(className);
+  input.placeholder = placeholder;
+  return input;
+}
+
+
 function addInputDeviceRow() {
   const inputDeviceWrapper = document.getElementById('inputDeviceWrapper');
-  const inputDeviceRow = document.createElement('div');
-  inputDeviceRow.classList.add('input-device-row');
 
-
-    // Check if the number of rows is equal to the number of input devices
-  const inputDeviceCount = Object.values(deviceData).filter(device => device.type === 'digital-input').length;
+  const inputDeviceCount = Object.values(deviceData).filter(device => device.type === 'digital-input' || device.type === 'sensor').length;
   if (inputDeviceRowCount >= inputDeviceCount) {
-    return false; // Row was not added
+    return false;
   }
 
-  // Create a dropdown to select an input device
-  const inputDeviceSelect = document.createElement('select');
-  inputDeviceSelect.classList.add('input-device-select');
-  //inputDeviceSelect.innerHTML = `<option disabled selected>Select Input Device</option>`;
-  //inputDeviceSelect.innerHTML = `<option disabled selected data-placeholder>Select Input Device</option>`;
-  inputDeviceSelect.innerHTML = `<option disabled selected class="placeholder-option">Select Input Device</option>`;
+  const inputDeviceRow = createRow('input-device-row');
+  inputDeviceWrapper.appendChild(inputDeviceRow);
+
+  const inputDeviceSelect = createSelect('input-device-select', `<option disabled selected class="placeholder-option">Select Input Device</option>`);
   for (const deviceKey in deviceData) {
     const device = deviceData[deviceKey];
-    if (device.type === 'digital-input') {
+    if (device.type === 'digital-input'|| device.type === 'sensor') {
       const optionDevice = document.createElement("option");
       optionDevice.value = deviceKey;
       optionDevice.textContent = device.name;
       inputDeviceSelect.appendChild(optionDevice);
     }
   }
-    // Add an event listener to call updateInputDeviceOptions when the selected device changes
-    /*when you select a device from the dropdown menu, the updateInputDeviceOptions() function will be called, 
-    and the selected device will be disabled in the other dropdown menus. */
-    inputDeviceSelect.addEventListener('change', () => {
-      updateInputDeviceOptions();
-      });
-    
-
   inputDeviceRow.appendChild(inputDeviceSelect);
 
-  // Create a dropdown to select the input device state (0 or 1)
-  const inputDeviceOption = document.createElement('select');
-  inputDeviceOption.classList.add('input-device-option');
-  inputDeviceOption.innerHTML = `
-    <option disabled selected>Select State</option>
-    <option value="0">0</option>
-    <option value="1">1</option>
-  `;
-  inputDeviceRow.appendChild(inputDeviceOption);
-
-  // Create a remove button to delete the input device row
   const removeButton = document.createElement('button');
   removeButton.type = 'button';
   removeButton.textContent = 'Remove';
   removeButton.classList.add('btn', 'btn-sm', 'custom-delete-input-button');
   removeButton.addEventListener('click', () => {
     inputDeviceWrapper.removeChild(inputDeviceRow);
+    if (temperatureRow.parentNode) 
+    inputDeviceWrapper.removeChild(temperatureRow);
     updateInputDeviceOptions();
-
-  // Decrement the inputDeviceRowCount since a row was removed
-  inputDeviceRowCount--;
+    inputDeviceRowCount--;
   });
   inputDeviceRow.appendChild(removeButton);
 
-  // Add the input device row to the inputDeviceWrapper and update the input device options
-  inputDeviceWrapper.appendChild(inputDeviceRow);
+  
+  const temperatureRow = createRow('temperature-row');
+  temperatureRow.appendChild(createLabel('Temperature: '));
+  temperatureRow.appendChild(createSelect('temp-option', `
+    <option disabled selected>Select Option</option>
+    <option value="equal">equal to</option>
+    <option value="less">less than</option>
+    <option value="greater">greater than</option>
+  `));
+  temperatureRow.appendChild(createInput('text', 'temp-value', 'Value'));
+  temperatureRow.appendChild(createLabel(' °C'));
+ 
+
+  inputDeviceSelect.addEventListener('change', () => {
+    const selectedDevice = deviceData[inputDeviceSelect.value];
+  
+    if (selectedDevice.type === 'digital-input') {
+      const inputDeviceOption = createSelect('input-device-option', `
+        <option disabled selected>Select State</option>
+        <option value="0">0</option>
+        <option value="1">1</option>
+      `);
+      inputDeviceRow.insertBefore(inputDeviceOption, removeButton);
+    } else {
+      const inputDeviceOptionElement = inputDeviceRow.querySelector('.input-device-option');
+      if (inputDeviceOptionElement) {
+        inputDeviceRow.removeChild(inputDeviceOptionElement);
+      }
+    }
+  
+    /*
+    if (selectedDevice.type === 'sensor' && selectedDevice.sensor_type1 === 'temp') {
+      inputDeviceWrapper.appendChild(temperatureRow);
+    } else if (temperatureRow.parentNode) {
+      inputDeviceWrapper.removeChild(temperatureRow);
+    }*/
+
+    if (selectedDevice.type === 'sensor' && selectedDevice.sensor_type1 === 'temp') {
+      inputDeviceRow.parentNode.insertBefore(temperatureRow, inputDeviceRow.nextSibling);
+    } else if (temperatureRow.parentNode) {
+      inputDeviceWrapper.removeChild(temperatureRow);
+    }
+  
+    updateInputDeviceOptions();
+  });
+  
+
   updateInputDeviceOptions();
-
   updateLogicOperatorVisibility();
-
-  // Increment the inputDeviceRowCount since a row was added
+  
   inputDeviceRowCount++;
-  return true; // Row was added
+  return true;
 }
-
 
 
 

@@ -28,13 +28,13 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
 
 
   //container for adding rule name      
-const ruleNameContainer = document.getElementById("rule-name-container");
-const input = document.createElement("input");
-input.className = "rule-input";
-input.type = "text";
-input.placeholder = "Enter name";
-input.id = "new-rule-name";
-ruleNameContainer.appendChild(input);
+    const ruleNameContainer = document.getElementById("rule-name-container");
+    const input = document.createElement("input");
+    input.className = "rule-input";
+    input.type = "text";
+    input.placeholder = "Enter name";
+    input.id = "new-rule-name";
+    ruleNameContainer.appendChild(input);
 
 
 
@@ -49,22 +49,22 @@ ruleNameContainer.appendChild(input);
     const inputDeviceSelects = document.querySelectorAll('.input-device-select');
     const outputDeviceSelects = document.querySelectorAll('.output-select');
   
-    inputDeviceSelects.forEach((inputDeviceSelect) => {   // Iterate through each input device select element
-      const currentValueInput = inputDeviceSelect.value;       // Store the current value of the select element
-      inputDeviceSelect.innerHTML = `<option disabled selected>Select Input Device</option>`; // Reset the inner HTML of the select element, keeping only the disabled option
-      //inputDeviceOption.innerHTML = `<option disabled selected>Select State</option>`; // Reset the inner HTML of the select element, keeping only the disabled option
-      for (const deviceKey in deviceData) {               // Iterate through the deviceData object
-        const device = deviceData[deviceKey];             
-        if (device.type === 'digital-input') {                           // Check if the current device is an input device
-          const optionDeviceInput = document.createElement("option"); // Create a new option element for the input device
+    inputDeviceSelects.forEach((inputDeviceSelect) => {
+      const currentValueInput = inputDeviceSelect.value;
+      inputDeviceSelect.innerHTML = `<option disabled selected>Select Input Device</option>`;
+  
+      for (const deviceKey in deviceData) {
+        const device = deviceData[deviceKey];
+        if (device.type === 'digital-input' || device.type === 'sensor') {
+          const optionDeviceInput = document.createElement("option");
           optionDeviceInput.value = deviceKey;
           optionDeviceInput.textContent = device.name;
-          inputDeviceSelect.appendChild(optionDeviceInput);          // Add the new option element to the select elemement
+          inputDeviceSelect.appendChild(optionDeviceInput);
         }
       }
-      inputDeviceSelect.value = currentValueInput;                   // Restore the original value of the select element
+      inputDeviceSelect.value = currentValueInput;
     });
-
+  
     outputDeviceSelects.forEach((outputDeviceSelect) => {
       const currentValueOutput = outputDeviceSelect.value;
       outputDeviceSelect.innerHTML = `<option disabled selected>Select Output Device</option>`;
@@ -80,9 +80,8 @@ ruleNameContainer.appendChild(input);
       }
       outputDeviceSelect.value = currentValueOutput;
     });
-
-
   }
+  
   
   
 
@@ -97,15 +96,34 @@ ruleNameContainer.appendChild(input);
   After the rule is successfully added, it removes all existing input device rows from the form, allowing the user to start fresh when adding a new rule.
   
   */
+
+
   addRuleForm.addEventListener("submit", (event) => {
     event.preventDefault();
   
-          // Get the selected input devices from the input device rows
-          const inputDeviceRows = document.querySelectorAll('.input-device-row');
-          const inputDevices = Array.from(inputDeviceRows).map((row) => ({
-            input_device_key: row.querySelector('.input-device-select').value,
-            input_device_option: row.querySelector('.input-device-option').value,
-          }));
+    const temperatureRow = document.querySelector('.temperature-row');
+
+  // Get the selected input devices from the input device rows
+            const inputDeviceRows = document.querySelectorAll('.input-device-row');
+              const inputDevices = Array.from(inputDeviceRows).map((row) => {
+              const input_device_key = row.querySelector('.input-device-select').value;
+              const input_device_option = row.querySelector('.input-device-option') ? row.querySelector('.input-device-option').value : null;
+
+              const temperatureRow = document.querySelector('.temperature-row');  
+              const tempOption = temperatureRow ? temperatureRow.querySelector('.temp-option').value : null;
+              const tempValue = temperatureRow ? temperatureRow.querySelector('.temp-value').value : null;
+              
+
+              
+
+              return {
+                input_device_key,
+                input_device_option,
+                temp_option: tempOption,
+                temp_value: tempValue
+              };
+            });
+          
           const ruleNameInput = document.getElementById("new-rule-name");
           const ruleName = ruleNameInput.value;
 
@@ -122,12 +140,22 @@ ruleNameContainer.appendChild(input);
           if (inputDevice.input_device_key === 'Select Input Device') {
             alert('Please select a valid input device.');
             return;
-          }
-          else if(inputDevice.input_device_option === 'Select State') {
+          } else if (inputDevice.input_device_option === 'Select State') {
             alert('Please select a valid input device state.');
             return;
+          } else if (inputDevice.temp_option === 'Select Option' && temperatureRow &&temperatureRow.parentNode) {
+            alert('Please select a valid sensor option.');
+            return;
+          } else if (inputDevice.temp_value === '' && temperatureRow && temperatureRow.parentNode) {
+            alert('Please enter a valid sensor value.');
+            return;
+          } else if (temperatureRow && temperatureRow.parentNode && (inputDevice.temp_value < -20 || inputDevice.temp_value > 40 || inputDevice.temp_value % 1 !== 0)) {
+            alert('Please enter a valid sensor value between -20 and 40°C with the step of 1°C.');
+            return;
           }
-        }
+  
+         }
+        
         
           if(outputActionSelect.value === 'Select Action' ) {
             alert('Please select a valid output device action.');
@@ -172,9 +200,14 @@ ruleNameContainer.appendChild(input);
               output_device_action: outputActionSelect.value
             };
             updateRuleList();
-            // Remove all existing input device rows once when rule is added
-          inputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));  
+            
+          inputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));  // Remove all existing input device rows once when rule is added   
+          
+ 
+         // inputDeviceWrapper.removeChild(temperatureRow);                       // Remove temperature row
+          //inputDeviceWrapper.removeChild(humidityRow);                          // Remove humidity row
           updateLogicOperatorVisibility() // update logic OperatorVisibility
+
           setInputDeviceRowCount(0); // Reset / set input DeviceRow Count to 0
               // Reset the logic operator, output select, and output action select to their default values
           logicOperatorSelect.value = 'Select Logic';
@@ -184,6 +217,14 @@ ruleNameContainer.appendChild(input);
 
             // Hide the add-rule-container after submitting the form
           addRuleContainer.style.display = 'none';
+
+          if (temperatureRow && temperatureRow.parentNode) {
+            inputDeviceWrapper.removeChild(temperatureRow);
+            temperatureRow.querySelector('.temp-option').value = 'Select Option';
+            temperatureRow.querySelector('.temp-value').value = '';
+          }
+          
+
           }
         });
   });
@@ -301,24 +342,64 @@ function updateRuleList() {
     const inputDevices = rule.input_devices;
     const logicOperator = rule.logic_operator;
     const output = rule.output_device_key;
-    const output_action = rule.output_device_action
-    const ruleName = rule.rule_name;;
+    const output_action = rule.output_device_action;
+    const ruleName = rule.rule_name;
 
-    const inputDevicesText = inputDevices.map((inputDevice) => `${deviceData[inputDevice.input_device_key].name} is ${inputDevice.input_device_option}`).join(` ${logicOperator} `);
+    function getOptionText(optionValue) { // get option text instead of value 
+      switch (optionValue) {
+        case 'less':
+          return 'Less Than';
+        case 'greater':
+          return 'Greater Than';
+        default:
+          return '';
+      }
+    }
 
+    
     const listItem = document.createElement("li");
     listItem.classList.add("rule-list-item");
-    listItem.textContent = `Rule Name: ${ruleName}: If ${inputDevicesText}, then ${deviceData[output].name} is ${output_action}`;
+    
+    const inputDevicesText = inputDevices.map((inputDevice, index) => {
+      const device = deviceData[inputDevice.input_device_key];
+      let deviceText = '';
+    
+      if (device.type === 'digital-input') {
+        deviceText = `${device.name} is ${inputDevice.input_device_option}`;
 
+      } else if (device.type === 'sensor') {
+        let sensorText = '';
+        if (device.sensor_type1 === 'temp') {
+          sensorText += `temperature is ${getOptionText(inputDevice.temp_option)} ${inputDevice.temp_value}°C`;
+        }
+        deviceText = `${device.name} ${sensorText}`;
+      }
+    
+      return index === 0 ? `If ${deviceText}` : `If ${deviceText}`;
+    }).join(` ${logicOperator} <br> `);
+    
+    const ruleNameElement = document.createElement("div");
+    ruleNameElement.textContent = `Rule Name: ${ruleName}`;
+    listItem.appendChild(ruleNameElement);
+    
+    const inputDevicesElement = document.createElement("div");
+    inputDevicesElement.innerHTML = inputDevicesText;
+    listItem.appendChild(inputDevicesElement);
+    
+    const outputDeviceElement = document.createElement("div");
+    outputDeviceElement.textContent = `then ${deviceData[output].name} is ${output_action}`;
+    listItem.appendChild(outputDeviceElement);
+    
     const deleteButton = document.createElement("button");
     deleteButton.classList.add("delete-rule-button");
     deleteButton.textContent = "Delete";
     deleteButton.addEventListener("click", () => {
       socket.emit("delete_rule", { rule_key: ruleKey });
     });
-
+    
     listItem.appendChild(deleteButton);
     ruleList.appendChild(listItem);
+  
   }
   updateLockStates();
 }

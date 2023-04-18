@@ -131,13 +131,13 @@ function createOutputDeviceBox(device_key, device) {
   
     const temperatureValue = document.createElement('span');
     temperatureValue.className = 'temperature-value';
-    temperatureValue.style.fontSize = '20px';
+    temperatureValue.style.fontSize = '30px';
     temperatureValue.style.color = '#FFFFFF';
     temperatureValue.textContent = `${device.sensor_value1} °C`;
     temperatureRow.appendChild(temperatureValue);
   
-    // Add humidity value in a separate row if type2 is not empty
-    if (device.sensor_type2 !== 'N/A') {
+    // Add humidity value in a separate row if type2 is humid
+    if (device.sensor_type2 === 'humid') {
 
       const humidityRow = document.createElement('div');
       humidityRow.style.marginTop = '-20px'; // Adjust this value to change the space between the rows
