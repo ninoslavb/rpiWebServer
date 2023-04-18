@@ -151,9 +151,9 @@ function addInputDeviceRow() {
   temperatureRow.appendChild(createLabel('Temperature: '));
   temperatureRow.appendChild(createSelect('temp-option', `
     <option disabled selected>Select Option</option>
-    <option value="equal">equal to</option>
-    <option value="less">less than</option>
-    <option value="greater">greater than</option>
+    <option value="equal">Equal To</option>
+    <option value="less">Less Than</option>
+    <option value="greater">Greater Than</option>
   `));
   temperatureRow.appendChild(createInput('text', 'temp-value', 'Value'));
   temperatureRow.appendChild(createLabel(' °C'));

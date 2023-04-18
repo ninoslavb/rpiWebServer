@@ -345,12 +345,14 @@ function updateRuleList() {
     const output_action = rule.output_device_action;
     const ruleName = rule.rule_name;
 
-    function getOptionText(optionValue) { // get option text instead of value 
+    function getSensorOptionText(optionValue) { // get option text instead of value 
       switch (optionValue) {
         case 'less':
-          return 'Less Than';
+          return 'less than';
         case 'greater':
-          return 'Greater Than';
+          return 'greater than';
+        case 'equal':
+          return 'equal to';
         default:
           return '';
       }
@@ -370,7 +372,7 @@ function updateRuleList() {
       } else if (device.type === 'sensor') {
         let sensorText = '';
         if (device.sensor_type1 === 'temp') {
-          sensorText += `temperature is ${getOptionText(inputDevice.temp_option)} ${inputDevice.temp_value}°C`;
+          sensorText += `temperature is ${getSensorOptionText(inputDevice.temp_option)} ${inputDevice.temp_value}°C`;
         }
         deviceText = `${device.name} ${sensorText}`;
       }
