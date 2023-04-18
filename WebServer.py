@@ -309,13 +309,6 @@ def check_input_devices_and_apply_rules():
     applied_rules = set()
 
     while True:
-        # Read and update the gpio_status of input devices
-        for device_key, device in device_data.items():
-            if device['source'] == 'rpi':
-                if device['type'] == 'digital-input':
-                    device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
-                    update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
-                    socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']})
 
         # Iterate over the rules and apply them if conditions are met
         for rule_key, rule in rule_data.items():
@@ -325,7 +318,21 @@ def check_input_devices_and_apply_rules():
             output_device_action = int(rule['output_device_action'])
 
             # Check if the input devices match the rule conditions
-            matching_input_devices = [str(device_data[input_device['input_device_key']]['gpio_status']) == input_device['input_device_option'] for input_device in input_devices]
+            matching_input_devices = []
+            for input_device in input_devices:
+                device = device_data[input_device['input_device_key']]
+                if device['type'] == 'digital-input':
+                    matching_input_devices.append(str(device['gpio_status']) == input_device['input_device_option'])
+                elif device['type'] == 'sensor':
+                    if device['sensor_type1'] == 'temp':
+                        temp_option = input_device['temp_option']
+                        temp_value = float(input_device['temp_value'])
+                        sensor_value = float(device['sensor_value1'])
+
+                        if temp_option == 'less':
+                            matching_input_devices.append(sensor_value < temp_value)
+                        elif temp_option == 'greater':
+                            matching_input_devices.append(sensor_value > temp_value)
 
             # If the rule conditions are met, apply the rule
             if (logic_operator == 'AND' and all(matching_input_devices)) or (logic_operator == 'OR' and any(matching_input_devices)):
@@ -334,7 +341,7 @@ def check_input_devices_and_apply_rules():
                     applied_rules.add(rule_key)
                 #elif for future use if source is different than rpi
 
-            # If the rule conditions are not met and the rule was previously applied, set the relay to the opposite state
+            # If the rule conditions are not met and the rule was previously applied, set the output to the opposite state
             elif rule_key in applied_rules:
                 if device_data[output_device_key]['source'] == 'rpi':
                     opposite_action = 1 - output_device_action
@@ -347,9 +354,10 @@ def check_input_devices_and_apply_rules():
                 device_data[output_device_key]['gpio_status'] = GPIO.input(device_data[output_device_key]['gpio_pin'])
                 update_device_gpio_status(output_device_key, device_data[output_device_key]['gpio_status'])
                 socketio.emit('device_gpio_status', {'device_key': output_device_key, 'gpio_status': device_data[output_device_key]['gpio_status']}, namespace='/')
-            #elif for future use if device source is different
+            # elif for future use if device source is different
 
         time.sleep(1)  # Check every second
+
 
 
 

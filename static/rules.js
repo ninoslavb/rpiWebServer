@@ -149,7 +149,7 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
           } else if (inputDevice.temp_value === '' && temperatureRow && temperatureRow.parentNode) {
             alert('Please enter a valid sensor value.');
             return;
-          } else if (temperatureRow && temperatureRow.parentNode && (inputDevice.temp_value < -20 || inputDevice.temp_value > 40 || inputDevice.temp_value % 1 !== 0)) {
+          } else if (temperatureRow && temperatureRow.parentNode && (inputDevice.temp_value < -20 || inputDevice.temp_value > 80 || inputDevice.temp_value % 1 !== 0)) {
             alert('Please enter a valid sensor value between -20 and 40°C with the step of 1°C.');
             return;
           }
