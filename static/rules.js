@@ -113,7 +113,7 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
               let tempOption = null;
               let tempValue = null;
               
-              if (device.type === 'sensor' && device.sensor_type1 === 'temp') {
+              if (device.type === 'sensor' && device.type1 === 'temp') {
                 const temperatureRow = document.querySelector('.temperature-row');  
                 tempOption = temperatureRow ? temperatureRow.querySelector('.temp-option').value : null;
                 tempValue = temperatureRow ? temperatureRow.querySelector('.temp-value').value : null;
@@ -375,7 +375,7 @@ function updateRuleList() {
 
       } else if (device.type === 'sensor') {
         let sensorText = '';
-        if (device.sensor_type1 === 'temp') {
+        if (device.type1 === 'temp') {
           sensorText += `temperature is ${getSensorOptionText(inputDevice.temp_option)} ${inputDevice.temp_value}°C`;
         }
         deviceText = `${device.name} ${sensorText}`;

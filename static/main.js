@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (device.type === 'digital-output') {
           deviceBox = createOutputDeviceBox(device_key, device);
         
-        } else if (device.type === 'sensor' && device.sensor_type1 === 'temp') {
+        } else if (device.type === 'sensor' && device.type1 === 'temp') {
           deviceBox = createTHDSensorDeviceBox(device_key, device);
         
         } else {

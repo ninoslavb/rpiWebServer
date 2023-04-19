@@ -14,7 +14,7 @@ socketio = SocketIO(app)
 
 @app.route('/gateway1.mbednino.online')
 def my_route():
-    response = make_response('Disable cache for /gateway.mbednino.online')
+    response = make_response('Disable cache for /gateway1.mbednino.online')
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
@@ -44,10 +44,10 @@ def init_device_data():
             'gpio_id': device['device_gpio_id'],
             'gpio_pin': device['device_gpio_pin'],
             'type': device['device_type'],  
-            'sensor_type1': device['device_sensor_type1'],
-            'sensor_type2': device['device_sensor_type2'],
-            'sensor_value1': device['device_sensor_value1'],
-            'sensor_value2': device['device_sensor_value2'],
+            'type1': device['device_type1'],
+            'type2': device['device_type2'],
+            'value1': device['device_value1'],
+            'value2': device['device_value2'],
             'bat_stat': device['device_bat_stat'],
             'source': device['device_source'],
         }
@@ -327,10 +327,10 @@ def check_input_devices_and_apply_rules():
                 if device['type'] == 'digital-input':
                     matching_input_devices.append(str(device['gpio_status']) == input_device['input_device_option'])
                 elif device['type'] == 'sensor':
-                    if device['sensor_type1'] == 'temp':
+                    if device['type1'] == 'temp':
                         temp_option = input_device['temp_option']
                         temp_value = float(input_device['temp_value'])
-                        sensor_value = float(device['sensor_value1'])
+                        sensor_value = float(device['value1'])
 
                         if temp_option == 'less':
                             matching_input_devices.append(sensor_value < temp_value)
@@ -344,15 +344,15 @@ def check_input_devices_and_apply_rules():
                 if device_data[output_device_key]['source'] == 'rpi':
                     GPIO.output(device_data[output_device_key]['gpio_pin'], output_device_action)
                     applied_rules.add(rule_key)
-                #elif for future use if source is different than rpi
+                # elif for future use if source is different than rpi
 
-            # If the rule conditions are not met and the rule was previously applied, set the output to the opposite state
-            elif rule_key in applied_rules:
+            # If the rule conditions are not met, set the output to the opposite state
+            if not ((logic_operator == 'AND' and all(matching_input_devices)) or (logic_operator == 'OR' and any(matching_input_devices))):
                 if device_data[output_device_key]['source'] == 'rpi':
                     opposite_action = 1 - output_device_action
                     GPIO.output(device_data[output_device_key]['gpio_pin'], opposite_action)
+                if rule_key in applied_rules:
                     applied_rules.discard(rule_key)
-                #elif for future use
 
             # Update the gpio_status of the output device
             if device_data[output_device_key]['source'] == 'rpi':
@@ -362,6 +362,7 @@ def check_input_devices_and_apply_rules():
             # elif for future use if device source is different
 
         time.sleep(1)  # Check every second
+
 
 
 
@@ -379,9 +380,9 @@ def check_sensor_value():
     while True:
         for device_key, device in device_data.items():
     
-            if (device['type'] == 'sensor' and device['sensor_type1'] == 'temp' and device['source'] == 'cpu'):
-                device['sensor_value1'] = get_cpu_temperature()
-                socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'sensor_type1': device['sensor_type1'], 'sensor_type2': device['sensor_type2'], 'sensor_value1': device['sensor_value1'], 'sensor_value2': device['sensor_value2'],'device_bat_stat':device['bat_stat']}, namespace='/')
+            if (device['type'] == 'sensor' and device['type1'] == 'temp' and device['source'] == 'cpu'):
+                device['value1'] = get_cpu_temperature()
+                socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'sensor_type1': device['type1'], 'sensor_type2': device['type2'], 'sensor_value1': device['value1'], 'sensor_value2': device['value2'],'device_bat_stat':device['bat_stat']}, namespace='/')
             #elif for future device types
         time.sleep(5)
 

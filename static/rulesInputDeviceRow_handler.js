@@ -1,5 +1,8 @@
 /* ###########################################################################################
  This function updates the input device options to disable the options that are already selected
+ The updateInputDeviceOptions function disables the input device options that are already selected in other dropdowns. 
+This is done by first collecting all the selected input devices in a set and then looping through all the input device selects and disabling the options that are already selected.
+ The event listener at the end  listens for changes in the input device
 */
 
 function updateInputDeviceOptions() {
@@ -74,11 +77,9 @@ function setInputDeviceRowCount(value) {
 }
 
 /* 
-The addInputDeviceRow function creates a new input device row with a dropdown for selecting an input device and another dropdown for selecting the input device state (0 or 1). 
+The addInputDeviceRow function creates a new input device row with a dropdown for selecting an input device and another dropdown for selecting the input device state (0 or 1) if device type is digital-input
+If type is sensor, and if sensor-type1 = temp, then it will create temperature row where user can select equal, less than, greter than and the temperature value
 It also adds a remove button to delete the input device row.
-The updateInputDeviceOptions function disables the input device options that are already selected in other dropdowns. 
-This is done by first collecting all the selected input devices in a set and then looping through all the input device selects and disabling the options that are already selected.
-The event listener at the end of the code listens for changes in the input device
 */
 
 
@@ -121,6 +122,7 @@ function addInputDeviceRow() {
   const inputDeviceRow = createRow('input-device-row');
   inputDeviceWrapper.appendChild(inputDeviceRow);
 
+  //create device selection dropdown from device types digital-input and sensor
   const inputDeviceSelect = createSelect('input-device-select', `<option disabled selected class="placeholder-option">Select Input Device</option>`);
   for (const deviceKey in deviceData) {
     const device = deviceData[deviceKey];
@@ -133,6 +135,7 @@ function addInputDeviceRow() {
   }
   inputDeviceRow.appendChild(inputDeviceSelect);
 
+  //create remove button for removing the row
   const removeButton = document.createElement('button');
   removeButton.type = 'button';
   removeButton.textContent = 'Remove';
@@ -146,7 +149,7 @@ function addInputDeviceRow() {
   });
   inputDeviceRow.appendChild(removeButton);
 
-  
+  //create temperature row
   const temperatureRow = createRow('temperature-row');
   temperatureRow.appendChild(createLabel('Temperature: '));
   temperatureRow.appendChild(createSelect('temp-option', `
@@ -168,22 +171,14 @@ function addInputDeviceRow() {
         <option value="0">0</option>
         <option value="1">1</option>
       `);
-      inputDeviceRow.insertBefore(inputDeviceOption, removeButton);
+      inputDeviceRow.insertBefore(inputDeviceOption, removeButton); //insert inputDeviceOption before removeButton if device type is digital-input
     } else {
       const inputDeviceOptionElement = inputDeviceRow.querySelector('.input-device-option');
       if (inputDeviceOptionElement) {
         inputDeviceRow.removeChild(inputDeviceOptionElement);
       }
     }
-  
-    /*
-    if (selectedDevice.type === 'sensor' && selectedDevice.sensor_type1 === 'temp') {
-      inputDeviceWrapper.appendChild(temperatureRow);
-    } else if (temperatureRow.parentNode) {
-      inputDeviceWrapper.removeChild(temperatureRow);
-    }*/
-
-    if (selectedDevice.type === 'sensor' && selectedDevice.sensor_type1 === 'temp') {
+    if (selectedDevice.type === 'sensor' && selectedDevice.type1 === 'temp') {
       inputDeviceRow.parentNode.insertBefore(temperatureRow, inputDeviceRow.nextSibling);
     } else if (temperatureRow.parentNode) {
       inputDeviceWrapper.removeChild(temperatureRow);

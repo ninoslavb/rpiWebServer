@@ -133,11 +133,11 @@ function createOutputDeviceBox(device_key, device) {
     temperatureValue.className = 'temperature-value';
     temperatureValue.style.fontSize = '30px';
     temperatureValue.style.color = '#FFFFFF';
-    temperatureValue.textContent = `${device.sensor_value1} °C`;
+    temperatureValue.textContent = `${device.value1} °C`;
     temperatureRow.appendChild(temperatureValue);
   
     // Add humidity value in a separate row if type2 is humid
-    if (device.sensor_type2 === 'humid') {
+    if (device.type2 === 'humid') {
 
       const humidityRow = document.createElement('div');
       humidityRow.style.marginTop = '-20px'; // Adjust this value to change the space between the rows
@@ -148,7 +148,7 @@ function createOutputDeviceBox(device_key, device) {
       humidityValue.className = 'humidity-value';
       humidityValue.style.fontSize = '20px';
       humidityValue.style.color = '#FFFFFF';
-      humidityValue.textContent = `${device.sensor_value2}% RH`;
+      humidityValue.textContent = `${device.value2}% RH`;
       humidityRow.appendChild(humidityValue);
     }
   
