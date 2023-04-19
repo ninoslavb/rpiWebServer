@@ -9,11 +9,8 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
   const socket = io();
 
   const addRuleForm = document.getElementById("add-rule-form");
-  //const logicOperatorSelect = document.getElementById("logic-operator-select");
   const logicOperatorSelect = document.querySelector(".logic-operator-select");
-  //const outputSelect = document.getElementById("output-select");
   const outputSelect = document.querySelector(".output-select");
-  //const outputActionSelect = document.getElementById("output-action-select");
   const outputActionSelect = document.querySelector(".output-action-select");
   const ruleList = document.getElementById("rule-list");
 
@@ -206,14 +203,10 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
             updateRuleList();
             
           inputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));  // Remove all existing input device rows once when rule is added   
-          
- 
-         // inputDeviceWrapper.removeChild(temperatureRow);                       // Remove temperature row
-          //inputDeviceWrapper.removeChild(humidityRow);                          // Remove humidity row
-          updateLogicOperatorVisibility() // update logic OperatorVisibility
-
+          updateLogicOperatorVisibility() // update logic OperatorVisibility (hide it when the rule is applied and no more devices selected)
           setInputDeviceRowCount(0); // Reset / set input DeviceRow Count to 0
-              // Reset the logic operator, output select, and output action select to their default values
+
+          // Reset the logic operator, output select, and output action select to their default values
           logicOperatorSelect.value = 'Select Logic';
           outputSelect.value = 'Select Output Device';
           outputActionSelect.value = 'Select Action';
@@ -222,6 +215,7 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
             // Hide the add-rule-container after submitting the form
           addRuleContainer.style.display = 'none';
 
+          //Delete temperature row when the rule is submitted and select default values for option and value
           if (temperatureRow && temperatureRow.parentNode) {
             inputDeviceWrapper.removeChild(temperatureRow);
             temperatureRow.querySelector('.temp-option').value = 'Select Option';
