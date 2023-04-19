@@ -164,6 +164,12 @@ function addInputDeviceRow() {
 
   inputDeviceSelect.addEventListener('change', () => {
     const selectedDevice = deviceData[inputDeviceSelect.value];
+
+    //if input-device-option dropdown already exists, remove it
+    const existingOptionDropdown = inputDeviceRow.querySelector('.input-device-option');
+    if (existingOptionDropdown) {
+      inputDeviceRow.removeChild(existingOptionDropdown);
+    }
   
     if (selectedDevice.type === 'digital-input') {
       const inputDeviceOption = createSelect('input-device-option', `
@@ -179,10 +185,15 @@ function addInputDeviceRow() {
       }
     }
     if (selectedDevice.type === 'sensor' && selectedDevice.type1 === 'temp') {
-      inputDeviceRow.parentNode.insertBefore(temperatureRow, inputDeviceRow.nextSibling);
+      // Check if the temperatureRow already exists
+      const existingTemperatureRow = inputDeviceWrapper.querySelector('.temperature-row');
+      if (!existingTemperatureRow) { //if not insert it
+        inputDeviceRow.parentNode.insertBefore(temperatureRow, inputDeviceRow.nextSibling);
+      }
     } else if (temperatureRow.parentNode) {
       inputDeviceWrapper.removeChild(temperatureRow);
     }
+
   
     updateInputDeviceOptions();
   });
