@@ -1,10 +1,11 @@
 import os
 import json
 
-def add_device(device_key, device_name, device_gpio_status, device_gpio_id, device_gpio_pin, device_type, device_type1, device_type2, device_value1, device_value2, device_bat_stat, device_source):
+def add_device(device_key, device_id,device_name, device_gpio_status, device_gpio_id, device_gpio_pin, device_type, device_type1, device_type2, device_value1, device_value2, device_bat_stat, device_source):
     devices = load_devices()
     if device_key not in devices:
         devices[device_key] = {
+            'device_id': device_id,
             'device_name': device_name,
             'device_gpio_status': device_gpio_status,
             'device_gpio_id': device_gpio_id,

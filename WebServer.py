@@ -8,9 +8,11 @@ import json
 import os
 import time
 from cpu_temp import get_cpu_temperature
+from zigbee import register_callback, start_mqtt_loop
 
 app = Flask(__name__)
 socketio = SocketIO(app)
+start_mqtt_loop()
 
 @app.route('/gateway1.mbednino.online')
 def my_route():
@@ -24,21 +26,22 @@ def my_route():
 GPIO.setwarnings(False)
 
 # Define devices
-add_device('digout1',  'DO1', 0,  'DO1', 40, 'digital-output', 'N/A', 'N/A',  -1, -1, -1, 'rpi')
-add_device('digout2',  'DO2', 0,  'DO2', 12,'digital-output' , 'N/A', 'N/A',  -1, -1, -1, 'rpi')
-add_device('digin1',   'DI1', 0, 'DI1', 35, 'digital-input'  , 'N/A', 'N/A',  -1, -1, -1, 'rpi')
-add_device('digin2',   'DI2', 0, 'DI2', 22, 'digital-input'  , 'N/A', 'N/A',  -1, -1, -1, 'rpi')
-add_device('digin3',   'DI3', 0, 'DI3', 33, 'digital-input'  , 'N/A', 'N/A',  -1, -1, -1, 'rpi')
-add_device('digin4',   'DI4', 0, 'DI4', 37, 'digital-input'  , 'N/A', 'N/A',  -1, -1, -1, 'rpi')
-add_device('digin5',   'DI5', 0, 'DI5', 16, 'digital-input'  , 'N/A', 'N/A',  -1, -1, -1, 'rpi')
+add_device('digout1', None, 'DO1', 0,  'DO1', 40, 'digital-output', 'N/A', 'N/A',  None, None, None, 'rpi')
+add_device('digout2', None,'DO2', 0,  'DO2', 12,'digital-output' , 'N/A', 'N/A',  None, None, None, 'rpi')
+add_device('digin1',  None, 'DI1', 0, 'DI1', 35, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
+add_device('digin2',  None,  'DI2', 0, 'DI2', 22, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
+add_device('digin3',  None,'DI3', 0, 'DI3', 33, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
+add_device('digin4',  None, 'DI4', 0, 'DI4', 37, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
+add_device('digin5',  None, 'DI5', 0, 'DI5', 16, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
 
-add_device('TCPU', 'TEMP CPU', 0,'TCPU',0,'sensor','temp','N/A',0,-1,-1,'cpu')
+#add_device('TCPU', None,'TEMP CPU', 0,'TCPU',0,'sensor','temp','N/A',None,None,None,'cpu')
 
 def init_device_data():
     device_data = {}
     devices = load_devices()
     for device_key, device in devices.items():
         device_data[device_key] = {
+            'device_id': device['device_id'],
             'name': device['device_name'],
             'gpio_status': device['device_gpio_status'],
             'gpio_id': device['device_gpio_id'],
@@ -77,6 +80,7 @@ def init_groups():
     return group_data
 
 if __name__ == '__main__':
+    
   
     device_data = init_device_data()
     rule_data = init_rules()
@@ -363,6 +367,55 @@ def check_input_devices_and_apply_rules():
 
         time.sleep(1)  # Check every second
 
+def zigbee_callback(event_type, device_key):
+    if event_type == "new_device":
+        devices = load_devices()
+        if device_key in devices:
+            device = devices[device_key]
+            device_data[device_key] = {
+                'device_id': device['device_id'],
+                'name': device['device_name'],
+                'gpio_status': device['device_gpio_status'],
+                'gpio_id': device['device_gpio_id'],
+                'gpio_pin': device['device_gpio_pin'],
+                'type': device['device_type'],  
+                'type1': device['device_type1'],
+                'type2': device['device_type2'],
+                'value1': device['device_value1'],
+                'value2': device['device_value2'],
+                'bat_stat': device['device_bat_stat'],
+                'source': device['device_source'],
+            }
+            new_device_info = device_data[device_key]
+            socketio.emit('new_device_added', {'device_key': device_key, 'device_info': new_device_info}, namespace='/')
+        else:
+            return  # Skip the device if the device_key is not found in devices
+
+    elif event_type == "sensor_update":
+        devices=load_devices()
+        if device_key in devices:
+            device = devices[device_key]
+            device_data[device_key] = {
+                'device_id': device['device_id'],
+                'name': device['device_name'],
+                'gpio_status': device['device_gpio_status'],
+                'gpio_id': device['device_gpio_id'],
+                'gpio_pin': device['device_gpio_pin'],
+                'type': device['device_type'],  
+                'type1': device['device_type1'],
+                'type2': device['device_type2'],
+                'value1': device['device_value1'],
+                'value2': device['device_value2'],
+                'bat_stat': device['device_bat_stat'],
+                'source': device['device_source'],
+            }
+            device = device_data[device_key]
+        else:
+            return  # Skip the device if the device_key is not found in devices
+        socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'device_type1': device['type1'], 'device_type2': device['type2'], 'device_value1': device['value1'], 'device_value2': device['value2'], 'device_bat_stat': device['bat_stat']}, namespace='/')
+
+register_callback(zigbee_callback)
+
 
 
 
@@ -376,15 +429,15 @@ def check_input_devices_and_apply_rules():
 
 
 #check_sensor_value
-def check_sensor_value():
-    while True:
-        for device_key, device in device_data.items():
-    
-            if (device['type'] == 'sensor' and device['type1'] == 'temp' and device['source'] == 'cpu'):
-                device['value1'] = get_cpu_temperature()
-                socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'sensor_type1': device['type1'], 'sensor_type2': device['type2'], 'sensor_value1': device['value1'], 'sensor_value2': device['value2'],'device_bat_stat':device['bat_stat']}, namespace='/')
+#def check_sensor_value():
+ #   while True:
+  #      for device_key, device in device_data.items():
+   # 
+    #        if (device['type'] == 'sensor' and device['type1'] == 'temp' and device['source'] == 'cpu'):
+     #           device['value1'] = get_cpu_temperature()
+      #          socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'sensor_type1': device['type1'], 'sensor_type2': device['type2'], 'sensor_value1': device['value1'], 'sensor_value2': device['value2'],'device_bat_stat':device['bat_stat']}, namespace='/')
             #elif for future device types
-        time.sleep(5)
+       # time.sleep(5)
 
 ###############################################################################################################################################
 ########################################## CPU TEMPERATURE EXAMPLE #############################################################################
@@ -400,6 +453,6 @@ def check_sensor_value():
 if __name__ == "__main__":
     app.env="development"
     socketio.start_background_task(check_input_devices_and_apply_rules)
-    socketio.start_background_task(check_sensor_value)
+    #socketio.start_background_task(check_sensor_value)
     socketio.run(app, host='0.0.0.0', port=80, debug=True, allow_unsafe_werkzeug=True)
    

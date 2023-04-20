@@ -131,7 +131,7 @@ function createOutputDeviceBox(device_key, device) {
   
     const temperatureValue = document.createElement('span');
     temperatureValue.className = 'temperature-value';
-    temperatureValue.style.fontSize = '30px';
+    temperatureValue.style.fontSize = '20px';
     temperatureValue.style.color = '#FFFFFF';
     temperatureValue.textContent = `${device.value1} °C`;
     temperatureRow.appendChild(temperatureValue);

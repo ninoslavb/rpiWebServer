@@ -3,16 +3,16 @@
   <head>
     <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/sidebar.css?v=11231234241242124414524415555233444454155566652322555326455545314" />
-    <link rel="stylesheet" href="/static/master.css?v=1423221421224344523253312554434532554423354555666455452555556251234422112331" />
-    <link rel="stylesheet" href="/static/rules.css?v=12123324321321425552444524454544521523442555351555665555522555633" />
-    <link rel="stylesheet" href="/static/groups.css?v=121233224425155123224123555335544553544512343255421665456325555333" />
+    <link rel="stylesheet" href="/static/sidebar.css?v=1123123424124212441452441555525334444545155566652322555326455545314" />
+    <link rel="stylesheet" href="/static/master.css?v=142322142122434452325331255443455325544523354555666455452555556251234422112331" />
+    <link rel="stylesheet" href="/static/rules.css?v=1212332432132142555244452445454452515235442555351555665555522555633" />
+    <link rel="stylesheet" href="/static/groups.css?v=12123322442515512322412355533554455535445512343255421665456325555333" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
     <script>
       //Parse device_data rendered in WebServer.py to json file so it is acessible in .js files throuh deviceData
-      const deviceData = JSON.parse('{{ device_data | tojson | safe }}'); 
+      let deviceData = JSON.parse('{{ device_data | tojson | safe }}'); 
       let ruleData = JSON.parse('{{ rule_data | tojson | safe }}'); 
       let groupData = JSON.parse('{{ group_data | tojson | safe }}'); 
     </script>
