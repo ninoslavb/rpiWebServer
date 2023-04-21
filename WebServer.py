@@ -122,6 +122,10 @@ def handle_connect():
             if (device['type'] == 'digital-input'):
                 device['gpio_status'] = GPIO.input(device['gpio_pin'])
                 emit('device_input_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True)
+
+        elif device['source']=='zbee':
+                emit('device_input_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True) # just send the state because it is stored in device_data
+
         #else for future use if device has different source
 
     # Emit device names
