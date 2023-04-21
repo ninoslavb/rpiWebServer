@@ -15,7 +15,7 @@ h1 {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 10px;
-  margin: 0 10px;
+  margin: 0 10px 10px;
 }
 
 .device-box {
@@ -114,6 +114,34 @@ h1 {
 }
 
 
+
+
+.device-switch .on-text,
+.device-switch .off-text {
+  position: absolute;
+  color: white;
+  bottom: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  transition: 0s;
+  opacity: 0;
+}
+
+.device-switch input:checked ~ .slider .on-text {
+  left: 8px;
+  opacity: 1;
+}
+
+.device-switch input:not(:checked) ~ .slider .off-text {
+  right: 8px;
+  opacity: 1;
+}
+
+
+
+
+
+
 .device-input-connected {
   background-color: transparent;
 }
@@ -122,7 +150,7 @@ h1 {
   position: absolute;
   bottom: 5px;
   left: 5px;
-  font-size: 14px;
+  font-size: 10px;
   font-weight: 600;
   color: white;
 }

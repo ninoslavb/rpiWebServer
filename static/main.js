@@ -75,10 +75,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //function to update deviceInput box
     function updateDeviceInputStatus(deviceInputBox, deviceInputStatus) {
+    const stateValue = deviceInputBox.querySelector('.state-value');
     if (deviceInputStatus === 0) {
     deviceInputBox.classList.add('device-input-connected');
+    stateValue.textContent = `open`;
+    
      } else {
     deviceInputBox.classList.remove('device-input-connected');
+    stateValue.textContent = `closed`;
     }
     }
 

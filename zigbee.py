@@ -93,6 +93,7 @@ def store_paired_device(device):
 
     device_key = f"{device['model']}-{device['device_id'][2:]}"   #device_key is combination of model and device_id without 0x
     device_name = f"{device['model']}-{device['device_id'][14:]}"  #device_name is combination of model and device_id without first 14 digs
+    device_gpio_id = f"{device['model']}-{device['device_id'][16:]}"  #device_gpio_id is combination of model and device_id without first 14 digs
     if device_key not in devices.items():
         description = device['description']
         if "temperature" in description.lower() and "humidity" in description.lower():
@@ -109,7 +110,7 @@ def store_paired_device(device):
             device_id=device['device_id'],
             device_name=device_name,
             device_gpio_status=None,
-            device_gpio_id=None,
+            device_gpio_id=device_gpio_id,
             device_gpio_pin=None,
             device_type=device_type,
             device_type1=device_type1,
