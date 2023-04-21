@@ -11,7 +11,8 @@ from cpu_temp import get_cpu_temperature
 from zigbee import register_callback, start_mqtt_loop
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+#socketio = SocketIO(app)
+socketio = SocketIO(app, logger=False, engineio_logger=False)
 start_mqtt_loop()
 
 @app.route('/gateway1.mbednino.online')
@@ -115,9 +116,12 @@ def handle_connect():
     # Emit device state for each device
     for device_key, device in device_data.items():
         if device['source'] == 'rpi':
-            if (device['type'] == 'digital-input' or device['type'] == 'digital-output'):
+            if (device['type'] == 'digital-output'):
                 device['gpio_status'] = GPIO.input(device['gpio_pin'])
                 emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True)
+            if (device['type'] == 'digital-input'):
+                device['gpio_status'] = GPIO.input(device['gpio_pin'])
+                emit('device_input_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True)
         #else for future use if device has different source
 
     # Emit device names
@@ -412,8 +416,31 @@ def zigbee_callback(event_type, device_key):
             device = device_data[device_key]
         else:
             return  # Skip the device if the device_key is not found in devices
-        socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'device_type1': device['type1'], 'device_type2': device['type2'], 'device_value1': device['value1'], 'device_value2': device['value2'], 'device_bat_stat': device['bat_stat']}, namespace='/')
+        socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'device_type1': device['type1'], 'device_type2': device['type2'], 'device_value1': device['value1'], 'device_value2': device['value2'], 'device_bat_stat': device['bat_stat'], 'device_source':device['source']}, namespace='/')
 
+
+    elif event_type == "digital_input_update":
+        devices=load_devices()
+        if device_key in devices:
+            device = devices[device_key]
+            device_data[device_key] = {
+                'device_id': device['device_id'],
+                'name': device['device_name'],
+                'gpio_status': device['device_gpio_status'],
+                'gpio_id': device['device_gpio_id'],
+                'gpio_pin': device['device_gpio_pin'],
+                'type': device['device_type'],  
+                'type1': device['device_type1'],
+                'type2': device['device_type2'],
+                'value1': device['device_value1'],
+                'value2': device['device_value2'],
+                'bat_stat': device['device_bat_stat'],
+                'source': device['device_source'],
+            }
+            device = device_data[device_key]
+        else:
+            return  # Skip the device if the device_key is not found in devices
+        socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']}, namespace='/')
 register_callback(zigbee_callback)
 
 
@@ -435,7 +462,7 @@ register_callback(zigbee_callback)
    # 
     #        if (device['type'] == 'sensor' and device['type1'] == 'temp' and device['source'] == 'cpu'):
      #           device['value1'] = get_cpu_temperature()
-      #          socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'sensor_type1': device['type1'], 'sensor_type2': device['type2'], 'sensor_value1': device['value1'], 'sensor_value2': device['value2'],'device_bat_stat':device['bat_stat']}, namespace='/')
+      #          socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'sensor_type1': device['type1'], 'sensor_type2': device['type2'], 'sensor_value1': device['value1'], 'sensor_value2': device['value2'],'device_bat_stat':device['bat_stat'],'device_source':device['source']}, namespace='/')
             #elif for future device types
        # time.sleep(5)
 

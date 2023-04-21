@@ -95,26 +95,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
       socket.on('device_sensor_status', function(data) {
-        updateSensorValues(data.device_key, data.device_type, data.device_type1, data.device_type2, data.device_value1, data.device_value2);
+        updateSensorValues(data.device_key, data.device_type, data.device_type1, data.device_type2, data.device_value1, data.device_value2, data.device_bat_stat, data.device_source);
       });
       
 
 // Function to update the temperature and humidity values inside the box
-  function updateSensorValues(device_key, device_type, device_type1, device_type2, device_value1, device_value2) {
+  function updateSensorValues(device_key, device_type, device_type1, device_type2, device_value1, device_value2, device_bat_stat,device_source) {
   
     if (device_type === 'sensor' && device_type1 === 'temp' && device_type2 === 'humid') {
       const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`);
       const temperatureValue = deviceBox.querySelector('.temperature-value');
       const humidityValue = deviceBox.querySelector('.humidity-value');
-  
       temperatureValue.textContent = `${device_value1} °C`;
       humidityValue.textContent = `${device_value2}% RH`;
+
+      if(device_source==='zbee') {
+      const batteryValue = deviceBox.querySelector('.battery-value')
+      batteryValue.textContent = `${device_bat_stat}%`;
+      }
     }
     else if(device_type === 'sensor' && device_type1 === 'temp' && device_type2 === 'N/A') {
       const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`);
       const temperatureValue = deviceBox.querySelector('.temperature-value');
-  
       temperatureValue.textContent = `${device_value1} °C`;
+      if(device_source==='zbee') {
+        const batteryValue = deviceBox.querySelector('.battery-value')
+        batteryValue.textContent = `${device_bat_stat}%`;
+        }
   
     }
     
@@ -124,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 socket.on('new_device_added', function(data) {
   // Update the deviceData object with the new device information
-  console.log(`New device added: ${data.device_key}`);
   
   deviceData[data.device_key] = data.device_info;
   const device = deviceData[data.device_key];
@@ -137,7 +143,6 @@ socket.on('new_device_added', function(data) {
     deviceBox = createOutputDeviceBox(data.device_key, device);
   
   } else if (device.type === 'sensor' && device.type1 === 'temp') {
-    console.log('Create new THD sensor');
     deviceBox = createTHDSensorDeviceBox(data.device_key, device);
   
   } else {

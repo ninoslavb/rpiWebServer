@@ -151,7 +151,20 @@ function createOutputDeviceBox(device_key, device) {
       humidityValue.textContent = `${device.value2}% RH`;
       humidityRow.appendChild(humidityValue);
     }
+
+    if (device.source === 'zbee') {
+
+    const batteryRow = document.createElement('div');
+    batteryRow.style.marginTop = '-20px'; // Adjust this value to change the space between the rows
+    deviceIcon.appendChild(batteryRow);
   
+    const batteryValue = document.createElement('span');
+    batteryValue.className = 'battery-value';
+    batteryValue.style.fontSize = '20px';
+    batteryValue.style.color = '#FFFFFF';
+    batteryValue.textContent = `${device.bat_stat}%`;
+    batteryRow.appendChild(batteryValue);
+  }
     return deviceBox;
   }
   

@@ -93,15 +93,14 @@ def store_paired_device(device):
 
     device_key = f"{device['model']}-{device['device_id'][2:]}"   #device_key is combination of model and device_id without 0x
     device_name = f"{device['model']}-{device['device_id'][14:]}"  #device_name is combination of model and device_id without first 14 digs
-    #device_key = f"{device['device_id']}"
     if device_key not in devices.items():
         description = device['description']
         if "temperature" in description.lower() and "humidity" in description.lower():
             device_type = 'sensor'
             device_type1 = 'temp'
             device_type2 = 'humid'
-        else:
-            device_type = None
+        elif "contact sensor" in description.lower():
+            device_type = 'digital-input'
             device_type1 = None
             device_type2 = None
 
@@ -151,6 +150,18 @@ def handle_sensor_data(device_id, payload):
                     callback("sensor_update", device_key)
                 return
 
+                
+            if device['device_type'] == 'digital-input':
+                if 'contact' in payload:
+                    device['device_gpio_status'] = int(payload['contact']) #convert boolean to 0 or 1
+                    print(f"Contact info from {device_id}: {int(payload['contact'])}")
+                
+                # Save updated device values to devices.json
+                save_devices(devices)
+
+                if callback:
+                    callback("digital_input_update", device_key)
+                return
 
 
 
