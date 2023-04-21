@@ -16,9 +16,15 @@ def load_groups():
 
 
 
-def save_groups(groups):
+#def save_groups(groups):
+ #   with open('groups.json', 'w') as f:
+  #      json.dump(groups, f, indent=2)
+        
+def save_groups(devices):
     with open('groups.json', 'w') as f:
-        json.dump(groups, f, indent=2)
+        json.dump(devices, f, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
 
 
 def add_group(group_key, group_devices, group_name):

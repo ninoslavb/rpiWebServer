@@ -76,6 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
     //function to update deviceInput box
     function updateDeviceInputStatus(deviceInputBox, deviceInputStatus) {
     const stateValue = deviceInputBox.querySelector('.state-value');
+     //check if box exists
+    if (stateValue === null) {
+      console.error("Error: .state-value element not found within deviceInputBox");
+      return;
+  }
     if (deviceInputStatus === 0) {
     deviceInputBox.classList.add('device-input-connected');
     stateValue.textContent = `open`;

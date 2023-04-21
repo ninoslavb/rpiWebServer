@@ -122,7 +122,8 @@ function createOutputDeviceBox(device_key, device) {
 
 
     const stateValue = document.createElement('span');
-    stateValue.className = 'state-value'
+    stateValue.classList.add('state-value');
+    //stateValue.className = 'state-value'
     stateValue.style.marginTop = '10px'; 
     stateValue.style.fontSize = '15px';
     stateValue.style.color = '#FFFFFF';

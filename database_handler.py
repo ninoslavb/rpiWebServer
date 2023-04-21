@@ -37,10 +37,15 @@ def load_devices():
 
 
 
+#def save_devices(devices):
+ #   with open('devices.json', 'w') as f:
+  #      json.dump(devices, f, indent=2)
+
 def save_devices(devices):
     with open('devices.json', 'w') as f:
         json.dump(devices, f, indent=2)
-
+        f.flush()
+        os.fsync(f.fileno())
 
 
 

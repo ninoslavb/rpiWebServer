@@ -25,7 +25,8 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     global device_info
     devices = load_devices()
-    for device_key, device in devices.items():
+    for device_key in devices:
+        device = devices[device_key]
         topic = f"zigbee2mqtt/{device['device_id']}"
         if msg.topic == topic:
             try:
@@ -36,6 +37,7 @@ def on_message(client, userdata, msg):
             break
     else:
         print(f"Message received on unknown topic {msg.topic}: {msg.payload}")
+
 
 
     print(f"Received message on topic: {msg.topic}")  # Add this line
@@ -89,47 +91,45 @@ def on_message(client, userdata, msg):
 
 
 def store_paired_device(device):
-    devices = load_devices()
+    device_key = f"{device['model']}-{device['device_id'][2:]}"
+    device_name = f"{device['model']}-{device['device_id'][14:]}"
+    device_gpio_id = f"{device['model']}-{device['device_id'][16:]}"
+    
+    description = device['description']
+    if "temperature" in description.lower() and "humidity" in description.lower():
+        device_type = 'sensor'
+        device_type1 = 'temp'
+        device_type2 = 'humid'
+    elif "contact sensor" in description.lower():
+        device_type = 'digital-input'
+        device_type1 = None
+        device_type2 = None
 
-    device_key = f"{device['model']}-{device['device_id'][2:]}"   #device_key is combination of model and device_id without 0x
-    device_name = f"{device['model']}-{device['device_id'][14:]}"  #device_name is combination of model and device_id without first 14 digs
-    device_gpio_id = f"{device['model']}-{device['device_id'][16:]}"  #device_gpio_id is combination of model and device_id without first 14 digs
-    if device_key not in devices.items():
-        description = device['description']
-        if "temperature" in description.lower() and "humidity" in description.lower():
-            device_type = 'sensor'
-            device_type1 = 'temp'
-            device_type2 = 'humid'
-        elif "contact sensor" in description.lower():
-            device_type = 'digital-input'
-            device_type1 = None
-            device_type2 = None
+    add_device(
+        device_key=device_key,
+        device_id=device['device_id'],
+        device_name=device_name,
+        device_gpio_status=None,
+        device_gpio_id=device_gpio_id,
+        device_gpio_pin=None,
+        device_type=device_type,
+        device_type1=device_type1,
+        device_type2=device_type2,
+        device_value1=None,
+        device_value2=None,
+        device_bat_stat=None,
+        device_source='zbee'
+    )
+    if callback:
+        callback("new_device", device_key)
 
-        add_device(
-            device_key=device_key,
-            device_id=device['device_id'],
-            device_name=device_name,
-            device_gpio_status=None,
-            device_gpio_id=device_gpio_id,
-            device_gpio_pin=None,
-            device_type=device_type,
-            device_type1=device_type1,
-            device_type2=device_type2,
-            device_value1=None,
-            device_value2=None,
-            device_bat_stat=None,
-            device_source='zbee'
-        )
-        if callback:
-            callback("new_device", device_key)
-    else:
-        print(f"Device key {device_key} already exists.")
 
 
 def handle_sensor_data(device_id, payload):
     devices = load_devices()
     
-    for device_key, device in devices.items():
+    for device_key in devices:
+        device=devices[device_key]
         if device_key == device_id:
             if device['device_type'] == 'sensor' and device['device_type1'] == 'temp' and device['device_type2'] == 'humid':
                 if 'temperature' in payload:

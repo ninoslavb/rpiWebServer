@@ -9,6 +9,21 @@ import os
 import time
 from cpu_temp import get_cpu_temperature
 from zigbee import register_callback, start_mqtt_loop
+import logging
+import atexit
+
+def flush_logs():
+    for handler in logging.getLogger().handlers:
+        handler.flush()
+
+atexit.register(flush_logs)
+
+
+logging.basicConfig(filename='log.txt', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+devices = load_devices()
+logging.debug(f'Initial devices: {devices}')
+
 
 app = Flask(__name__)
 #socketio = SocketIO(app)
@@ -87,6 +102,9 @@ if __name__ == '__main__':
     rule_data = init_rules()
     group_data = init_groups()
 
+devices = load_devices()
+logging.debug(f' devices after init: {devices}')
+
 # set GPIOs according to its type
 GPIO.setmode(GPIO.BOARD)
 
@@ -124,7 +142,8 @@ def handle_connect():
                 emit('device_input_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True)
 
         elif device['source']=='zbee':
-                emit('device_input_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True) # just send the state because it is stored in device_data
+                if(device['type']=='digital-input'):
+                    emit('device_input_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True) # just send the state because it is stored in device_data
 
         #else for future use if device has different source
 
@@ -193,6 +212,77 @@ def input_device_callback(channel, device_key):
     #else for future use if device has different source
 
 
+def zigbee_callback(event_type, device_key):
+    if event_type == "new_device":
+        devices = load_devices()
+        if device_key in devices:
+            device = devices[device_key]
+            device_data[device_key] = {
+                'device_id': device['device_id'],
+                'name': device['device_name'],
+                'gpio_status': device['device_gpio_status'],
+                'gpio_id': device['device_gpio_id'],
+                'gpio_pin': device['device_gpio_pin'],
+                'type': device['device_type'],  
+                'type1': device['device_type1'],
+                'type2': device['device_type2'],
+                'value1': device['device_value1'],
+                'value2': device['device_value2'],
+                'bat_stat': device['device_bat_stat'],
+                'source': device['device_source'],
+            }
+            new_device_info = device_data[device_key]
+            socketio.emit('new_device_added', {'device_key': device_key, 'device_info': new_device_info}, namespace='/')
+        else:
+            return  # Skip the device if the device_key is not found in devices
+
+    elif event_type == "sensor_update":
+        devices=load_devices()
+        if device_key in devices:
+            device = devices[device_key]
+            device_data[device_key] = {
+                'device_id': device['device_id'],
+                'name': device['device_name'],
+                'gpio_status': device['device_gpio_status'],
+                'gpio_id': device['device_gpio_id'],
+                'gpio_pin': device['device_gpio_pin'],
+                'type': device['device_type'],  
+                'type1': device['device_type1'],
+                'type2': device['device_type2'],
+                'value1': device['device_value1'],
+                'value2': device['device_value2'],
+                'bat_stat': device['device_bat_stat'],
+                'source': device['device_source'],
+            }
+            device = device_data[device_key]
+        else:
+            return  # Skip the device if the device_key is not found in devices
+        socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'device_type1': device['type1'], 'device_type2': device['type2'], 'device_value1': device['value1'], 'device_value2': device['value2'], 'device_bat_stat': device['bat_stat'], 'device_source':device['source']}, namespace='/')
+
+
+    elif event_type == "digital_input_update":
+        devices=load_devices()
+        if device_key in devices:
+            device = devices[device_key]
+            device_data[device_key] = {
+                'device_id': device['device_id'],
+                'name': device['device_name'],
+                'gpio_status': device['device_gpio_status'],
+                'gpio_id': device['device_gpio_id'],
+                'gpio_pin': device['device_gpio_pin'],
+                'type': device['device_type'],  
+                'type1': device['device_type1'],
+                'type2': device['device_type2'],
+                'value1': device['device_value1'],
+                'value2': device['device_value2'],
+                'bat_stat': device['device_bat_stat'],
+                'source': device['device_source'],
+            }
+            device = device_data[device_key]
+        else:
+            return  # Skip the device if the device_key is not found in devices
+        socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']}, namespace='/')
+register_callback(zigbee_callback)
 
 
 #add/update group handler
@@ -374,81 +464,6 @@ def check_input_devices_and_apply_rules():
             # elif for future use if device source is different
 
         time.sleep(1)  # Check every second
-
-def zigbee_callback(event_type, device_key):
-    if event_type == "new_device":
-        devices = load_devices()
-        if device_key in devices:
-            device = devices[device_key]
-            device_data[device_key] = {
-                'device_id': device['device_id'],
-                'name': device['device_name'],
-                'gpio_status': device['device_gpio_status'],
-                'gpio_id': device['device_gpio_id'],
-                'gpio_pin': device['device_gpio_pin'],
-                'type': device['device_type'],  
-                'type1': device['device_type1'],
-                'type2': device['device_type2'],
-                'value1': device['device_value1'],
-                'value2': device['device_value2'],
-                'bat_stat': device['device_bat_stat'],
-                'source': device['device_source'],
-            }
-            new_device_info = device_data[device_key]
-            socketio.emit('new_device_added', {'device_key': device_key, 'device_info': new_device_info}, namespace='/')
-        else:
-            return  # Skip the device if the device_key is not found in devices
-
-    elif event_type == "sensor_update":
-        devices=load_devices()
-        if device_key in devices:
-            device = devices[device_key]
-            device_data[device_key] = {
-                'device_id': device['device_id'],
-                'name': device['device_name'],
-                'gpio_status': device['device_gpio_status'],
-                'gpio_id': device['device_gpio_id'],
-                'gpio_pin': device['device_gpio_pin'],
-                'type': device['device_type'],  
-                'type1': device['device_type1'],
-                'type2': device['device_type2'],
-                'value1': device['device_value1'],
-                'value2': device['device_value2'],
-                'bat_stat': device['device_bat_stat'],
-                'source': device['device_source'],
-            }
-            device = device_data[device_key]
-        else:
-            return  # Skip the device if the device_key is not found in devices
-        socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'device_type1': device['type1'], 'device_type2': device['type2'], 'device_value1': device['value1'], 'device_value2': device['value2'], 'device_bat_stat': device['bat_stat'], 'device_source':device['source']}, namespace='/')
-
-
-    elif event_type == "digital_input_update":
-        devices=load_devices()
-        if device_key in devices:
-            device = devices[device_key]
-            device_data[device_key] = {
-                'device_id': device['device_id'],
-                'name': device['device_name'],
-                'gpio_status': device['device_gpio_status'],
-                'gpio_id': device['device_gpio_id'],
-                'gpio_pin': device['device_gpio_pin'],
-                'type': device['device_type'],  
-                'type1': device['device_type1'],
-                'type2': device['device_type2'],
-                'value1': device['device_value1'],
-                'value2': device['device_value2'],
-                'bat_stat': device['device_bat_stat'],
-                'source': device['device_source'],
-            }
-            device = device_data[device_key]
-        else:
-            return  # Skip the device if the device_key is not found in devices
-        socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']}, namespace='/')
-register_callback(zigbee_callback)
-
-
-
 
 
 

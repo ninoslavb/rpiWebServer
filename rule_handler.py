@@ -16,9 +16,17 @@ def load_rules():
 
 
 
-def save_rules(rules):
+#def save_rules(rules):
+ #   with open('rules.json', 'w') as f:
+  #      json.dump(rules, f, indent=2)
+
+def save_rules(devices):
     with open('rules.json', 'w') as f:
-        json.dump(rules, f, indent=2)
+        json.dump(devices, f, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+
+
 
 
 def add_rule(rule_key, rule_name, input_devices, logic_operator, output_device_key, output_device_action):
