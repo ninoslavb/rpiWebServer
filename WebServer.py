@@ -17,10 +17,7 @@ def flush_logs():
         handler.flush()
 
 atexit.register(flush_logs)
-
-
 logging.basicConfig(filename='log.txt', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
 devices = load_devices()
 logging.debug(f'Initial devices: {devices}')
 
@@ -28,7 +25,7 @@ logging.debug(f'Initial devices: {devices}')
 app = Flask(__name__)
 #socketio = SocketIO(app)
 socketio = SocketIO(app, logger=False, engineio_logger=False)
-start_mqtt_loop()
+
 
 @app.route('/gateway1.mbednino.online')
 def my_route():
@@ -42,13 +39,16 @@ def my_route():
 GPIO.setwarnings(False)
 
 # Define devices
-add_device('digout1', None, 'DO1', 0,  'DO1', 40, 'digital-output', 'N/A', 'N/A',  None, None, None, 'rpi')
-add_device('digout2', None,'DO2', 0,  'DO2', 12,'digital-output' , 'N/A', 'N/A',  None, None, None, 'rpi')
-add_device('digin1',  None, 'DI1', 0, 'DI1', 35, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
-add_device('digin2',  None,  'DI2', 0, 'DI2', 22, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
-add_device('digin3',  None,'DI3', 0, 'DI3', 33, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
-add_device('digin4',  None, 'DI4', 0, 'DI4', 37, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
-add_device('digin5',  None, 'DI5', 0, 'DI5', 16, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
+if not devices:
+    add_device('digout1', None, 'DO1', 0,  'DO1', 40, 'digital-output', 'N/A', 'N/A',  None, None, None, 'rpi')
+    add_device('digout2', None,'DO2', 0,  'DO2', 12,'digital-output' , 'N/A', 'N/A',  None, None, None, 'rpi')
+    add_device('digin1',  None, 'DI1', 0, 'DI1', 35, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
+    add_device('digin2',  None,  'DI2', 0, 'DI2', 22, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
+    add_device('digin3',  None,'DI3', 0, 'DI3', 33, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
+    add_device('digin4',  None, 'DI4', 0, 'DI4', 37, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
+    add_device('digin5',  None, 'DI5', 0, 'DI5', 16, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
+
+
 
 #add_device('TCPU', None,'TEMP CPU', 0,'TCPU',0,'sensor','temp','N/A',None,None,None,'cpu')
 
@@ -254,10 +254,9 @@ def zigbee_callback(event_type, device_key):
                 'bat_stat': device['device_bat_stat'],
                 'source': device['device_source'],
             }
-            device = device_data[device_key]
         else:
             return  # Skip the device if the device_key is not found in devices
-        socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'device_type1': device['type1'], 'device_type2': device['type2'], 'device_value1': device['value1'], 'device_value2': device['value2'], 'device_bat_stat': device['bat_stat'], 'device_source':device['source']}, namespace='/')
+        socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device_data[device_key]['type'], 'device_type1': device_data[device_key]['type1'], 'device_type2': device_data[device_key]['type2'], 'device_value1': device_data[device_key]['value1'], 'device_value2': device_data[device_key]['value2'], 'device_bat_stat': device_data[device_key]['bat_stat'], 'device_source':device_data[device_key]['source']}, namespace='/')
 
 
     elif event_type == "digital_input_update":
@@ -278,7 +277,6 @@ def zigbee_callback(event_type, device_key):
                 'bat_stat': device['device_bat_stat'],
                 'source': device['device_source'],
             }
-            device = device_data[device_key]
         else:
             return  # Skip the device if the device_key is not found in devices
         socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']}, namespace='/')
@@ -298,13 +296,14 @@ def update_group_handler(data):
     existing_group_name = None
     existing_device_name = None
 
+    groups = load_groups()
     # Check if the group name already exists
     for group in group_data.values():
         if group['group_name'] == groupName:
             return {'error': f"Group name {groupName} already exists!"}
 
     # Check if the device is already assigned to some group
-    for group_key, group_details in group_data.items():
+    for group_key, group_details in groups.items():
         for group_device in group_details['group_devices']:
             for new_group_device in groupDevices:
                 if group_device['group_device_key'] == new_group_device['group_device_key']:
@@ -356,9 +355,10 @@ def update_rule_handler(data):
     existing_output_rule_name = None
     existing_output_device_name = None
 
+    rules = load_rules()
 
     # Check if the output device is already used in existing rules
-    for existing_rule_key, existing_rule in rule_data.items():
+    for existing_rule_key, existing_rule in rules.items():
         if existing_rule['output_device_key'] == output_device_key:
             existing_output_device_name = device_data[existing_rule['output_device_key']]['name']
             existing_output_rule_name = existing_rule['rule_name']
@@ -412,11 +412,11 @@ def delete_rule_handler(data):
 def check_input_devices_and_apply_rules():
     # Keep track of the rules that have been applied
     applied_rules = set()
-
+    
     while True:
-
+        rules = load_rules()
         # Iterate over the rules and apply them if conditions are met
-        for rule_key, rule in rule_data.items():
+        for rule_key, rule in rules.items():
             input_devices = rule['input_devices']
             logic_operator = rule['logic_operator']
             output_device_key = rule['output_device_key']
@@ -499,6 +499,7 @@ def check_input_devices_and_apply_rules():
 if __name__ == "__main__":
     app.env="development"
     socketio.start_background_task(check_input_devices_and_apply_rules)
+    start_mqtt_loop()
     #socketio.start_background_task(check_sensor_value)
-    socketio.run(app, host='0.0.0.0', port=80, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=80, debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
    

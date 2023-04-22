@@ -2,7 +2,7 @@ import time
 import paho.mqtt.client as mqtt
 from database_handler import load_devices, save_devices, get_device_status, update_device_gpio_status, get_device_name, update_device_name, get_device_gpio_id, get_device_type, add_device, get_device_gpio_pin
 import json
-import os
+#import os
 import atexit
 
 
@@ -24,6 +24,7 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):
     global device_info
+    #maybe use global variable instead of devices, do devices.json is not being deleted if load is happened before save in handle_sensor_data function
     devices = load_devices()
     for device_key in devices:
         device = devices[device_key]
