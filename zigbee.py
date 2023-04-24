@@ -92,35 +92,35 @@ def on_message(client, userdata, msg):
 
 
 def store_paired_device(device):
+    def add_device_helper(device_type, device_type1, device_type2):
+        add_device(
+            device_key=device_key,
+            device_id=device['device_id'],
+            device_name=device_name,
+            device_gpio_status=None,
+            device_gpio_id=device_gpio_id,
+            device_gpio_pin=None,
+            device_type=device_type,
+            device_type1=device_type1,
+            device_type2=device_type2,
+            device_value1=None,
+            device_value2=None,
+            device_bat_stat=None,
+            device_source='zbee'
+        )
+
     device_key = f"{device['model']}-{device['device_id'][2:]}"
     device_name = f"{device['model']}-{device['device_id'][14:]}"
     device_gpio_id = f"{device['model']}-{device['device_id'][16:]}"
     
     description = device['description']
     if "temperature" in description.lower() and "humidity" in description.lower():
-        device_type = 'sensor'
-        device_type1 = 'temp'
-        device_type2 = 'humid'
+        add_device_helper('sensor', 'temp', 'humid')
     elif "contact sensor" in description.lower():
-        device_type = 'digital-input'
-        device_type1 = None
-        device_type2 = None
-
-    add_device(
-        device_key=device_key,
-        device_id=device['device_id'],
-        device_name=device_name,
-        device_gpio_status=None,
-        device_gpio_id=device_gpio_id,
-        device_gpio_pin=None,
-        device_type=device_type,
-        device_type1=device_type1,
-        device_type2=device_type2,
-        device_value1=None,
-        device_value2=None,
-        device_bat_stat=None,
-        device_source='zbee'
-    )
+        add_device_helper('digital-input', 'contact', None)
+    elif "motion sensor" in description.lower():
+        add_device_helper('digital-input', 'motion', None)
+ 
     if callback:
         callback("new_device", device_key)
 
@@ -156,7 +156,11 @@ def handle_sensor_data(device_id, payload):
             if device['device_type'] == 'digital-input':
                 if 'contact' in payload:
                     device['device_gpio_status'] = int(payload['contact']) #convert boolean to 0 or 1
+                    device['device_bat_stat'] = payload['battery']
                     print(f"Contact info from {device_id}: {int(payload['contact'])}")
+                if 'occupancy' in payload:
+                    device['device_gpio_status'] = int(payload['occupancy']) #convert boolean to 0 or 1
+                    device['device_bat_stat'] = payload['battery']
                 
                 # Save updated device values to devices.json
                 save_devices(devices)

@@ -42,11 +42,11 @@ GPIO.setwarnings(False)
 if not devices:
     add_device('digout1', None, 'DO1', 0,  'DO1', 40, 'digital-output', 'N/A', 'N/A',  None, None, None, 'rpi')
     add_device('digout2', None,'DO2', 0,  'DO2', 12,'digital-output' , 'N/A', 'N/A',  None, None, None, 'rpi')
-    add_device('digin1',  None, 'DI1', 0, 'DI1', 35, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
-    add_device('digin2',  None,  'DI2', 0, 'DI2', 22, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
-    add_device('digin3',  None,'DI3', 0, 'DI3', 33, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
-    add_device('digin4',  None, 'DI4', 0, 'DI4', 37, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
-    add_device('digin5',  None, 'DI5', 0, 'DI5', 16, 'digital-input'  , 'N/A', 'N/A',  None, None, None, 'rpi')
+    add_device('digin1',  None, 'DI1', 0, 'DI1', 35, 'digital-input'  , 'contact', 'N/A',  None, None, None, 'rpi')
+    add_device('digin2',  None,  'DI2', 0, 'DI2', 22, 'digital-input'  , 'contact', 'N/A',  None, None, None, 'rpi')
+    add_device('digin3',  None,'DI3', 0, 'DI3', 33, 'digital-input'  , 'contact', 'N/A',  None, None, None, 'rpi')
+    add_device('digin4',  None, 'DI4', 0, 'DI4', 37, 'digital-input'  , 'contact', 'N/A',  None, None, None, 'rpi')
+    add_device('digin5',  None, 'DI5', 0, 'DI5', 16, 'digital-input'  , 'motion', 'N/A',  None, None, None, 'rpi')
 
 
 
@@ -139,11 +139,11 @@ def handle_connect():
                 emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True)
             if (device['type'] == 'digital-input'):
                 device['gpio_status'] = GPIO.input(device['gpio_pin'])
-                emit('device_input_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True)
+                emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, broadcast=True)
 
         elif device['source']=='zbee':
                 if(device['type']=='digital-input'):
-                    emit('device_input_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True) # just send the state because it is stored in device_data
+                    emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, broadcast=True) # just send the state because it is stored in device_data
 
         #else for future use if device has different source
 
@@ -207,7 +207,7 @@ def input_device_callback(channel, device_key):
     if device_data[device_key]['source'] == 'rpi':
         device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
         update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
-        socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']})
+        socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
         #print(f"Input device callback triggered for {device_key}, gpio_status: {device_data[device_key]['gpio_status']}")  # Add this print statement
     #else for future use if device has different source
 
@@ -279,7 +279,7 @@ def zigbee_callback(event_type, device_key):
             }
         else:
             return  # Skip the device if the device_key is not found in devices
-        socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']}, namespace='/')
+        socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
 register_callback(zigbee_callback)
 
 

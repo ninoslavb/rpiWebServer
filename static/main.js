@@ -6,7 +6,7 @@ import { createOutputDeviceBox, createInputDeviceBox, createTHDSensorDeviceBox }
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io.connect(); //connect the socket
 
-    //Add device boxes
+    //Add device boxes that are integrated in device (i.e. RPI)
       const deviceContainer = document.querySelector(".device-container");
       const DeviceKeys = Object.keys(deviceData)
 
@@ -37,6 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
       updateDeviceName(data.device_key, data.device_name);
       attachDeviceNameUpdateListener(data.device_key); //attach the listener, and send the update to the server when new name is entered
       });
+
+
+
+
+
+
 
 
       const sendUpdate = (device_key, action) => {
@@ -73,8 +79,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       
 
+
+
+
+
+
     //function to update deviceInput box
-    function updateDeviceInputStatus(deviceInputBox, deviceInputStatus) {
+    function updateDeviceInputStatus(deviceInputBox, deviceInputStatus, deviceInputType1, deviceBatStat, deviceSource) {
     const stateValue = deviceInputBox.querySelector('.state-value');
      //check if box exists
     if (stateValue === null) {
@@ -82,33 +93,54 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
   }
     if (deviceInputStatus === 0) {
-    deviceInputBox.classList.add('device-input-connected');
-    stateValue.textContent = `open`;
-    
+      if(deviceInputType1 === 'contact') {
+          deviceInputBox.classList.add('device-input-connected');
+          stateValue.textContent = `open`;
+        }
+        else if(deviceInputType1 === 'motion') {
+          deviceInputBox.classList.remove('device-input-connected');
+          stateValue.textContent = 'unoccupied';
+        }
+
      } else {
-    deviceInputBox.classList.remove('device-input-connected');
-    stateValue.textContent = `closed`;
+        if(deviceInputType1 === 'contact') {
+            deviceInputBox.classList.remove('device-input-connected');
+            stateValue.textContent = `closed`;
+          }
+          else if(deviceInputType1 === 'motion') {
+            deviceInputBox.classList.add('device-input-connected');
+            stateValue.textContent = 'occupied';
+          }
     }
-    }
+
+
+    if(deviceSource==='zbee') {
+      const batteryValue = deviceInputBox.querySelector('.battery-value')
+      batteryValue.textContent = `${deviceBatStat}%`;
+      }
+}
+
 
     // listens information from the Server side about digital input status
     socket.on('device_input_status', (data) => {
       const deviceKey = data.device_key;
       const deviceInputStatus = data.gpio_status;
+      const deviceInputType1 = data.device_type1;
+      const deviceBatStat = data.device_bat_stat;
+      const deviceSource = data.device_source;
       const deviceBox = document.querySelector(`.device-box[device-id="${deviceKey}"]`);
-      updateDeviceInputStatus(deviceBox, deviceInputStatus);
+      updateDeviceInputStatus(deviceBox, deviceInputStatus, deviceInputType1, deviceBatStat, deviceSource);
       });
 
 
 
 
 
-      socket.on('device_sensor_status', function(data) {
-        updateSensorValues(data.device_key, data.device_type, data.device_type1, data.device_type2, data.device_value1, data.device_value2, data.device_bat_stat, data.device_source);
-      });
-      
 
-// Function to update the temperature and humidity values inside the box
+
+
+
+// Function to update sensor box values
   function updateSensorValues(device_key, device_type, device_type1, device_type2, device_value1, device_value2, device_bat_stat,device_source) {
   
     if (device_type === 'sensor' && device_type1 === 'temp' && device_type2 === 'humid') {
@@ -136,7 +168,18 @@ document.addEventListener('DOMContentLoaded', () => {
     
     //else for other type sensors
   }
+
+
+  socket.on('device_sensor_status', function(data) {
+    updateSensorValues(data.device_key, data.device_type, data.device_type1, data.device_type2, data.device_value1, data.device_value2, data.device_bat_stat, data.device_source);
+  });
   
+  
+
+
+
+
+
 
 socket.on('new_device_added', function(data) {
   // Update the deviceData object with the new device information

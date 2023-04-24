@@ -72,12 +72,27 @@ function createOutputDeviceBox(device_key, device) {
     wifiIcon.style.color = 'white';
     deviceBox.appendChild(wifiIcon);
     }
+
+    if (device.source === 'zbee') {
+  
+      const batteryValue = document.createElement('span');
+      batteryValue.className = 'battery-value';
+      batteryValue.style.position = 'absolute'
+      batteryValue.style.fontSize = '10px';
+      batteryValue.style.bottom = '15px'; // Adjust this value to position the icon above the label
+      batteryValue.style.left = '20px';   //adjust this value to position battery status right to the wifi icon
+      batteryValue.style.color = 'white';
+      batteryValue.textContent = `${device.bat_stat}%`;
+      deviceBox.appendChild(batteryValue);
+  
+    }
   
   
    return deviceBox;
   }
 
   
+
 
 
   function createInputDeviceBox(device_key, device) {
@@ -124,7 +139,7 @@ function createOutputDeviceBox(device_key, device) {
     const stateValue = document.createElement('span');
     stateValue.classList.add('state-value');
     //stateValue.className = 'state-value'
-    stateValue.style.marginTop = '10px'; 
+    stateValue.style.marginTop = '8px'; 
     stateValue.style.fontSize = '15px';
     stateValue.style.color = '#FFFFFF';
     stateValue.textContent = `closed`;
@@ -141,6 +156,20 @@ function createOutputDeviceBox(device_key, device) {
     wifiIcon.style.fontSize = '10px';
     wifiIcon.style.color = 'white';
     deviceBox.appendChild(wifiIcon);
+    }
+
+    if (device.source === 'zbee') {
+  
+      const batteryValue = document.createElement('span');
+      batteryValue.className = 'battery-value';
+      batteryValue.style.position = 'absolute'
+      batteryValue.style.fontSize = '10px';
+      batteryValue.style.bottom = '15px'; // Adjust this value to position the icon above the label
+      batteryValue.style.left = '20px';   //adjust this value to position battery status right to the wifi icon
+      batteryValue.style.color = 'white';
+      batteryValue.textContent = `${device.bat_stat}%`;
+      deviceBox.appendChild(batteryValue);
+  
     }
   
 
@@ -206,20 +235,6 @@ function createOutputDeviceBox(device_key, device) {
       humidityRow.appendChild(humidityValue);
     }
 
-    if (device.source === 'zbee') {
-
-    const batteryRow = document.createElement('div');
-    batteryRow.style.marginTop = '-25px'; // Adjust this value to change the space between the rows
-    deviceIcon.appendChild(batteryRow);
-  
-    const batteryValue = document.createElement('span');
-    batteryValue.className = 'battery-value';
-    batteryValue.style.fontSize = '20px';
-    batteryValue.style.color = '#FFFFFF';
-    batteryValue.textContent = `${device.bat_stat}%`;
-    batteryRow.appendChild(batteryValue);
-
-  }
 
   if (device.source === 'zbee') {
     // Add Wi-Fi icon above the device label
@@ -231,6 +246,20 @@ function createOutputDeviceBox(device_key, device) {
       wifiIcon.style.fontSize = '10px';
       wifiIcon.style.color = 'white';
       deviceBox.appendChild(wifiIcon);
+      }
+
+      if (device.source === 'zbee') {
+  
+        const batteryValue = document.createElement('span');
+        batteryValue.className = 'battery-value';
+        batteryValue.style.position = 'absolute'
+        batteryValue.style.fontSize = '10px';
+        batteryValue.style.bottom = '15px'; // Adjust this value to position the icon above the label
+        batteryValue.style.left = '20px';   //adjust this value to position battery status right to the wifi icon
+        batteryValue.style.color = 'white';
+        batteryValue.textContent = `${device.bat_stat}%`;
+        deviceBox.appendChild(batteryValue);
+    
       }
 
 

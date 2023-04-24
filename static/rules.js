@@ -356,7 +356,29 @@ function updateRuleList() {
       }
     }
 
-    
+    function getContactInputText(optionValue){
+      switch (optionValue) {
+        case '0':
+          return 'closed';
+        case '1':
+          return 'open';
+        default:
+          return '';
+      }
+    }
+
+
+    function getMotionInputText(optionValue){
+      switch (optionValue) {
+        case '0':
+          return 'unoccupied';
+        case '1':
+          return 'occupied';
+        default:
+          return '';
+      }
+    }
+
     const listItem = document.createElement("li");
     listItem.classList.add("rule-list-item");
     
@@ -364,10 +386,17 @@ function updateRuleList() {
       const device = deviceData[inputDevice.input_device_key];
       let deviceText = '';
     
-      if (device.type === 'digital-input') {
-        deviceText = `${device.name} is ${inputDevice.input_device_option}`;
-
-      } else if (device.type === 'sensor') {
+      if (device.type === 'digital-input' && device.type1 === 'contact') {
+      //  deviceText = `${device.name} is ${inputDevice.input_device_option}`;
+      deviceText = `${device.name} is ${getContactInputText(inputDevice.input_device_option)}`;
+      } 
+          
+      else if (device.type === 'digital-input' && device.type1 === 'motion') {
+        //  deviceText = `${device.name} is ${inputDevice.input_device_option}`;
+        deviceText = `${device.name} is ${getMotionInputText(inputDevice.input_device_option)}`;
+        } 
+      
+      else if (device.type === 'sensor') {
         let sensorText = '';
         if (device.type1 === 'temp') {
           sensorText += `temperature is ${getSensorOptionText(inputDevice.temp_option)} ${inputDevice.temp_value}°C`;

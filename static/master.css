@@ -47,7 +47,7 @@ h1 {
   color: white;
   width: calc(100% - 20px);
   padding: 5px 10px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   border: 0px solid #ccc;
   border-radius: 4px;
   outline: none;
@@ -66,7 +66,7 @@ h1 {
   display: inline-block;
   width: 55px;
   height: 24px;
-  margin-top:10px;
+  margin-top:-25px;
   margin-bottom: 10px;
   
 }
@@ -156,8 +156,8 @@ h1 {
 }
 .lock-icon {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
+  bottom: 35px;
+  left: 5px;
   font-size: 14px;
   font-weight: 600;
   color: white;
@@ -166,7 +166,7 @@ h1 {
 
 .device-icon {
   position: relative;
-  top: -10px;
+  top: -20px;
   left: 0;
   font-size: 30px;
 }
