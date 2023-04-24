@@ -146,6 +146,8 @@ def handle_connect():
                     emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, broadcast=True) # just send the state because it is stored in device_data
                 if (device['type'] == 'digital-output'):
                     emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, broadcast=True)
+                if (device['type']=='sensor'):
+                    emit('device_sensor_status', {'device_key': device_key, 'device_type': device_data[device_key]['type'], 'device_type1': device_data[device_key]['type1'], 'device_type2': device_data[device_key]['type2'], 'device_value1': device_data[device_key]['value1'], 'device_value2': device_data[device_key]['value2'], 'device_bat_stat': device_data[device_key]['bat_stat'], 'device_source':device_data[device_key]['source']}, broadcast=True)
         #else for future use if device has different source
 
     # Emit device names
@@ -240,6 +242,8 @@ def zigbee_callback(event_type, device_key, command=None):
             }
             new_device_info = device_data[device_key]
             socketio.emit('new_device_added', {'device_key': device_key, 'device_info': new_device_info}, namespace='/')
+            print("Battery status:", device['device_bat_stat'])
+
         else:
             return  # Skip the device if the device_key is not found in devices
 

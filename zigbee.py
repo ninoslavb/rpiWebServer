@@ -92,7 +92,7 @@ def on_message(client, userdata, msg):
 
 
 def store_paired_device(device):
-    def add_device_helper(device_type, device_type1, device_type2,device_bat_stat):
+    def add_device_helper(device_type, device_type1, device_type2):
         add_device(
             device_key=device_key,
             device_id=device['device_id'],
@@ -105,7 +105,7 @@ def store_paired_device(device):
             device_type2=device_type2,
             device_value1=None,
             device_value2=None,
-            device_bat_stat=device_bat_stat,
+            device_bat_stat=None,
             device_source='zbee'
         )
 
@@ -116,26 +116,17 @@ def store_paired_device(device):
     
     description = device['description']
     if "temperature" in description.lower() and "humidity" in description.lower():
-        if "battery" in description.lower():
-            add_device_helper('sensor', 'temp', 'humid', 0)
-        else: 
-            add_device_helper('sensor', 'temp', 'humid',None)
+        add_device_helper('sensor', 'temp', 'humid')
+
     elif "contact sensor" in description.lower():
-        if "battery" in description.lower():
-            add_device_helper('digital-input', 'contact', None,0)
-        else:
-            add_device_helper('digital-input', 'contact', None,None)
+        add_device_helper('digital-input', 'contact', None)
+     
     elif "motion sensor" in description.lower():
-        if "battery" in description.lower():
-            add_device_helper('digital-input', 'motion', None, 0)
-        else:
-            add_device_helper('digital-input', 'motion', None, None)
+       add_device_helper('digital-input', 'motion', None)
+     
     elif "smart plug" in description.lower():
-        if "battery" in description.lower():
-            add_device_helper('digital-output', 'plug', None,0)
-        else:
-            add_device_helper('digital-output', 'plug', None,None)
- 
+        add_device_helper('digital-output', 'plug', None)
+
     if callback:
         callback("new_device", device_key)
 
@@ -189,8 +180,12 @@ def handle_received_data(device_id, payload):
                         device['device_gpio_status'] = 1
                     else:
                         device['device_gpio_status'] = 0
+                
                 if 'battery' in payload:
                     device['device_bat_stat'] = payload['battery']
+                else:
+                    device['device_bat_stat']=None
+
 
                 save_devices(devices)
 
@@ -207,7 +202,7 @@ def control_actuator(device_key, command):
         return
 
     device = devices[device_key]
-    print("I AM HERE")
+    
     topic = f"zigbee2mqtt/{device['device_id']}/set"
 
     if command == 0:
@@ -217,7 +212,7 @@ def control_actuator(device_key, command):
     else:
         print(f"Invalid command: {command}")
         return
-    print("NOW HERE")
+    
     client.publish(topic, payload)
 
 

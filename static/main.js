@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if(deviceSource==='zbee') {
               const batteryValue = deviceBox.querySelector('.battery-value')
+              if(deviceBatStat !== null && deviceBatStat !== undefined)
               batteryValue.textContent = `${deviceBatStat}%`;
               }
   
@@ -124,10 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(deviceSource==='zbee') {
       const batteryValue = deviceInputBox.querySelector('.battery-value')
+      if(deviceBatStat !== null && deviceBatStat !== undefined)
       batteryValue.textContent = `${deviceBatStat}%`;
       }
-}
 
+    }
 
     // listens information from the Server side about digital input status
     socket.on('device_input_status', (data) => {
@@ -159,12 +161,10 @@ document.addEventListener('DOMContentLoaded', () => {
       humidityValue.textContent = `${device_value2}% RH`;
 
       if(device_source==='zbee') {
-      const batteryValue = deviceBox.querySelector('.battery-value')
-      if (!batteryValue) {
-        return;
-      }
-      batteryValue.textContent = `${device_bat_stat}%`;
-      }
+        const batteryValue = deviceBox.querySelector('.battery-value')
+        if(device_bat_stat !== null && device_bat_stat !== undefined)
+        batteryValue.textContent = `${device_bat_stat}%`;
+        }
     }
     else if(device_type === 'sensor' && device_type1 === 'temp' && device_type2 === 'N/A') {
       const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`);
@@ -172,6 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
       temperatureValue.textContent = `${device_value1} °C`;
       if(device_source==='zbee') {
         const batteryValue = deviceBox.querySelector('.battery-value')
+        if(device_bat_stat !== null && device_bat_stat !== undefined)
         batteryValue.textContent = `${device_bat_stat}%`;
         }
   

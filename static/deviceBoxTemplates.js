@@ -82,11 +82,11 @@ function createOutputDeviceBox(device_key, device) {
       batteryValue.style.bottom = '15px'; // Adjust this value to position the icon above the label
       batteryValue.style.left = '20px';   //adjust this value to position battery status right to the wifi icon
       batteryValue.style.color = 'white';
-      batteryValue.textContent = `${device.bat_stat}%`;
+      batteryValue.textContent = ``;
       deviceBox.appendChild(batteryValue);
   
+    
     }
-  
   
    return deviceBox;
   }
@@ -167,11 +167,11 @@ function createOutputDeviceBox(device_key, device) {
       batteryValue.style.bottom = '15px'; // Adjust this value to position the icon above the label
       batteryValue.style.left = '20px';   //adjust this value to position battery status right to the wifi icon
       batteryValue.style.color = 'white';
-      batteryValue.textContent = `${device.bat_stat}%`;
+      batteryValue.textContent = ``;
       deviceBox.appendChild(batteryValue);
   
+
     }
-  
 
     return deviceBox;
   }
@@ -257,10 +257,10 @@ function createOutputDeviceBox(device_key, device) {
         batteryValue.style.bottom = '15px'; // Adjust this value to position the icon above the label
         batteryValue.style.left = '20px';   //adjust this value to position battery status right to the wifi icon
         batteryValue.style.color = 'white';
-        batteryValue.textContent = `${device.bat_stat}%`;
+        batteryValue.textContent = ``;
         deviceBox.appendChild(batteryValue);
-    
       }
+      
 
 
     return deviceBox;
