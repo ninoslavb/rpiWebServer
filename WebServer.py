@@ -8,7 +8,7 @@ import json
 import os
 import time
 from cpu_temp import get_cpu_temperature
-from zigbee import register_callback, start_mqtt_loop
+from zigbee import register_callback, control_actuator, start_mqtt_loop
 import logging
 import atexit
 
@@ -136,7 +136,7 @@ def handle_connect():
         if device['source'] == 'rpi':
             if (device['type'] == 'digital-output'):
                 device['gpio_status'] = GPIO.input(device['gpio_pin'])
-                emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device['gpio_status']}, broadcast=True)
+                emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, broadcast=True)
             if (device['type'] == 'digital-input'):
                 device['gpio_status'] = GPIO.input(device['gpio_pin'])
                 emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, broadcast=True)
@@ -144,7 +144,8 @@ def handle_connect():
         elif device['source']=='zbee':
                 if(device['type']=='digital-input'):
                     emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, broadcast=True) # just send the state because it is stored in device_data
-
+                if (device['type'] == 'digital-output'):
+                    emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, broadcast=True)
         #else for future use if device has different source
 
     # Emit device names
@@ -193,8 +194,14 @@ def digital_output_update(data):
                 
             device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
             update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
-            emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status']}, broadcast=True)
-        #else for future use if output has different source
+            emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, broadcast=True)
+        elif device_data[device_key]['source'] == 'zbee':
+            if action == 'on':
+                control_actuator(device_key,1)
+            elif action == 'off':
+                control_actuator(device_key,0)
+
+
 
 
 # Add event detect for all digital inputs
@@ -212,7 +219,7 @@ def input_device_callback(channel, device_key):
     #else for future use if device has different source
 
 
-def zigbee_callback(event_type, device_key):
+def zigbee_callback(event_type, device_key, command=None):
     if event_type == "new_device":
         devices = load_devices()
         if device_key in devices:
@@ -280,6 +287,31 @@ def zigbee_callback(event_type, device_key):
         else:
             return  # Skip the device if the device_key is not found in devices
         socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
+
+
+    elif event_type == "digital_output_update":
+        devices=load_devices()
+        if device_key in devices:
+            device = devices[device_key]
+            device_data[device_key] = {
+                'device_id': device['device_id'],
+                'name': device['device_name'],
+                'gpio_status': device['device_gpio_status'],
+                'gpio_id': device['device_gpio_id'],
+                'gpio_pin': device['device_gpio_pin'],
+                'type': device['device_type'],  
+                'type1': device['device_type1'],
+                'type2': device['device_type2'],
+                'value1': device['device_value1'],
+                'value2': device['device_value2'],
+                'bat_stat': device['device_bat_stat'],
+                'source': device['device_source'],
+            }
+        else:
+            return  # Skip the device if the device_key is not found in devices
+        socketio.emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
+
+
 register_callback(zigbee_callback)
 
 
@@ -446,22 +478,30 @@ def check_input_devices_and_apply_rules():
                 if device_data[output_device_key]['source'] == 'rpi':
                     GPIO.output(device_data[output_device_key]['gpio_pin'], output_device_action)
                     applied_rules.add(rule_key)
-                # elif for future use if source is different than rpi
-
+                elif device_data[output_device_key]['source'] == 'zbee':
+                    control_actuator(output_device_key, output_device_action)
+                    applied_rules.add(rule_key)
             # If the rule conditions are not met, set the output to the opposite state
             if not ((logic_operator == 'AND' and all(matching_input_devices)) or (logic_operator == 'OR' and any(matching_input_devices))):
                 if device_data[output_device_key]['source'] == 'rpi':
                     opposite_action = 1 - output_device_action
                     GPIO.output(device_data[output_device_key]['gpio_pin'], opposite_action)
-                if rule_key in applied_rules:
-                    applied_rules.discard(rule_key)
+                    if rule_key in applied_rules:
+                        applied_rules.discard(rule_key)
+                elif device_data[output_device_key]['source'] == 'zbee':
+                    opposite_action = 1 - output_device_action
+                    control_actuator(output_device_key, opposite_action)
+                    if rule_key in applied_rules:
+                        applied_rules.discard(rule_key)
 
             # Update the gpio_status of the output device
             if device_data[output_device_key]['source'] == 'rpi':
                 device_data[output_device_key]['gpio_status'] = GPIO.input(device_data[output_device_key]['gpio_pin'])
                 update_device_gpio_status(output_device_key, device_data[output_device_key]['gpio_status'])
-                socketio.emit('device_gpio_status', {'device_key': output_device_key, 'gpio_status': device_data[output_device_key]['gpio_status']}, namespace='/')
-            # elif for future use if device source is different
+                socketio.emit('device_gpio_status', {'device_key': output_device_key, 'gpio_status': device_data[output_device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']},  namespace='/')
+
+            ##device_gpio_status of device with source zbee is updated using MQTT messages and callback functions
+
 
         time.sleep(1)  # Check every second
 

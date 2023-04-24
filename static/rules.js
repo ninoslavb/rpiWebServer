@@ -359,9 +359,9 @@ function updateRuleList() {
     function getContactInputText(optionValue){
       switch (optionValue) {
         case '0':
-          return 'closed';
-        case '1':
           return 'open';
+        case '1':
+          return 'closed';
         default:
           return '';
       }

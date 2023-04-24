@@ -175,8 +175,8 @@ function addInputDeviceRow() {
       if(selectedDevice.type1 === 'contact') {
       const inputDeviceOption = createSelect('input-device-option', `
         <option disabled selected>Select State</option>
-        <option value="0">closed</option>
-        <option value="1">open</option>
+        <option value="0">open</option>
+        <option value="1">closed</option>
       `);
       inputDeviceRow.insertBefore(inputDeviceOption, removeButton); //insert inputDeviceOption before removeButton if device type is digital-input
       }

@@ -32,7 +32,7 @@ def on_message(client, userdata, msg):
         if msg.topic == topic:
             try:
                 payload = json.loads(msg.payload)
-                handle_sensor_data(device_key, payload)
+                handle_received_data(device_key, payload)
             except json.JSONDecodeError:
                 print(f"Invalid JSON message received on topic {msg.topic}: {msg.payload}")
             break
@@ -81,8 +81,8 @@ def on_message(client, userdata, msg):
             if 'friendly_name' in data and data['friendly_name'] == device_info.get('friendly_name') and 'description' in data and 'model' in data:
                 device_info['description'] = data['description']
                 device_info['model'] = data['model']
-                print(f"Storing paired device: {device_info}")  # Add this line
                 store_paired_device(device_info)
+                print(f"Storing paired device: {device_info}")  
             else:
                 print("Received pairing event with incomplete data.")
 
@@ -92,7 +92,7 @@ def on_message(client, userdata, msg):
 
 
 def store_paired_device(device):
-    def add_device_helper(device_type, device_type1, device_type2):
+    def add_device_helper(device_type, device_type1, device_type2,device_bat_stat):
         add_device(
             device_key=device_key,
             device_id=device['device_id'],
@@ -105,7 +105,7 @@ def store_paired_device(device):
             device_type2=device_type2,
             device_value1=None,
             device_value2=None,
-            device_bat_stat=None,
+            device_bat_stat=device_bat_stat,
             device_source='zbee'
         )
 
@@ -113,20 +113,35 @@ def store_paired_device(device):
     device_name = f"{device['model']}-{device['device_id'][14:]}"
     device_gpio_id = f"{device['model']}-{device['device_id'][16:]}"
     
+    
     description = device['description']
     if "temperature" in description.lower() and "humidity" in description.lower():
-        add_device_helper('sensor', 'temp', 'humid')
+        if "battery" in description.lower():
+            add_device_helper('sensor', 'temp', 'humid', 0)
+        else: 
+            add_device_helper('sensor', 'temp', 'humid',None)
     elif "contact sensor" in description.lower():
-        add_device_helper('digital-input', 'contact', None)
+        if "battery" in description.lower():
+            add_device_helper('digital-input', 'contact', None,0)
+        else:
+            add_device_helper('digital-input', 'contact', None,None)
     elif "motion sensor" in description.lower():
-        add_device_helper('digital-input', 'motion', None)
+        if "battery" in description.lower():
+            add_device_helper('digital-input', 'motion', None, 0)
+        else:
+            add_device_helper('digital-input', 'motion', None, None)
+    elif "smart plug" in description.lower():
+        if "battery" in description.lower():
+            add_device_helper('digital-output', 'plug', None,0)
+        else:
+            add_device_helper('digital-output', 'plug', None,None)
  
     if callback:
         callback("new_device", device_key)
 
 
 
-def handle_sensor_data(device_id, payload):
+def handle_received_data(device_id, payload):
     devices = load_devices()
     
     for device_key in devices:
@@ -135,15 +150,13 @@ def handle_sensor_data(device_id, payload):
             if device['device_type'] == 'sensor' and device['device_type1'] == 'temp' and device['device_type2'] == 'humid':
                 if 'temperature' in payload:
                     device['device_value1'] = payload['temperature']
-                    print(f"Temperature from {device_id}: {payload['temperature']}")
                 
                 if 'humidity' in payload:
                     device['device_value2'] = payload['humidity']
-                    print(f"Humidity from {device_id}: {payload['humidity']}")
                 
                 if 'battery' in payload:
                     device['device_bat_stat'] = payload['battery']
-                    print(f"Battery from {device_id}: {payload['battery']}")
+
 
                 # Save updated device values to devices.json
                 save_devices(devices)
@@ -156,11 +169,12 @@ def handle_sensor_data(device_id, payload):
             if device['device_type'] == 'digital-input':
                 if 'contact' in payload:
                     device['device_gpio_status'] = int(payload['contact']) #convert boolean to 0 or 1
-                    device['device_bat_stat'] = payload['battery']
-                    print(f"Contact info from {device_id}: {int(payload['contact'])}")
+                    if 'battery'in payload:
+                        device['device_bat_stat'] = payload['battery']
                 if 'occupancy' in payload:
                     device['device_gpio_status'] = int(payload['occupancy']) #convert boolean to 0 or 1
-                    device['device_bat_stat'] = payload['battery']
+                    if 'battery'in payload:
+                        device['device_bat_stat'] = payload['battery']
                 
                 # Save updated device values to devices.json
                 save_devices(devices)
@@ -168,6 +182,49 @@ def handle_sensor_data(device_id, payload):
                 if callback:
                     callback("digital_input_update", device_key)
                 return
+
+            if device['device_type'] == 'digital-output':
+                if 'state' in payload:
+                    if payload['state'].lower() == 'on':
+                        device['device_gpio_status'] = 1
+                    else:
+                        device['device_gpio_status'] = 0
+                if 'battery' in payload:
+                    device['device_bat_stat'] = payload['battery']
+
+                save_devices(devices)
+
+                if callback:
+                    callback("digital_output_update", device_key)
+                return
+
+
+
+def control_actuator(device_key, command):
+    devices = load_devices()
+    if device_key not in devices:
+        print(f"Device key {device_key} not found")
+        return
+
+    device = devices[device_key]
+    print("I AM HERE")
+    topic = f"zigbee2mqtt/{device['device_id']}/set"
+
+    if command == 0:
+        payload = json.dumps({"state": "OFF"})
+    elif command == 1:
+        payload = json.dumps({"state": "ON"})
+    else:
+        print(f"Invalid command: {command}")
+        return
+    print("NOW HERE")
+    client.publish(topic, payload)
+
+
+
+
+
+
 
 
 

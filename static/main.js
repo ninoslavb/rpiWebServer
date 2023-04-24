@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
       const sendUpdate = (device_key, action) => {
         socket.emit('device_output_update', { device_key: device_key, action: action });
       };
@@ -68,16 +67,25 @@ document.addEventListener('DOMContentLoaded', () => {
       
         socket.on('device_gpio_status', (data) => {
           if (data.device_key === device_key) {
+            const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`)
             const deviceOutputStatus = data.gpio_status;
+            const deviceBatStat = data.device_bat_stat;
+            const deviceSource = data.device_source;
             if (deviceOutputStatus === 1) {
               document.querySelector(`#${device_key}-input`).checked = true;
             } else {
               document.querySelector(`#${device_key}-input`).checked = false;
             }
+            if(deviceSource==='zbee') {
+              const batteryValue = deviceBox.querySelector('.battery-value')
+              batteryValue.textContent = `${deviceBatStat}%`;
+              }
+  
           }
         });
       });
-      
+
+
 
 
 
@@ -152,6 +160,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if(device_source==='zbee') {
       const batteryValue = deviceBox.querySelector('.battery-value')
+      if (!batteryValue) {
+        return;
+      }
       batteryValue.textContent = `${device_bat_stat}%`;
       }
     }
