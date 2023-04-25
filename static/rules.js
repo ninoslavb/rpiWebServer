@@ -434,7 +434,7 @@ function updateRuleList() {
     
     const outputDeviceElement = document.createElement("div");
     //outputDeviceElement.textContent = `then ${deviceData[output].name} is ${output_action}`;
-    outputDeviceElement.textContent = `then ${deviceData[output].name} is ${getDigitalOutputText(outputActionSelect.value)}`;
+    outputDeviceElement.textContent = `then ${deviceData[output].name} is ${getDigitalOutputText(output_action)}`;
     listItem.appendChild(outputDeviceElement);
     
     const deleteButton = document.createElement("button");
