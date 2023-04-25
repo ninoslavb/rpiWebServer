@@ -2,7 +2,6 @@ import { updateDeviceName, attachDeviceNameUpdateListener } from './deviceName_h
 import { createOutputDeviceBox, createInputDeviceBox, createTHDSensorDeviceBox } from './deviceBoxTemplates.js';
 
 
-
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io.connect(); //connect the socket
 
@@ -42,52 +41,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+      function updateDeviceState(device_key, device) {
+        const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`);
+        const deviceOutputStatus = device.gpio_status;
+        const deviceBatStat = device.device_bat_stat;
+        const deviceSource = device.device_source;
+      
+        if (deviceOutputStatus === 1) {
+          document.querySelector(`#${device_key}-input`).checked = true;
+        } else {
+          document.querySelector(`#${device_key}-input`).checked = false;
+        }
+      
+        if (deviceSource === 'zbee') {
+          const batteryValue = deviceBox.querySelector('.battery-value');
+          if (deviceBatStat !== null && deviceBatStat !== undefined) {
+            batteryValue.textContent = `${deviceBatStat}%`;
+          }
+        }
+      }
+      
+
 
 
       const sendUpdate = (device_key, action) => {
         socket.emit('device_output_update', { device_key: device_key, action: action });
       };
-      
-      // Add the device keys of devices with type 'digital-output'
-      const outputDeviceKeys = Object.keys(deviceData).filter((device_key) => deviceData[device_key].type === 'digital-output');
-    
-    
-      outputDeviceKeys.forEach((device_key) => {
-      
+
+
+
+      function addDigitalOutputEventListener(device_key) {
         document.querySelector(`#${device_key}-input`).addEventListener('change', (e) => {
           e.preventDefault();
-
-              if (e.target.checked) {
-                sendUpdate(device_key, 'on');
-              } else {
-                sendUpdate(device_key, 'off');
-              }
-           
+      
+          if (e.target.checked) {
+            sendUpdate(device_key, 'on');
+          } else {
+            sendUpdate(device_key, 'off');
+          }
         });
       
         socket.on('device_gpio_status', (data) => {
           if (data.device_key === device_key) {
-            const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`)
-            const deviceOutputStatus = data.gpio_status;
-            const deviceBatStat = data.device_bat_stat;
-            const deviceSource = data.device_source;
-            if (deviceOutputStatus === 1) {
-              document.querySelector(`#${device_key}-input`).checked = true;
-            } else {
-              document.querySelector(`#${device_key}-input`).checked = false;
-            }
-            if(deviceSource==='zbee') {
-              const batteryValue = deviceBox.querySelector('.battery-value')
-              if(deviceBatStat !== null && deviceBatStat !== undefined)
-              batteryValue.textContent = `${deviceBatStat}%`;
-              }
-  
+            updateDeviceState(device_key, data);
           }
         });
+      }
+
+      
+      // Add the device keys of devices with type 'digital-output'
+      const outputDeviceKeys = Object.keys(deviceData).filter((device_key) => deviceData[device_key].type === 'digital-output');
+
+      outputDeviceKeys.forEach((device_key) => {
+        addDigitalOutputEventListener(device_key);
       });
-
-
-
 
 
 
@@ -166,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         batteryValue.textContent = `${device_bat_stat}%`;
         }
     }
-    else if(device_type === 'sensor' && device_type1 === 'temp' && device_type2 === 'N/A') {
+    else if(device_type === 'sensor' && device_type1 === 'temp' && device_type2 !== 'humid') {  //only for temperature sensors
       const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`);
       const temperatureValue = deviceBox.querySelector('.temperature-value');
       temperatureValue.textContent = `${device_value1} °C`;
@@ -198,7 +205,7 @@ socket.on('new_device_added', function(data) {
   
   deviceData[data.device_key] = data.device_info;
   const device = deviceData[data.device_key];
-  console.log('Device info:', device);
+  //console.log('Device info:', device);
   let deviceBox;
   if (device.type === 'digital-input') {
     deviceBox = createInputDeviceBox(data.device_key, device);
@@ -214,6 +221,16 @@ socket.on('new_device_added', function(data) {
   }
   deviceContainer.appendChild(deviceBox);
   // Update the HTML content with the new device information
+
+
+
+  // Attach the event listener for the newly added device (if it's a digital-output device)
+  if (device.type === "digital-output") {
+    addDigitalOutputEventListener(data.device_key);
+    } 
+  updateDeviceOptions();      //append newly added device to the rule options
+  updateGroupDeviceOptions(); //append newly added device to the group options
+ 
 });
 
 

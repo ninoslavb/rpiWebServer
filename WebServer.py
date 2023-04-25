@@ -40,17 +40,17 @@ GPIO.setwarnings(False)
 
 # Define devices
 if not devices:
-    add_device('digout1', None, 'DO1', 0,  'DO1', 40, 'digital-output', 'N/A', 'N/A',  None, None, None, 'rpi')
-    add_device('digout2', None,'DO2', 0,  'DO2', 12,'digital-output' , 'N/A', 'N/A',  None, None, None, 'rpi')
-    add_device('digin1',  None, 'DI1', 0, 'DI1', 35, 'digital-input'  , 'contact', 'N/A',  None, None, None, 'rpi')
-    add_device('digin2',  None,  'DI2', 0, 'DI2', 22, 'digital-input'  , 'contact', 'N/A',  None, None, None, 'rpi')
-    add_device('digin3',  None,'DI3', 0, 'DI3', 33, 'digital-input'  , 'contact', 'N/A',  None, None, None, 'rpi')
-    add_device('digin4',  None, 'DI4', 0, 'DI4', 37, 'digital-input'  , 'contact', 'N/A',  None, None, None, 'rpi')
-    add_device('digin5',  None, 'DI5', 0, 'DI5', 16, 'digital-input'  , 'motion', 'N/A',  None, None, None, 'rpi')
+    add_device('digout1', None, 'DO1', 0,  'DO1', 40, 'digital-output',  None,       None,  None, None, None, 'rpi')
+    add_device('digout2', None, 'DO2', 0,  'DO2', 12, 'digital-output',  None,       None,  None, None, None, 'rpi')
+    add_device('digin1',  None, 'DI1', 0,  'DI1', 35, 'digital-input' , 'contact',   None,  None, None, None, 'rpi')
+    add_device('digin2',  None, 'DI2', 0,  'DI2', 22, 'digital-input' , 'contact',   None,  None, None, None, 'rpi')
+    add_device('digin3',  None, 'DI3', 0,  'DI3', 33, 'digital-input' , 'contact',   None,  None, None, None, 'rpi')
+    add_device('digin4',  None, 'DI4', 0,  'DI4', 37, 'digital-input' , 'contact',   None,  None, None, None, 'rpi')
+    add_device('digin5',  None, 'DI5', 0,  'DI5', 16, 'digital-input' , 'motion',    None,  None, None, None, 'rpi')
 
 
 
-#add_device('TCPU', None,'TEMP CPU', 0,'TCPU',0,'sensor','temp','N/A',None,None,None,'cpu')
+add_device('TCPU', None,'TEMP CPU', 0,'TCPU',0,'sensor','temp',None,None,None,None,'cpu')
 
 def init_device_data():
     device_data = {}
@@ -221,7 +221,7 @@ def input_device_callback(channel, device_key):
     #else for future use if device has different source
 
 
-def zigbee_callback(event_type, device_key, command=None):
+def zigbee_callback(event_type, device_key):
     if event_type == "new_device":
         devices = load_devices()
         if device_key in devices:
@@ -242,7 +242,7 @@ def zigbee_callback(event_type, device_key, command=None):
             }
             new_device_info = device_data[device_key]
             socketio.emit('new_device_added', {'device_key': device_key, 'device_info': new_device_info}, namespace='/')
-            print("Battery status:", device['device_bat_stat'])
+            socketio.emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
 
         else:
             return  # Skip the device if the device_key is not found in devices
@@ -314,7 +314,6 @@ def zigbee_callback(event_type, device_key, command=None):
         else:
             return  # Skip the device if the device_key is not found in devices
         socketio.emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
-
 
 register_callback(zigbee_callback)
 
@@ -448,7 +447,8 @@ def delete_rule_handler(data):
 def check_input_devices_and_apply_rules():
     # Keep track of the rules that have been applied
     applied_rules = set()
-    
+    previous_output_states = {} #used so control_actuator is executed only when the state realy changes (to lower MQTT traffic)
+
     while True:
         rules = load_rules()
         # Iterate over the rules and apply them if conditions are met
@@ -483,8 +483,11 @@ def check_input_devices_and_apply_rules():
                     GPIO.output(device_data[output_device_key]['gpio_pin'], output_device_action)
                     applied_rules.add(rule_key)
                 elif device_data[output_device_key]['source'] == 'zbee':
-                    control_actuator(output_device_key, output_device_action)
-                    applied_rules.add(rule_key)
+                    if previous_output_states.get(output_device_key) != output_device_action:
+                        control_actuator(output_device_key, output_device_action)
+                        applied_rules.add(rule_key)
+                        # Update the previous state
+                        previous_output_states[output_device_key] = output_device_action
             # If the rule conditions are not met, set the output to the opposite state
             if not ((logic_operator == 'AND' and all(matching_input_devices)) or (logic_operator == 'OR' and any(matching_input_devices))):
                 if device_data[output_device_key]['source'] == 'rpi':
@@ -494,16 +497,17 @@ def check_input_devices_and_apply_rules():
                         applied_rules.discard(rule_key)
                 elif device_data[output_device_key]['source'] == 'zbee':
                     opposite_action = 1 - output_device_action
-                    control_actuator(output_device_key, opposite_action)
-                    if rule_key in applied_rules:
-                        applied_rules.discard(rule_key)
+                    if previous_output_states.get(output_device_key) != opposite_action:
+                        control_actuator(output_device_key, opposite_action)
+                        if rule_key in applied_rules:
+                            applied_rules.discard(rule_key)
+                        previous_output_states[output_device_key] = opposite_action
 
             # Update the gpio_status of the output device
             if device_data[output_device_key]['source'] == 'rpi':
                 device_data[output_device_key]['gpio_status'] = GPIO.input(device_data[output_device_key]['gpio_pin'])
                 update_device_gpio_status(output_device_key, device_data[output_device_key]['gpio_status'])
                 socketio.emit('device_gpio_status', {'device_key': output_device_key, 'gpio_status': device_data[output_device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']},  namespace='/')
-
             ##device_gpio_status of device with source zbee is updated using MQTT messages and callback functions
 
 
@@ -518,16 +522,15 @@ def check_input_devices_and_apply_rules():
 
 
 
-#check_sensor_value
-#def check_sensor_value():
- #   while True:
-  #      for device_key, device in device_data.items():
-   # 
-    #        if (device['type'] == 'sensor' and device['type1'] == 'temp' and device['source'] == 'cpu'):
-     #           device['value1'] = get_cpu_temperature()
-      #          socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'sensor_type1': device['type1'], 'sensor_type2': device['type2'], 'sensor_value1': device['value1'], 'sensor_value2': device['value2'],'device_bat_stat':device['bat_stat'],'device_source':device['source']}, namespace='/')
-            #elif for future device types
-       # time.sleep(5)
+def check_sensor_value():
+    while True:
+        for device_key, device in device_data.items():
+    
+            if (device['type'] == 'sensor' and device['type1'] == 'temp' and device['source'] == 'cpu'):
+                device['value1'] = get_cpu_temperature()
+                socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device['type'], 'device_type1': device['type1'], 'device_type2': device['type2'], 'device_value1': device['value1'], 'device_value2': device['value2'], 'device_bat_stat': device['bat_stat'], 'device_source':device['source']}, namespace='/')
+           
+        time.sleep(5)
 
 ###############################################################################################################################################
 ########################################## CPU TEMPERATURE EXAMPLE #############################################################################
@@ -544,6 +547,6 @@ if __name__ == "__main__":
     app.env="development"
     socketio.start_background_task(check_input_devices_and_apply_rules)
     start_mqtt_loop()
-    #socketio.start_background_task(check_sensor_value)
+    socketio.start_background_task(check_sensor_value)
     socketio.run(app, host='0.0.0.0', port=80, debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
    

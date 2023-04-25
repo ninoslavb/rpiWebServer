@@ -141,12 +141,15 @@ def handle_received_data(device_id, payload):
             if device['device_type'] == 'sensor' and device['device_type1'] == 'temp' and device['device_type2'] == 'humid':
                 if 'temperature' in payload:
                     device['device_value1'] = payload['temperature']
-                
                 if 'humidity' in payload:
                     device['device_value2'] = payload['humidity']
+                else:
+                    device['device_value2'] = None
                 
                 if 'battery' in payload:
                     device['device_bat_stat'] = payload['battery']
+                else:
+                    device['device_bat_stat'] = None
 
 
                 # Save updated device values to devices.json

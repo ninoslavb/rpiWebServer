@@ -128,7 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   
-  
+  window.updateGroupDeviceOptions = updateGroupDeviceOptions;
+
     /*##############################################################################################################################
     This function updates the options in all device selects by first querying all elements with the class 'device-select'.
     Then, for each device select element, it stores the current value, resets its inner HTML, and repopulates it with the updated devices. 
@@ -387,3 +388,4 @@ document.addEventListener('DOMContentLoaded', () => {
   
   
   });
+

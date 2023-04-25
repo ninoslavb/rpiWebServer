@@ -148,7 +148,7 @@ h1 {
 
 .device-label {
   position: absolute;
-  bottom: 5px;
+  bottom: 0px;
   left: 5px;
   font-size: 10px;
   font-weight: 600;
@@ -156,7 +156,7 @@ h1 {
 }
 .lock-icon {
   position: absolute;
-  bottom: 35px;
+  bottom: 30px;
   left: 5px;
   font-size: 14px;
   font-weight: 600;

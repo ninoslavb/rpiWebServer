@@ -79,7 +79,8 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
     });
   }
   
-  
+  window.updateDeviceOptions = updateDeviceOptions;
+
   
 
   /* 
@@ -379,6 +380,22 @@ function updateRuleList() {
       }
     }
 
+
+    function getDigitalOutputText(actionValue){
+      switch (actionValue) {
+        case '0':
+          return 'OFF';
+        case '1':
+          return 'ON';
+        default:
+          return '';
+      }
+    }
+
+
+    const outputActionSelect = document.querySelector(".output-action-select");
+
+
     const listItem = document.createElement("li");
     listItem.classList.add("rule-list-item");
     
@@ -416,7 +433,8 @@ function updateRuleList() {
     listItem.appendChild(inputDevicesElement);
     
     const outputDeviceElement = document.createElement("div");
-    outputDeviceElement.textContent = `then ${deviceData[output].name} is ${output_action}`;
+    //outputDeviceElement.textContent = `then ${deviceData[output].name} is ${output_action}`;
+    outputDeviceElement.textContent = `then ${deviceData[output].name} is ${getDigitalOutputText(outputActionSelect.value)}`;
     listItem.appendChild(outputDeviceElement);
     
     const deleteButton = document.createElement("button");
@@ -459,3 +477,5 @@ document.querySelector("button.custom-add-input-device-button").addEventListener
 
 
   });
+
+ 

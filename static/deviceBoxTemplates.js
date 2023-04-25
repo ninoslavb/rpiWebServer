@@ -66,7 +66,7 @@ function createOutputDeviceBox(device_key, device) {
     const wifiIcon = document.createElement('i');
     wifiIcon.classList.add('fas', 'fa-wifi'); // Use 'far' instead of 'fas' for the regular icon
     wifiIcon.style.position = 'absolute';
-    wifiIcon.style.bottom = '20px'; // Adjust this value to position the icon above the label
+    wifiIcon.style.bottom = '15px'; // Adjust this value to position the icon above the label
     wifiIcon.style.left = '5px';
     wifiIcon.style.fontSize = '10px';
     wifiIcon.style.color = 'white';
@@ -79,7 +79,7 @@ function createOutputDeviceBox(device_key, device) {
       batteryValue.className = 'battery-value';
       batteryValue.style.position = 'absolute'
       batteryValue.style.fontSize = '10px';
-      batteryValue.style.bottom = '15px'; // Adjust this value to position the icon above the label
+      batteryValue.style.bottom = '12px'; // Adjust this value to position the icon above the label
       batteryValue.style.left = '20px';   //adjust this value to position battery status right to the wifi icon
       batteryValue.style.color = 'white';
       batteryValue.textContent = ``;
@@ -139,11 +139,15 @@ function createOutputDeviceBox(device_key, device) {
     const stateValue = document.createElement('span');
     stateValue.classList.add('state-value');
     //stateValue.className = 'state-value'
-    stateValue.style.marginTop = '8px'; 
+    stateValue.style.marginTop = '3px'; 
     stateValue.style.fontSize = '15px';
     stateValue.style.color = '#FFFFFF';
-    stateValue.textContent = `closed`;
-  
+    //stateValue.textContent = `closed`;
+    if (device.type1 === 'contact') {
+      stateValue.textContent = 'closed';
+  } else if (device.type1 === 'motion') {
+      stateValue.textContent = 'unoccupied';
+  }
     deviceIcon.appendChild(stateValue);
 
     if (device.source === 'zbee') {
@@ -151,20 +155,21 @@ function createOutputDeviceBox(device_key, device) {
     const wifiIcon = document.createElement('i');
     wifiIcon.classList.add('fas', 'fa-wifi'); // Use 'far' instead of 'fas' for the regular icon
     wifiIcon.style.position = 'absolute';
-    wifiIcon.style.bottom = '20px'; // Adjust this value to position the icon above the label
+    wifiIcon.style.bottom = '15px'; // Adjust this value to position the icon above the label
     wifiIcon.style.left = '5px';
     wifiIcon.style.fontSize = '10px';
     wifiIcon.style.color = 'white';
     deviceBox.appendChild(wifiIcon);
     }
 
+  
     if (device.source === 'zbee') {
   
       const batteryValue = document.createElement('span');
       batteryValue.className = 'battery-value';
       batteryValue.style.position = 'absolute'
       batteryValue.style.fontSize = '10px';
-      batteryValue.style.bottom = '15px'; // Adjust this value to position the icon above the label
+      batteryValue.style.bottom = '12px'; // Adjust this value to position the icon above the label
       batteryValue.style.left = '20px';   //adjust this value to position battery status right to the wifi icon
       batteryValue.style.color = 'white';
       batteryValue.textContent = ``;
@@ -241,7 +246,7 @@ function createOutputDeviceBox(device_key, device) {
       const wifiIcon = document.createElement('i');
       wifiIcon.classList.add('fas', 'fa-wifi'); // Use 'far' instead of 'fas' for the regular icon
       wifiIcon.style.position = 'absolute';
-      wifiIcon.style.bottom = '20px'; // Adjust this value to position the icon above the label
+      wifiIcon.style.bottom = '15px'; // Adjust this value to position the icon above the label
       wifiIcon.style.left = '5px';
       wifiIcon.style.fontSize = '10px';
       wifiIcon.style.color = 'white';
@@ -254,7 +259,7 @@ function createOutputDeviceBox(device_key, device) {
         batteryValue.className = 'battery-value';
         batteryValue.style.position = 'absolute'
         batteryValue.style.fontSize = '10px';
-        batteryValue.style.bottom = '15px'; // Adjust this value to position the icon above the label
+        batteryValue.style.bottom = '12px'; // Adjust this value to position the icon above the label
         batteryValue.style.left = '20px';   //adjust this value to position battery status right to the wifi icon
         batteryValue.style.color = 'white';
         batteryValue.textContent = ``;
