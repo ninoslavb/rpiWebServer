@@ -2,10 +2,15 @@ import { updateDeviceName, attachDeviceNameUpdateListener } from './deviceName_h
 import { createOutputDeviceBox, createInputDeviceBox, createTHDSensorDeviceBox } from './deviceBoxTemplates.js';
 
 
+
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io.connect(); //connect the socket
 
-    //Add device boxes that are integrated in device (i.e. RPI)
+
+/*###################################### ADD DEVICE ###########################################################################
+Following code checks all device_key s from deviceData dictonary, checks device type and creates appropriate device Box
+Only for devices that are already integrated in device (e.g. RPI)
+ */
       const deviceContainer = document.querySelector(".device-container");
       const DeviceKeys = Object.keys(deviceData)
 
@@ -30,17 +35,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-    // Handle device name updates from the server and send the name update to the server when it is changed
+/*###########################################--DEVICE NAME UPDATE---###########################################################################
+Following code is socket event listener for device_name_updated. When event is received from the server updateDeviceName for 
+updating device name is called, and attachDeviceNameUpdateListener is reponsible to sending device name update information to
+the server
+ */
       socket.on('device_name_updated', (data) => {
       updateDeviceName(data.device_key, data.device_name);
       attachDeviceNameUpdateListener(data.device_key); //attach the listener, and send the update to the server when new name is entered
       });
 
 
-
-
-
+/*#########################################---UPDATE OUTPUT DEVICE---###########################################################################
+function updateDeviceState is checks the status of output device received from the server and sets slider in frondend accordingly
+It also checks if output device has battery and appends battery state in frontend if available.Function is called when device_gpio_status
+socket event from server is recieved. 
+sendUpdate function emits socket event device_output_device with device_key and action. It is called in addDigitalOutputEventListener event listener
+which checks if slider is set to ON or OFF in frontend.
+addDigitalOutputEventListener is attached for all device keys with type digital-output
+*/
       function updateDeviceState(device_key, device) {
         const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`);
         const deviceOutputStatus = device.gpio_status;
@@ -62,12 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
 
-
-
       const sendUpdate = (device_key, action) => {
         socket.emit('device_output_update', { device_key: device_key, action: action });
       };
-
 
 
       function addDigitalOutputEventListener(device_key) {
@@ -87,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       }
-
       
       // Add the device keys of devices with type 'digital-output'
       const outputDeviceKeys = Object.keys(deviceData).filter((device_key) => deviceData[device_key].type === 'digital-output');
@@ -98,9 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-
-    //function to update deviceInput box
+/*###################################---UPDATE INPUT VALUES---#################################################################################
+This function is responsible to update input device box in frontend depending of its type, type1, type2 and source. For example devices with zbee
+source (ZigBee) will have battery status if it is not null and is defined. If input state is 0 and if input type 1 is contact (contact sensor)
+then text shown will be 'open'and box will be transparent (device-input-connected class, take a look in master.css)
+FUnction is called when socket event 'device_input_status' from the server side is received.
+ */
     function updateDeviceInputStatus(deviceInputBox, deviceInputStatus, deviceInputType1, deviceBatStat, deviceSource) {
     const stateValue = deviceInputBox.querySelector('.state-value');
      //check if box exists
@@ -156,8 +168,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-// Function to update sensor box values
+/*###################################---UPDATE SENSOR VALUES---#################################################################################
+This function is responsible to update sensor values in frontend depending of its type, type1, type2 and source. For example devices with zbee
+source (ZigBee) will have battery status if it is not null and is defined. 
+FUnction is called when socket event 'update_sensor_status' from the server side is received.
+ */
   function updateSensorValues(device_key, device_type, device_type1, device_type2, device_value1, device_value2, device_bat_stat,device_source) {
   
     if (device_type === 'sensor' && device_type1 === 'temp' && device_type2 === 'humid') {
@@ -188,7 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
     //else for other type sensors
   }
 
-
   socket.on('device_sensor_status', function(data) {
     updateSensorValues(data.device_key, data.device_type, data.device_type1, data.device_type2, data.device_value1, data.device_value2, data.device_bat_stat, data.device_source);
   });
@@ -198,47 +212,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+  /*##############################################---NEW DEVICE ADDED ---#############################################################
+  This part of the code listens for the socket event 'new_device_added' from the server side, and for the given device_key
+  and device type dynamically creates device Box. If it is type digital-output it attachs event listener which checks if 
+  the state of digital-output changed in frontend (someone pressed the button in app), or if the state is changed (i.e. from the rule) 
+  rule and group options are updated with the new device added.
+  */
 
-
-socket.on('new_device_added', function(data) {
-  // Update the deviceData object with the new device information
-  
-  deviceData[data.device_key] = data.device_info;
-  const device = deviceData[data.device_key];
-  //console.log('Device info:', device);
-  let deviceBox;
-  if (device.type === 'digital-input') {
-    deviceBox = createInputDeviceBox(data.device_key, device);
-   
-  } else if (device.type === 'digital-output') {
-    deviceBox = createOutputDeviceBox(data.device_key, device);
-  
-  } else if (device.type === 'sensor' && device.type1 === 'temp') {
-    deviceBox = createTHDSensorDeviceBox(data.device_key, device);
-  
-  } else {
-    return; // Skip the device if it has an unrecognized type
-  }
-  deviceContainer.appendChild(deviceBox);
-  // Update the HTML content with the new device information
-
-
-
-  // Attach the event listener for the newly added device (if it's a digital-output device)
-  if (device.type === "digital-output") {
-    addDigitalOutputEventListener(data.device_key);
-    } 
-  updateDeviceOptions();      //append newly added device to the rule options
-  updateGroupDeviceOptions(); //append newly added device to the group options
- 
-});
+          socket.on('new_device_added', function(data) {
+            // Update the deviceData object with the new device information
+            
+            deviceData[data.device_key] = data.device_info;
+            const device = deviceData[data.device_key];
+            //console.log('Device info:', device);
+            let deviceBox;
+            if (device.type === 'digital-input') {
+              deviceBox = createInputDeviceBox(data.device_key, device);
+            
+            } else if (device.type === 'digital-output') {
+              deviceBox = createOutputDeviceBox(data.device_key, device);
+            
+            } else if (device.type === 'sensor' && device.type1 === 'temp') {
+              deviceBox = createTHDSensorDeviceBox(data.device_key, device);
+            
+            } else {
+              return; // Skip the device if it has an unrecognized type
+            }
+            deviceContainer.appendChild(deviceBox);
+            // Update the HTML content with the new device information
 
 
 
+            // Attach the event listener for the newly added device (if it's a digital-output device)
+            if (device.type === "digital-output") {
+              addDigitalOutputEventListener(data.device_key);
+              } 
+            updateDeviceOptions();      //append newly added device to the rule options
+            updateGroupDeviceOptions(); //append newly added device to the group options
+          
+          });
 
 
 
-     /*################################################################################################################################
+
+
+
+     /*################################################----INITIAL SORT----################################################################################
      These lines of code set the 'data-group-key' attribute of the device container, 
      retrieve the stored dashboard order from localStorage, and sort the devices according to the stored order. 
      If the initial sort order has not been stored yet, it stores the initial order for the dashboard and each group in localStorage.*/

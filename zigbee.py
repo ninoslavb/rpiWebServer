@@ -18,6 +18,7 @@ def on_connect(client, userdata, flags, rc):
     print("Connected with result code " + str(rc))
     client.subscribe("zigbee2mqtt/bridge/event")
     client.subscribe("zigbee2mqtt/bridge/log")
+    client.subscribe("zigbee2mqtt/bridge/logging")
     client.subscribe("zigbee2mqtt/+")  # Subscribe to all device topics
 
 
@@ -38,7 +39,6 @@ def on_message(client, userdata, msg):
             break
     else:
         print(f"Message received on unknown topic {msg.topic}: {msg.payload}")
-
 
 
     print(f"Received message on topic: {msg.topic}")  # Add this line

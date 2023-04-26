@@ -393,9 +393,6 @@ function updateRuleList() {
     }
 
 
-    const outputActionSelect = document.querySelector(".output-action-select");
-
-
     const listItem = document.createElement("li");
     listItem.classList.add("rule-list-item");
     

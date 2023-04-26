@@ -15,7 +15,6 @@
   key !== device_key: This condition checks if the current key in the loop is not the same as the device_key parameter. This is important because we want to compare the name with other devices, not the device itself.
   deviceData[key].name.toLowerCase() === name.toLowerCase(): This condition checks if the name of the device (converted to lowercase) at the current key is equal to the name parameter (also converted to lowercase). Converting both names to lowercase ensures that the comparison is case-insensitive, so "DeviceName" and "devicename" would be considered the same.
   All three conditions are combined using the logical AND operator (&&). This means that for the overall condition to be true, all three individual conditions must be true. If any of them are false, the overall condition will be false.
-  
   */
   function doesNameExist(name, device_key) {
     for (const key in deviceData) {
