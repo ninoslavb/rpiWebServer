@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 from flask import Flask, render_template, make_response, request, jsonify
 from flask_socketio import SocketIO, emit
-from database_handler import load_devices, save_devices, get_device_status, update_device_gpio_status, get_device_name, update_device_name, get_device_gpio_id, get_device_type, add_device, get_device_gpio_pin
+from database_handler import load_devices, save_devices, get_device_status, update_device_gpio_status, get_device_name, update_device_name, get_device_gpio_id, get_device_type, add_device, get_device_gpio_pin, add_pairing_device, load_pairing_devices, delete_pairing_device
 from rule_handler import add_rule, load_rules, delete_rule
 from group_handler import add_group, load_groups, delete_group
 import json
@@ -95,12 +95,28 @@ def init_groups():
         }
     return group_data
 
+
+def init_pairing_device_data():
+    pairing_device_data = {}
+    pairing_devices = load_pairing_devices()
+    for friendly_name, pairing_device in pairing_devices.items():
+        pairing_device_data[friendly_name] = {
+            'description':pairing_device['description'],
+            'model': pairing_device['model'],
+            'supported': pairing_device['supported'],
+            'vendor': pairing_device['vendor'],
+        }
+    return pairing_device_data
+
+
+
 if __name__ == '__main__':
     
   
     device_data = init_device_data()
     rule_data = init_rules()
     group_data = init_groups()
+    pairing_device_data = init_pairing_device_data()
 
 devices = load_devices()
 logging.debug(f' devices after init: {devices}')
@@ -125,7 +141,7 @@ for device_key, device in device_data.items():
 #render device_data, rule data and group data in index.html
 @app.route("/")
 def index():
-    return render_template('index.html', device_data=device_data, rule_data=rule_data, group_data=group_data)
+    return render_template('index.html', device_data=device_data, rule_data=rule_data, group_data=group_data, pairing_device_data=pairing_device_data)
 
 
 #When the socket connection is established, send all digital input and output statuses and device names
@@ -169,6 +185,8 @@ def handle_connect():
     for group_key, group in group_data.items():
         emit('group_name_updated', {'group_key': group_key, 'group_name': group['group_name']})  
 
+    # Emit pairing devices
+    emit('pairing_devices_updated', pairing_device_data, broadcast=True)  # Send the entire group_data object
 
 
 #When the name of device is changed, update the name and send feedback to the client
@@ -222,32 +240,8 @@ def input_device_callback(channel, device_key):
 
 
 def zigbee_callback(event_type, device_key):
-    if event_type == "new_device":
-        devices = load_devices()
-        if device_key in devices:
-            device = devices[device_key]
-            device_data[device_key] = {
-                'device_id': device['device_id'],
-                'name': device['device_name'],
-                'gpio_status': device['device_gpio_status'],
-                'gpio_id': device['device_gpio_id'],
-                'gpio_pin': device['device_gpio_pin'],
-                'type': device['device_type'],  
-                'type1': device['device_type1'],
-                'type2': device['device_type2'],
-                'value1': device['device_value1'],
-                'value2': device['device_value2'],
-                'bat_stat': device['device_bat_stat'],
-                'source': device['device_source'],
-            }
-            new_device_info = device_data[device_key]
-            socketio.emit('new_device_added', {'device_key': device_key, 'device_info': new_device_info}, namespace='/')
-            socketio.emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
-
-        else:
-            return  # Skip the device if the device_key is not found in devices
-
-    elif event_type == "sensor_update":
+    print(f"Event Type: {event_type}, Device Key: {device_key}")  # Print the event_type and device_keycd
+    if event_type == "sensor_update":
         devices=load_devices()
         if device_key in devices:
             device = devices[device_key]
@@ -315,7 +309,149 @@ def zigbee_callback(event_type, device_key):
             return  # Skip the device if the device_key is not found in devices
         socketio.emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
 
-register_callback(zigbee_callback)
+register_callback("sensor_update", zigbee_callback)
+register_callback("digital_input_update", zigbee_callback)
+register_callback("digital_output_update", zigbee_callback)
+
+
+
+def pairing_callback(event_type, device_info):
+
+    if event_type == "pairing_device":
+        print("SUCESSFULL CALLBACK!!!!!!!!!!!!!")
+        friendly_name = device_info.get('friendly_name', None)
+        device_id = device_info.get('device_id',None)
+        description = device_info.get('description', None)
+        model = device_info.get('model', None)
+        supported = device_info.get('supported', None)
+        vendor = device_info.get('vendor', None)
+
+        # Check if the device already exists in devices
+        devices = load_devices()
+        device_key = f"{model}-{device_id[2:]}"
+        if device_key in devices:
+            print(f"Device with key {device_key} already exists, skipping adding.")
+            return  # Skip the rest of the function if the device already exists
+
+
+        add_pairing_device(friendly_name,device_id,description,model,supported,vendor)
+        pairing_device_data[friendly_name] = {
+            'device_id':device_id,
+            'description': description,
+            'model':model,
+            'supported':supported,
+            'vendor':vendor,
+        }
+        pairing_device_info = pairing_device_data[friendly_name]
+        socketio.emit('new_device_pairing', {'friendly_name': friendly_name, 'pairing_device_info': pairing_device_info}, namespace='/')
+register_callback("pairing_device", pairing_callback)
+
+
+
+
+
+def store_paired_device(device):
+    def add_device_helper(device_type, device_type1, device_type2):
+        add_device(
+            device_key=device_key,
+            device_id=device['device_id'],
+            device_name=device_name,
+            device_gpio_status=None,
+            device_gpio_id=device_gpio_id,
+            device_gpio_pin=None,
+            device_type=device_type,
+            device_type1=device_type1,
+            device_type2=device_type2,
+            device_value1=None,
+            device_value2=None,
+            device_bat_stat=None,
+            device_source='zbee'
+        )
+
+    device_key = f"{device['model']}-{device['device_id'][2:]}"
+    device_name = f"{device['model']}-{device['device_id'][14:]}"
+    device_gpio_id = f"{device['model']}-{device['device_id'][16:]}"
+    
+    
+    description = device['description']
+    if "temperature" in description.lower() and "humidity" in description.lower():
+        add_device_helper('sensor', 'temp', 'humid')
+
+    elif "contact sensor" in description.lower():
+        add_device_helper('digital-input', 'contact', None)
+     
+    elif "motion sensor" in description.lower():
+       add_device_helper('digital-input', 'motion', None)
+     
+    elif "smart plug" in description.lower():
+        add_device_helper('digital-output', 'plug', None)
+
+
+
+@socketio.on('pairing_device_action')
+def paring_device_action(data):
+    friendly_name = data['friendly_name']
+    action = data['action']
+    print(f"Received paring_device_update: friendly_name = {friendly_name}, action = {action}")  # Add this print statement
+
+    if action == 'accept_device':
+        pairing_device=pairing_device_data[friendly_name]
+        device_key = f"{pairing_device['model']}-{pairing_device['device_id'][2:]}"
+
+         # Check if the device already exists in devices
+        devices = load_devices()
+        if device_key in devices:
+            print(f"Device with key {device_key} already exists, skipping adding.")
+            return  # Skip the rest of the function if the device already exists
+
+        # If the device does not exist, store it
+        store_paired_device(pairing_device)
+    
+        devices = load_devices()
+        device = devices[device_key]
+        device_data[device_key] = {
+            'device_id': device['device_id'],
+            'name': device['device_name'],
+            'gpio_status': device['device_gpio_status'],
+            'gpio_id': device['device_gpio_id'],
+            'gpio_pin': device['device_gpio_pin'],
+            'type': device['device_type'],  
+            'type1': device['device_type1'],
+            'type2': device['device_type2'],
+            'value1': device['device_value1'],
+            'value2': device['device_value2'],
+            'bat_stat': device['device_bat_stat'],
+            'source': device['device_source'],
+            }
+        new_device_info = device_data[device_key]
+        socketio.emit('new_device_added', {'device_key': device_key, 'device_info': new_device_info}, namespace='/')
+        socketio.emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
+      
+    else:
+        return   
+
+    if friendly_name in pairing_device_data:
+        delete_pairing_device(friendly_name)
+        del pairing_device_data[friendly_name]
+        emit('pairing_devices_updated', pairing_device_data, broadcast=True)  # Send the entire pairing_device_data object
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #add/update group handler

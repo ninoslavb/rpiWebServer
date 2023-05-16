@@ -172,6 +172,92 @@ h1 {
 }
 
 
+
+
+.pairing-device-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 0 10px 10px;
+}
+
+
+.pairing-device-box {
+  padding: 10px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  background-color: #0472a9;
+  transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  border-radius: 10px;
+  margin: 10px;
+  color: white;
+}
+
+.device-friendly-name,
+.device-description,
+.device-model,
+.device-vendor {
+  margin-bottom: 5px;
+}
+
+
+   .decline-button {
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    background-color: transparent;
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+    background-color: transparent;
+    border: 2px solid black;
+    color: black;
+    border-radius: 5px;
+    font-size: 12px;
+    padding: 5px 2px; /* padding around the text */
+    width: 100%;
+    min-width: 60px;
+    max-width: 60px;
+    margin-bottom: 5px;
+    margin-right: 10px;
+    align-self: center;
+  }
+
+
+  .decline-button:hover {
+    box-shadow: 0px 0px 20px red;
+  }
+
+
+  .accept-button {
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    background-color: transparent;
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+    background-color: transparent;
+    border: 2px solid black;
+    color: black;
+    border-radius: 5px;
+    font-size: 12px;
+    padding: 5px 2px; /* padding around the text */
+    width: 100%;
+    min-width: 60px;
+    max-width: 60px;
+    margin-bottom: 5px;
+    margin-right: 10px;
+    align-self: center;
+  }
+
+
+  .accept-button:hover {
+    box-shadow: 0px 0px 20px green;
+  }
+
+
+
+
+
+
+
+
+
 @media (min-width: 768px) {
   .device-container {
     display: flex;

@@ -13,6 +13,7 @@
     <script>
       //Parse device_data rendered in WebServer.py to json file so it is acessible in .js files throuh deviceData
       let deviceData = JSON.parse('{{ device_data | tojson | safe }}'); 
+      let pairingdeviceData = JSON.parse('{{ pairing_device_data | tojson | safe }}'); 
       let ruleData = JSON.parse('{{ rule_data | tojson | safe }}'); 
       let groupData = JSON.parse('{{ group_data | tojson | safe }}'); 
     </script>
@@ -30,6 +31,7 @@
       <div class="sidebar collapsed" id="sidebar">
         <ul>
           <li><button onclick="navigate('dashboard', 'Dashboard'); toggleSidebar();">Dashboard</button></li>
+          <li><button onclick="navigate('pairing', 'Pairing'); toggleSidebar();">Pairing</button></li>
           <li id="groups-li">
             <button onclick="navigate('groups', 'Groups'); toggleSidebar();">Groups</button>
             <ul id="group-sidebar-list" class="group-sidebar-list"></ul>
@@ -49,6 +51,14 @@
               <!-- Device boxes are added here at the beginning of main.js -->
         </div>  
       </div>     
+
+      <div id="pairing" style="display: none;">    
+        <h1 class="page-title">Pairing</h1> <!-- Inital page title is Pairing-->
+        <div class="pairing-device-container">  
+              <!-- Paring device boxes are added here at the beginning of main.js -->
+        </div>  
+      </div>   
+
 
 
       <!-- RULES -->

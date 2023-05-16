@@ -271,8 +271,6 @@ function createOutputDeviceBox(device_key, device) {
     return deviceBox;
   }
   
-  
-
 
 export {createOutputDeviceBox, createInputDeviceBox, createTHDSensorDeviceBox};
 

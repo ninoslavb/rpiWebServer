@@ -7,12 +7,18 @@ import atexit
 
 
 device_info = {}
-callback = None  # Add this line
+#callback = None  # Add this line
 
 
-def register_callback(cb):
-    global callback
-    callback = cb
+#def register_callback(cb):
+ #   global callback
+  #  callback = cb
+
+callbacks = {}
+
+def register_callback(event_type, cb):
+    callbacks[event_type] = cb
+
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code " + str(rc))
@@ -78,63 +84,24 @@ def on_message(client, userdata, msg):
             data = payload.get('meta', {})
             print("Processing pairing event")  # Add this line
 
-            if 'friendly_name' in data and data['friendly_name'] == device_info.get('friendly_name') and 'description' in data and 'model' in data:
+            if 'friendly_name' in data and data['friendly_name'] == device_info.get('friendly_name') and 'description' in data and 'model' in data and 'vendor' in data and 'supported' in data:
                 device_info['description'] = data['description']
                 device_info['model'] = data['model']
-                store_paired_device(device_info)
-                print(f"Storing paired device: {device_info}")  
+                device_info['vendor']= data['vendor']
+                device_info['supported'] = data['supported']
+                #store_paired_device(device_info)
+                if "pairing_device" in callbacks:
+                    callbacks["pairing_device"]("pairing_device", device_info)
+                #print(f"Storing paired device: {device_info}")  
+                print(f"Start device paring: {device_info}")  
             else:
                 print("Received pairing event with incomplete data.")
 
  
 
 
-
-
-def store_paired_device(device):
-    def add_device_helper(device_type, device_type1, device_type2):
-        add_device(
-            device_key=device_key,
-            device_id=device['device_id'],
-            device_name=device_name,
-            device_gpio_status=None,
-            device_gpio_id=device_gpio_id,
-            device_gpio_pin=None,
-            device_type=device_type,
-            device_type1=device_type1,
-            device_type2=device_type2,
-            device_value1=None,
-            device_value2=None,
-            device_bat_stat=None,
-            device_source='zbee'
-        )
-
-    device_key = f"{device['model']}-{device['device_id'][2:]}"
-    device_name = f"{device['model']}-{device['device_id'][14:]}"
-    device_gpio_id = f"{device['model']}-{device['device_id'][16:]}"
-    
-    
-    description = device['description']
-    if "temperature" in description.lower() and "humidity" in description.lower():
-        add_device_helper('sensor', 'temp', 'humid')
-
-    elif "contact sensor" in description.lower():
-        add_device_helper('digital-input', 'contact', None)
-     
-    elif "motion sensor" in description.lower():
-       add_device_helper('digital-input', 'motion', None)
-     
-    elif "smart plug" in description.lower():
-        add_device_helper('digital-output', 'plug', None)
-
-    if callback:
-        callback("new_device", device_key)
-
-
-
 def handle_received_data(device_id, payload):
     devices = load_devices()
-    
     for device_key in devices:
         device=devices[device_key]
         if device_key == device_id:
@@ -154,10 +121,11 @@ def handle_received_data(device_id, payload):
 
                 # Save updated device values to devices.json
                 save_devices(devices)
-
-                if callback:
-                    callback("sensor_update", device_key)
+                
+                if "sensor_update" in callbacks:
+                    callbacks["sensor_update"]("sensor_update", device_key)
                 return
+
 
                 
             if device['device_type'] == 'digital-input':
@@ -173,9 +141,10 @@ def handle_received_data(device_id, payload):
                 # Save updated device values to devices.json
                 save_devices(devices)
 
-                if callback:
-                    callback("digital_input_update", device_key)
+                if "digital_input_update" in callbacks:
+                    callbacks["digital_input_update"]("digital_input_update", device_key)
                 return
+
 
             if device['device_type'] == 'digital-output':
                 if 'state' in payload:
@@ -191,11 +160,12 @@ def handle_received_data(device_id, payload):
 
 
                 save_devices(devices)
-
-                if callback:
-                    callback("digital_output_update", device_key)
+                
+                if "digital_output_update" in callbacks:
+                    callbacks["digital_output_update"]("digital_output_update", device_key)
                 return
 
+ 
 
 
 def control_actuator(device_key, command):

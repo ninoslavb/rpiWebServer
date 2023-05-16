@@ -50,6 +50,56 @@ def save_devices(devices):
 
 
 
+#####################---PAIRING DEVICES DICTIONARY---############################
+
+def add_pairing_device(friendly_name,device_id, description, model, supported, vendor):
+    #print(f"add_device() called with device_key: {device_key}")  
+    pairing_devices = load_pairing_devices()
+    if friendly_name not in pairing_devices:
+        pairing_devices[friendly_name] = {
+            'device_id':device_id,
+            'description': description,
+            'model':model,
+            'supported': supported,
+            'vendor': vendor
+        }
+        save_pairing_devices(pairing_devices)
+    else:
+        print(f"Device {friendly_name} already in pairing process!")
+
+
+
+def load_pairing_devices():
+    if not os.path.exists('pairing_devices.json'):
+        with open('pairing_devices.json', 'w') as f:
+            json.dump({}, f, indent=2)
+
+    try:
+        with open('pairing_devices.json', 'r') as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        return {}
+
+
+
+
+def save_pairing_devices(pairing_devices):
+    with open('pairing_devices.json', 'w') as f:
+        json.dump(pairing_devices, f, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+
+
+def delete_pairing_device(friendly_name):
+    pairing_devices = load_pairing_devices()
+    if friendly_name in pairing_devices:
+        del pairing_devices[friendly_name]
+        with open("pairing_devices.json", "w") as f:
+            json.dump(pairing_devices, f)
+
+
+#########################################################################################
+
 def get_device_status(device_key):
     devices = load_devices()
     return devices.get(device_key, {}).get('device_gpio_status', None)

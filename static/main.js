@@ -1,15 +1,25 @@
 import { updateDeviceName, attachDeviceNameUpdateListener } from './deviceName_handler.js';
-import { createOutputDeviceBox, createInputDeviceBox, createTHDSensorDeviceBox } from './deviceBoxTemplates.js';
-
+import { createOutputDeviceBox, createInputDeviceBox, createTHDSensorDeviceBox} from './deviceBoxTemplates.js';
+import {createPairingDeviceBox } from './pairingDeviceBox.js';
 
 
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io.connect(); //connect the socket
 
 
+    const pairingdeviceContainer = document.querySelector(".pairing-device-container");
+    const pairingDeviceKeys = Object.keys(pairingdeviceData)    
+    pairingDeviceKeys.forEach((friendly_name)=> {
+    const pairingdDevice = pairingdeviceData[friendly_name];
+    let pairingdeviceBox;
+    pairingdeviceBox = createPairingDeviceBox(friendly_name,pairingdDevice)
+    pairingdeviceContainer.appendChild(pairingdeviceBox);
+    });
+
+
+
 /*###################################### ADD DEVICE ###########################################################################
 Following code checks all device_key s from deviceData dictonary, checks device type and creates appropriate device Box
-Only for devices that are already integrated in device (e.g. RPI)
  */
       const deviceContainer = document.querySelector(".device-container");
       const DeviceKeys = Object.keys(deviceData)
@@ -209,6 +219,57 @@ FUnction is called when socket event 'update_sensor_status' from the server side
   
   
 
+
+/*###################################---NEW DEVICE PAIRING---###################################################################### */
+socket.on('new_device_pairing',function(data) {
+
+pairingdeviceData[data.friendly_name] = data.pairing_device_info;
+const pairingDevice = pairingdeviceData[data.friendly_name];
+console.log('Pairing device info:', pairingDevice);
+let pairingdeviceBox;
+pairingdeviceBox = createPairingDeviceBox(data.friendly_name,pairingDevice);
+pairingdeviceContainer.appendChild(pairingdeviceBox);
+
+});
+
+
+// Load the current pairing devices on the load and display them
+socket.on("pairing_devices_updated", (data) => {
+pairingdeviceData = data; // Update the groupData object with the new data
+});
+
+
+// Add event listener to all 'Accept' buttons
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('accept-button')) {  // Check if clicked element is an 'Accept' button
+      const friendly_name = e.target.getAttribute('data-friendly-name');  // Retrieve friendly_name from the attribute
+      const pairingdeviceBox = document.querySelector(`div[pairing-device-id="${friendly_name}"]`);
+
+      if (pairingdeviceBox) {
+          pairingdeviceContainer.removeChild(pairingdeviceBox);
+      }
+
+      const action = 'accept_device';
+      socket.emit('pairing_device_action', { friendly_name: friendly_name, action: action });
+  }
+});
+
+
+
+// Add event listener to all 'Decline' buttons
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('decline-button')) {  // Check if clicked element is an 'Decline' button
+      const friendly_name = e.target.getAttribute('data-friendly-name');  // Retrieve friendly_name from the attribute
+      const pairingdeviceBox = document.querySelector(`div[pairing-device-id="${friendly_name}"]`);
+
+      if (pairingdeviceBox) {
+          pairingdeviceContainer.removeChild(pairingdeviceBox);
+      }
+
+      const action = 'decline_device';
+      socket.emit('pairing_device_action', { friendly_name: friendly_name, action: action });
+  }
+});
 
 
 
