@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const socket = io.connect(); //connect the socket
 
 
+/*###################################### ADD PAIRING DEVICE ########################################################################### */
     const pairingdeviceContainer = document.querySelector(".pairing-device-container");
     const pairingDeviceKeys = Object.keys(pairingdeviceData)    
     pairingDeviceKeys.forEach((friendly_name)=> {

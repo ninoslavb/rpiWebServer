@@ -47,10 +47,11 @@ if not devices:
     add_device('digin3',  None, 'DI3', 0,  'DI3', 33, 'digital-input' , 'contact',   None,  None, None, None, 'rpi')
     add_device('digin4',  None, 'DI4', 0,  'DI4', 37, 'digital-input' , 'contact',   None,  None, None, None, 'rpi')
     add_device('digin5',  None, 'DI5', 0,  'DI5', 16, 'digital-input' , 'motion',    None,  None, None, None, 'rpi')
+    add_device('TCPU', None,'TEMP CPU', 0,'TCPU',0,'sensor','temp',None,None,None,None,'cpu')
 
-
-
-add_device('TCPU', None,'TEMP CPU', 0,'TCPU',0,'sensor','temp',None,None,None,None,'cpu')
+#################################################################################################################################################################
+#######################################################---DICTIONARIES, INITIAL STATES AND RENDERING---##########################################################
+#################################################################################################################################################################
 
 def init_device_data():
     device_data = {}
@@ -143,8 +144,11 @@ for device_key, device in device_data.items():
 def index():
     return render_template('index.html', device_data=device_data, rule_data=rule_data, group_data=group_data, pairing_device_data=pairing_device_data)
 
+#################################################################################################################################################################
+####################################################---SOCKET INITIAL CONNECTION---##############################################################################
+#################################################################################################################################################################
 
-#When the socket connection is established, send all digital input and output statuses and device names
+#When the socket connection is established, send all digital input and output statuses, device name, rules, groups and pairing devices
 @socketio.on('connect')
 def handle_connect():
     # Emit device state for each device
@@ -189,6 +193,13 @@ def handle_connect():
     emit('pairing_devices_updated', pairing_device_data, broadcast=True)  # Send the entire group_data object
 
 
+
+
+
+################################################################################################################################################################
+#################################################---DEVICE NAME UPDATE EVENT---#################################################################################
+################################################################################################################################################################
+
 #When the name of device is changed, update the name and send feedback to the client
 @socketio.on('update_device_name')
 def update_device_name_socketio(data):
@@ -197,6 +208,13 @@ def update_device_name_socketio(data):
     device_data[device_key]['name'] = device_name 
     emit('device_name_updated', {'device_key': device_key, 'device_name': device_name}, broadcast=True)
     update_device_name(device_key, device_name) #update database with the new name
+
+
+
+
+################################################################################################################################################################
+#################################################---DIGITAL INPUT/OUTPUT UPDATE---##############################################################################
+################################################################################################################################################################
 
 #When the button for change the output device is pressed, execute the action, check the state of the output and send update to the client
 @socketio.on('device_output_update')
@@ -223,7 +241,6 @@ def digital_output_update(data):
 
 
 
-
 # Add event detect for all digital inputs
 for device_key, device in device_data.items():
     if device['source'] == 'rpi':
@@ -238,6 +255,10 @@ def input_device_callback(channel, device_key):
         #print(f"Input device callback triggered for {device_key}, gpio_status: {device_data[device_key]['gpio_status']}")  # Add this print statement
     #else for future use if device has different source
 
+
+###################################################################################################################################################################
+###########################################---ZIGBEE SENSORS CALLBACK---###########################################################################################
+###################################################################################################################################################################
 
 def zigbee_callback(event_type, device_key):
     print(f"Event Type: {event_type}, Device Key: {device_key}")  # Print the event_type and device_keycd
@@ -315,6 +336,10 @@ register_callback("digital_output_update", zigbee_callback)
 
 
 
+################################################################################################################################################
+##############################################---DEVICE PAIRING---##############################################################################
+################################################################################################################################################
+
 def pairing_callback(event_type, device_info):
 
     if event_type == "pairing_device":
@@ -333,7 +358,7 @@ def pairing_callback(event_type, device_info):
             print(f"Device with key {device_key} already exists, skipping adding.")
             return  # Skip the rest of the function if the device already exists
 
-
+        #if device not exist, add device to the pairing list and send information to the frontend
         add_pairing_device(friendly_name,device_id,description,model,supported,vendor)
         pairing_device_data[friendly_name] = {
             'device_id':device_id,
@@ -348,8 +373,7 @@ register_callback("pairing_device", pairing_callback)
 
 
 
-
-
+#Function to store paired device (called if paring device is accepted in frontend)
 def store_paired_device(device):
     def add_device_helper(device_type, device_type1, device_type2):
         add_device(
@@ -387,14 +411,14 @@ def store_paired_device(device):
         add_device_helper('digital-output', 'plug', None)
 
 
-
+#wait for pairing_device_action event from the frontend
 @socketio.on('pairing_device_action')
 def paring_device_action(data):
     friendly_name = data['friendly_name']
     action = data['action']
     print(f"Received paring_device_update: friendly_name = {friendly_name}, action = {action}")  # Add this print statement
 
-    if action == 'accept_device':
+    if action == 'accept_device': #if device is accepted
         pairing_device=pairing_device_data[friendly_name]
         device_key = f"{pairing_device['model']}-{pairing_device['device_id'][2:]}"
 
@@ -409,7 +433,7 @@ def paring_device_action(data):
     
         devices = load_devices()
         device = devices[device_key]
-        device_data[device_key] = {
+        device_data[device_key] = { #update device_data dictionary
             'device_id': device['device_id'],
             'name': device['device_name'],
             'gpio_status': device['device_gpio_status'],
@@ -424,12 +448,13 @@ def paring_device_action(data):
             'source': device['device_source'],
             }
         new_device_info = device_data[device_key]
+        #send information about new device to the frontend to render it
         socketio.emit('new_device_added', {'device_key': device_key, 'device_info': new_device_info}, namespace='/')
         socketio.emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
       
     else:
         return   
-
+    #delete pairing devie from the pairing device dictionary (does not matter if it is accepted or declined)
     if friendly_name in pairing_device_data:
         delete_pairing_device(friendly_name)
         del pairing_device_data[friendly_name]
@@ -437,22 +462,9 @@ def paring_device_action(data):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+################################################################################################################################################################
+########################################################---GROUPS---############################################################################################
+################################################################################################################################################################
 
 #add/update group handler
 @socketio.on('add_group')
@@ -510,8 +522,11 @@ def delete_group_handler(data):
         del group_data[group_key]
         emit('groups_updated', group_data, broadcast=True)
 
-            
 
+
+################################################################################################################################################################
+#############################################################---RULES---########################################################################################
+################################################################################################################################################################            
 
 #add/update rule handler
 @socketio.on('add_rule')
@@ -575,8 +590,6 @@ def delete_rule_handler(data):
         if not is_output_device_used:
             print(f"Unlocking device {output_device_key}")  # Add a console log
             emit('lock_device', {'device_key': output_device_key, 'isLocked': False}, broadcast=True)
-
-
 
 
 
@@ -652,9 +665,9 @@ def check_input_devices_and_apply_rules():
 
 
 
-###############################################################################################################################################
-########################################## CPU TEMPERATURE EXAMPLE #############################################################################
-###############################################################################################################################################
+###############################################################################################################################################################
+########################################## CPU TEMPERATURE EXAMPLE ############################################################################################
+###############################################################################################################################################################
 
 
 
@@ -668,10 +681,8 @@ def check_sensor_value():
            
         time.sleep(5)
 
-###############################################################################################################################################
-########################################## CPU TEMPERATURE EXAMPLE #############################################################################
-################################################################################################################################################
-                   
+
+
 
 
 
