@@ -267,7 +267,7 @@ function lockDevice(device_key, isLocked) {
    const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`); // Select the device box element using its device-id attribute
    const existingLockIcon = deviceBox.querySelector('.lock-icon');               // Check if there's an existing lock icon within the deviceBox element
  
-   // If the device input or box is not found, log a warning and return early
+   // If the device input or top element is not found, log a warning and return early
    if (!deviceInput || !deviceBox) {
      //console.warn(`Device with key ${device_key} not found.`);
      return;

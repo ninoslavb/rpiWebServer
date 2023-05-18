@@ -274,8 +274,57 @@ h1 {
     box-shadow: 0px 0px 20px green;
   }
 
+  .yes-button {
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    position: relative;
+    text-align: center;
+    background-color: transparent;
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+    background-color: transparent;
+    border: 2px solid black;
+    color: black;
+    border-radius: 5px;
+    font-size: 12px;
+    padding: 5px 2px; /* padding around the text */
+    width: 100%;
+    min-width: 50px;
+    max-width: 50px;
+    margin-bottom: 5px;
+    margin-right: 10px;
+    align-self: center;
+  }
 
 
+  .yes-button:hover {
+    box-shadow: 0px 0px 20px red;
+  }
+
+
+  .no-button {
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    position: relative;
+    text-align: center;
+    background-color: transparent;
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+    background-color: transparent;
+    border: 2px solid black;
+    color: black;
+    border-radius: 5px;
+    font-size: 12px;
+    padding: 5px 2px; /* padding around the text */
+    width: 100%;
+    min-width: 50px;
+    max-width: 50px;
+    margin-bottom: 5px;
+    margin-right: 10px;
+    margin-left: 10px;
+    align-self: center;
+  }
+
+
+  .no-button:hover {
+    box-shadow: 0px 0px 20px green;
+  }
 
 
 

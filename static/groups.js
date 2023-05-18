@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
       deviceData[deviceKey].name = deviceName;
           
       updateGroupList();       // Call the updateRuleList function to update the displayed rules when the name is updated
-      updateListDeviceOptions();  //Call the updateDeviceOptions to update the options in dropdown menu when the name is updated
+      updateListDeviceOptions();  //Call the updateListDeviceOptions to update the options in dropdown menu when the name is updated
   });
   
   

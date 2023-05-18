@@ -49,6 +49,16 @@ def save_devices(devices):
         os.fsync(f.fileno())
 
 
+def delete_device(device_key):
+    devices = load_devices()
+    if device_key in devices:
+        del devices[device_key]
+        with open("devices.json", "w") as f:
+            json.dump(devices, f)
+
+
+
+
 
 #####################---PAIRING DEVICES DICTIONARY---############################
 

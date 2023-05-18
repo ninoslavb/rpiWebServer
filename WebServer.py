@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 from flask import Flask, render_template, make_response, request, jsonify
 from flask_socketio import SocketIO, emit
-from database_handler import load_devices, save_devices, get_device_status, update_device_gpio_status, get_device_name, update_device_name, get_device_gpio_id, get_device_type, add_device, get_device_gpio_pin, add_pairing_device, load_pairing_devices, delete_pairing_device
+from database_handler import load_devices, save_devices, get_device_status, update_device_gpio_status, get_device_name, update_device_name, get_device_gpio_id, get_device_type, add_device, delete_device, get_device_gpio_pin, add_pairing_device, load_pairing_devices, delete_pairing_device
 from rule_handler import add_rule, load_rules, delete_rule
 from group_handler import add_group, load_groups, delete_group
 import json
@@ -434,6 +434,18 @@ def paring_device_action(data):
         del pairing_device_data[friendly_name]
         emit('pairing_devices_updated', pairing_device_data, broadcast=True)  # Send the entire pairing_device_data object
 
+##############################################################################################################################################################
+####################################################---DELETE DEVICE---#######################################################################################
+##############################################################################################################################################################
+
+#wait for delete device event
+@socketio.on('delete_device')
+def delete_deivce(data):
+    device_key = data['device_key']
+    delete_device(device_key)
+    del device_data[device_key]
+    emit('device_deleted',{ 'device_key': device_key, 'device_data': device_data}, broadcast=True)  # Send the entire updated device_data object and deleted device key
+    print(f"Device with key {device_key} deleted!!!!")
 
 
 ################################################################################################################################################################

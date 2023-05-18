@@ -44,7 +44,104 @@ Following code checks all device_key s from deviceData dictonary, checks device 
       });
 
 
+/*########################################## DELETE DEVICE ########################################################################### */
 
+ //Create a new loop just for attaching the event listeners
+
+
+DeviceKeys.forEach((device_key) => {
+deleteDeviceListener(device_key);
+
+});
+  // Attach an event listener to each "Yes" button
+
+  function deleteDeviceListener(device_key) {
+  const yesButton = deviceContainer.querySelector(`#${device_key}-yes-button`);
+  const deviceBox = document.querySelector(`.device-box[device-id="${device_key}"]`)
+  
+  if (yesButton) { // Ensure the button exists before adding an event listener
+    yesButton.addEventListener('click', (e) => {
+      e.preventDefault();
+
+       // Get the deviceTop element
+       const deviceTop = document.querySelector(`#${device_key}-top`);
+       const confirmDiv = document.querySelector(`#${device_key}-confirm`);
+      
+      //FIRST CHECK IF DEVICE IS PART OF THE RULE, AND IF YES ALERT!
+      const ruleKeys = Object.keys(ruleData);
+
+      for (let i = 0; i < ruleKeys.length; i++) {
+        const ruleKey = ruleKeys[i];
+        const rule = ruleData[ruleKey];
+        const inputDevices = rule.input_devices;
+
+        // Check if the device is the output device for this rule
+        if (rule.output_device_key === device_key) {
+          alert("Cannot delete device. It is used as output in rule: " + rule.rule_name + ". To delete the device, you must first delete it from the rule.");
+          deviceTop.style.display = 'block'; // Make the device box visible again after alert message is shown
+          confirmDiv.style.display = 'none'; //Hide device deletion window;
+          const lockIcon = deviceBox.querySelector('.lock-icon'); // Query lock icon
+          if(lockIcon){
+            lockIcon.style.display = 'block'; // hide the lockIcon
+        }
+          return;
+        }
+
+        // Check if the device is one of the input devices for this rule
+        for (let j = 0; j < inputDevices.length; j++) {
+          if (inputDevices[j].input_device_key === device_key) {
+            alert("Cannot delete device. It is used as input in rule: " + rule.rule_name + ". To delete the device, you must first delete it from the rule.");
+            deviceTop.style.display = 'block'; // Make the device box appear after alert message is shown
+            confirmDiv.style.display = 'none'; //Hide device deletion window
+            const lockIcon = deviceBox.querySelector('.lock-icon'); // Query lock icon
+            if(lockIcon){
+              lockIcon.style.display = 'block'; // hide the lockIcon
+            }
+            return;
+          }
+        }
+      }
+
+      //CHECK IF DEVICE IS PART OF ANY GROUP, AND IF YES ALERT!
+      const groupKeys = Object.keys(groupData);
+
+      for (let i = 0; i < groupKeys.length; i++) {
+        const groupKey = groupKeys[i];
+        const group = groupData[groupKey];
+        const groupDevices = group.group_devices;
+
+        // Check if the device is in this group
+        for (let j = 0; j < groupDevices.length; j++) {
+          if (groupDevices[j].group_device_key === device_key) {
+            alert("Cannot delete device. It is part of the group: " + group.group_name + ". To delete the device, you must first delete the group.");
+            deviceTop.style.display = 'block'; // Make the device box visible again after alert message is shown
+            confirmDiv.style.display = 'none'; //Hide device deletion window;
+            return;
+          }
+        }
+      }
+
+
+      //If device is not part of any rule or group, proceed with deletion
+      socket.emit('delete_device', { device_key: device_key });
+    });
+  }
+}
+
+// Wait for device_deleted event and delete it from the frontend, update deviceData dictionary
+socket.on("device_deleted", (data) => {
+  deviceData = data.device_data; // Update the groupData object with the new data
+  const deviceKeyToDelete = data.device_key;
+  const deviceBoxToDelete = document.querySelector(`[device-id="${deviceKeyToDelete}"]`); // Select the device box with the corresponding device-id
+  if (deviceBoxToDelete) { // Make sure the box was found before trying to remove it
+    deviceBoxToDelete.parentElement.removeChild(deviceBoxToDelete); // Remove the device box from its parent
+  }
+  });
+
+
+
+
+  
 
 /*###########################################--DEVICE NAME UPDATE---###########################################################################
 Following code is socket event listener for device_name_updated. When event is received from the server updateDeviceName for 
@@ -304,7 +401,8 @@ document.addEventListener('click', function(e) {
             // Update the HTML content with the new device information
 
 
-
+            deleteDeviceListener(data.device_key); //add delete device listener
+            
             // Attach the event listener for the newly added device (if it's a digital-output device)
             if (device.type === "digital-output") {
               addDigitalOutputEventListener(data.device_key);
