@@ -57,12 +57,20 @@ function createOutputDeviceBox(device_key, device) {
   dropdown.style.right = '0';                          // Align the right side of the dropdown with the right side of the device box
   dropdown.style.overflowY = 'scroll';                 // Add scroll bar if content exceeds max height
   dropdown.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Set dropdown background color to semi-transparent
+  dropdown.style.color = 'white';
   dropdown.style.zIndex = '1000'; // Ensure dropdown appears on top of other elements
   deviceBox.appendChild(dropdown); // Append the dropdown to deviceBox instead of deviceTop
 
+    // Add a non-selectable "Choose Icon" option
+  const chooseIconOption = document.createElement('div');
+  chooseIconOption.innerText = 'Choose Icon';
+  chooseIconOption.style.fontWeight = 'bold';
+  chooseIconOption.style.padding = '10px';
+  chooseIconOption.style.pointerEvents = 'none'; // Make the option non-selectable
+  dropdown.appendChild(chooseIconOption);
 
   // Add a few icon options
-  ['fa-lightbulb', 'fa-user', 'fa-flag', 'fa-heart', 'fa-star', 'fa-circle'].forEach(iconName => {
+  ['fa-lightbulb', 'fa-tv', 'fa-shower', 'fa-plug', 'fa-fan', 'fa-couch','fa-bed','fa-bath','fa-car','fa-home','fa-door-open'].forEach(iconName => {
       const option = document.createElement('div');
       option.style.padding = '10px'; // Add padding to options
       option.value = iconName;
@@ -207,6 +215,79 @@ function createInputDeviceBox(device_key, device) {
   icon.style.color = '#FFFFFF';
   deviceIcon.appendChild(icon);
 
+  // Retrieve the selected icon from local storage when the page is reloaded
+  const storedIconName = localStorage.getItem(`device-${device_key}-icon`);
+  if (storedIconName) {
+    icon.className = ''; // Clear existing classes
+    icon.classList.add('fas', storedIconName);
+  } else {
+    // If no icon is stored, default to 'fa-lightbulb'
+    icon.classList.add('fas', 'fa-door-open');
+  }
+  
+// Create a div to act as the icon dropdown menu
+  const dropdown = document.createElement('div');
+  dropdown.classList.add('icon-dropdown');
+  dropdown.style.display = 'none';                     // Hide the dropdown initially
+  dropdown.style.position = 'absolute';                // Position dropdown within the device box
+  dropdown.style.top = '0';                            // Align the top of the dropdown with the top of the device box
+  dropdown.style.bottom = '0';                         // Align the bottom of the dropdown with the bottom of the device box
+  dropdown.style.left = '0';                           // Align the left side of the dropdown with the left side of the device box
+  dropdown.style.right = '0';                          // Align the right side of the dropdown with the right side of the device box
+  dropdown.style.overflowY = 'scroll';                 // Add scroll bar if content exceeds max height
+  dropdown.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Set dropdown background color to semi-transparent
+  dropdown.style.color = 'white';
+  dropdown.style.zIndex = '1000'; // Ensure dropdown appears on top of other elements
+  deviceBox.appendChild(dropdown); // Append the dropdown to deviceBox instead of deviceTop
+
+
+  // Add a non-selectable "Choose Icon" option
+  const chooseIconOption = document.createElement('div');
+  chooseIconOption.innerText = 'Choose Icon';
+  chooseIconOption.style.fontWeight = 'bold';
+  chooseIconOption.style.padding = '10px';
+  chooseIconOption.style.pointerEvents = 'none'; // Make the option non-selectable
+  dropdown.appendChild(chooseIconOption);
+
+
+  // Add a few icon options
+  ['fa-lightbulb', 'fa-tv', 'fa-shower', 'fa-plug', 'fa-fan', 'fa-couch','fa-bed','fa-bath','fa-car','fa-home','fa-door-open'].forEach(iconName => {
+      const option = document.createElement('div');
+      option.style.padding = '10px'; // Add padding to options
+      option.value = iconName;
+      option.innerText = iconName;
+      option.addEventListener('click', () => { // Update icon when option is clicked
+          icon.className = '';  // clear existing classes
+          icon.classList.add('fas', iconName);
+          dropdown.style.display = 'none';  // Hide the dropdown after selection
+          deviceTop.style.display = 'block';  // Show the other parts of the device box
+
+            // Store the selected icon in local storage
+          localStorage.setItem(`device-${device_key}-icon`, iconName);
+      });
+      dropdown.appendChild(option);
+  });
+
+
+  // Toggle the visibility of the dropdown when the icon is clicked
+  icon.addEventListener('click', (e) => {
+    e.stopPropagation();  
+    const dropdown = deviceBox.querySelector('.icon-dropdown');
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    if (dropdown.style.display === 'block') { // If dropdown is visible
+        deviceTop.style.display = 'none'; // Hide the deviceTop
+    }
+});
+
+
+  // Hide dropdown when clicked outside
+  window.addEventListener('click', (event) => {
+      if (!deviceBox.contains(event.target)) {
+          dropdown.style.display = 'none';
+          deviceTop.style.display = 'block';  // Show the other parts of the device box
+      }
+  });
+
 
   const stateValue = document.createElement('span');
   stateValue.classList.add('state-value');
@@ -231,7 +312,7 @@ function createInputDeviceBox(device_key, device) {
   wifiIcon.style.left = '5px';
   wifiIcon.style.fontSize = '10px';
   wifiIcon.style.color = 'white';
-  deviceBox.appendChild(wifiIcon);
+  deviceTop.appendChild(wifiIcon);
   }
 
 
@@ -245,7 +326,7 @@ function createInputDeviceBox(device_key, device) {
     batteryValue.style.left = '20px';   //adjust this value to position battery status right to the wifi icon
     batteryValue.style.color = 'white';
     batteryValue.textContent = ``;
-    deviceBox.appendChild(batteryValue);
+    deviceTop.appendChild(batteryValue);
 
 
   }
