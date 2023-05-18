@@ -47,7 +47,7 @@ def on_message(client, userdata, msg):
         print(f"Message received on unknown topic {msg.topic}: {msg.payload}")
 
 
-    print(f"Received message on topic: {msg.topic}")  # Add this line
+    #print(f"Received message on topic: {msg.topic}") 
     if "zigbee2mqtt/bridge/event" in msg.topic:
         print("Processing device_joined event")  # Add this line
         payload = json.loads(msg.payload)

@@ -257,78 +257,53 @@ def input_device_callback(channel, device_key):
 
 
 ###################################################################################################################################################################
-###########################################---ZIGBEE SENSORS CALLBACK---###########################################################################################
+###########################################---ZIGBEE INPUTS/OUTPUTS/SENSORS CALLBACK---###########################################################################################
 ###################################################################################################################################################################
 
 def zigbee_callback(event_type, device_key):
-    print(f"Event Type: {event_type}, Device Key: {device_key}")  # Print the event_type and device_keycd
-    if event_type == "sensor_update":
-        devices=load_devices()
-        if device_key in devices:
-            device = devices[device_key]
-            device_data[device_key] = {
-                'device_id': device['device_id'],
-                'name': device['device_name'],
-                'gpio_status': device['device_gpio_status'],
-                'gpio_id': device['device_gpio_id'],
-                'gpio_pin': device['device_gpio_pin'],
-                'type': device['device_type'],  
-                'type1': device['device_type1'],
-                'type2': device['device_type2'],
-                'value1': device['device_value1'],
-                'value2': device['device_value2'],
-                'bat_stat': device['device_bat_stat'],
-                'source': device['device_source'],
-            }
-        else:
-            return  # Skip the device if the device_key is not found in devices
-        socketio.emit('device_sensor_status', {'device_key': device_key, 'device_type': device_data[device_key]['type'], 'device_type1': device_data[device_key]['type1'], 'device_type2': device_data[device_key]['type2'], 'device_value1': device_data[device_key]['value1'], 'device_value2': device_data[device_key]['value2'], 'device_bat_stat': device_data[device_key]['bat_stat'], 'device_source':device_data[device_key]['source']}, namespace='/')
+    #print(f"Event Type: {event_type}, Device Key: {device_key}")  # Print the event_type and device_keycd
+    
+    devices = load_devices()
+    if device_key not in devices:
+        return  # Skip the device if the device_key is not found in devices
 
+    #update device_data dictionary
+    device = devices[device_key]
+    device_data[device_key] = {
+        'device_id': device['device_id'],
+        'name': device['device_name'],
+        'gpio_status': device['device_gpio_status'],
+        'gpio_id': device['device_gpio_id'],
+        'gpio_pin': device['device_gpio_pin'],
+        'type': device['device_type'],  
+        'type1': device['device_type1'],
+        'type2': device['device_type2'],
+        'value1': device['device_value1'],
+        'value2': device['device_value2'],
+        'bat_stat': device['device_bat_stat'],
+        'source': device['device_source'],
+    }
 
-    elif event_type == "digital_input_update":
-        devices=load_devices()
-        if device_key in devices:
-            device = devices[device_key]
-            device_data[device_key] = {
-                'device_id': device['device_id'],
-                'name': device['device_name'],
-                'gpio_status': device['device_gpio_status'],
-                'gpio_id': device['device_gpio_id'],
-                'gpio_pin': device['device_gpio_pin'],
-                'type': device['device_type'],  
-                'type1': device['device_type1'],
-                'type2': device['device_type2'],
-                'value1': device['device_value1'],
-                'value2': device['device_value2'],
-                'bat_stat': device['device_bat_stat'],
-                'source': device['device_source'],
-            }
-        else:
-            return  # Skip the device if the device_key is not found in devices
-        socketio.emit('device_input_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
+    # Define a dictionary to map event types to their respective emit events and data
+    emit_event_mapping = {
+        "sensor_update": {
+            'event': 'device_sensor_status',
+            'data': {'device_key': device_key, 'device_type': device_data[device_key]['type'], 'device_type1': device_data[device_key]['type1'], 'device_type2': device_data[device_key]['type2'], 'device_value1': device_data[device_key]['value1'], 'device_value2': device_data[device_key]['value2'], 'device_bat_stat': device_data[device_key]['bat_stat'], 'device_source':device_data[device_key]['source']}
+        },
+        "digital_input_update": {
+            'event': 'device_input_status',
+            'data': {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}
+        },
+        "digital_output_update": {
+            'event': 'device_gpio_status',
+            'data': {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}
+        },
+    }
 
+    # Use the mapping to emit the correct event and data
+    if event_type in emit_event_mapping:
+        socketio.emit(emit_event_mapping[event_type]['event'], emit_event_mapping[event_type]['data'], namespace='/')
 
-    elif event_type == "digital_output_update":
-        devices=load_devices()
-        if device_key in devices:
-            device = devices[device_key]
-            device_data[device_key] = {
-                'device_id': device['device_id'],
-                'name': device['device_name'],
-                'gpio_status': device['device_gpio_status'],
-                'gpio_id': device['device_gpio_id'],
-                'gpio_pin': device['device_gpio_pin'],
-                'type': device['device_type'],  
-                'type1': device['device_type1'],
-                'type2': device['device_type2'],
-                'value1': device['device_value1'],
-                'value2': device['device_value2'],
-                'bat_stat': device['device_bat_stat'],
-                'source': device['device_source'],
-            }
-        else:
-            return  # Skip the device if the device_key is not found in devices
-        socketio.emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
 
 register_callback("sensor_update", zigbee_callback)
 register_callback("digital_input_update", zigbee_callback)
@@ -343,7 +318,6 @@ register_callback("digital_output_update", zigbee_callback)
 def pairing_callback(event_type, device_info):
 
     if event_type == "pairing_device":
-        print("SUCESSFULL CALLBACK!!!!!!!!!!!!!")
         friendly_name = device_info.get('friendly_name', None)
         device_id = device_info.get('device_id',None)
         description = device_info.get('description', None)
