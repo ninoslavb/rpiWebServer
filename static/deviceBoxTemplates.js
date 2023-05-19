@@ -30,143 +30,143 @@ function createOutputDeviceBox(device_key, device) {
 
 
 
-  /*############---DELETE DEVICE BUTTON---#################*/
-    // Add a delete button
-    const deleteButton = document.createElement('i');
-    deleteButton.classList.add('fas', 'fa-times');
-    deleteButton.style.position = 'absolute';
-    deleteButton.style.right = '5px';
-    deleteButton.style.bottom = '5px';
-    deleteButton.style.color = '#FFFFFF';
-    deviceTop.appendChild(deleteButton);
-  
-    // Add a confirmation div, initially hidden
-    const confirmDiv = document.createElement('div');
-    confirmDiv.id = `${device_key}-confirm`; // Assign an id based on the device_key
-    confirmDiv.style.display = 'none';
-    confirmDiv.style.position = 'absolute';
-    confirmDiv.style.top = '0';
-    confirmDiv.style.bottom = '0';
-    confirmDiv.style.left = '0';
-    confirmDiv.style.right = '0';
-    confirmDiv.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-    confirmDiv.style.color = 'white';
-    confirmDiv.style.textAlign = 'center';
-    confirmDiv.style.paddingTop = '20%';  // Adjust as needed
-    deviceBox.appendChild(confirmDiv);
-  
-    // Add confirmation text
-    const confirmText = document.createElement('p');
-    confirmText.textContent = 'Delete device?';
-    confirmDiv.appendChild(confirmText);
-  
-    // Add "No" button
-    const noButton = document.createElement('button');
-    noButton.textContent = 'NO';
-    noButton.classList.add('no-button');
-    noButton.id = `${device_key}-no-button`;  // unique id for the "No" button
-    noButton.style.marginRight = '10px';
-    confirmDiv.appendChild(noButton);
-  
-    // Add "Yes" button
-    const yesButton = document.createElement('button');
-    yesButton.classList.add('yes-button');
-    yesButton.textContent = 'YES';
-    yesButton.id = `${device_key}-yes-button`;  // unique id for the "Yes" button
-    confirmDiv.appendChild(yesButton);
-  
-    // Toggle visibility of the confirmation div when the delete button is clicked
-    deleteButton.addEventListener('click', (e) => {
-      e.stopPropagation();  
-      confirmDiv.style.display = confirmDiv.style.display === 'none' ? 'block' : 'none';
-      deviceTop.style.display = deviceTop.style.display === 'none' ? 'block' : 'none';
-      const lockIcon = deviceBox.querySelector('.lock-icon'); // Query lock icon
-      if(lockIcon){
-          lockIcon.style.display = 'none'; // hide the lockIcon
-      }
-    });
-  
-    // Hide the confirmation div when "No" is clicked, and show the deviceTop
-    noButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      confirmDiv.style.display = 'none';
-      deviceTop.style.display = 'block';
-      const lockIcon = deviceBox.querySelector('.lock-icon'); // Query lock icon
-      if(lockIcon){
-        lockIcon.style.display = 'block'; // hide the lockIcon
+/*############---DELETE DEVICE BUTTON---#################*/
+  // Add a delete button
+  const deleteButton = document.createElement('i');
+  deleteButton.classList.add('fas', 'fa-trash');
+  deleteButton.style.position = 'absolute';
+  deleteButton.style.right = '5px';
+  deleteButton.style.bottom = '5px';
+  deleteButton.style.color = '#028fd5';
+  deviceTop.appendChild(deleteButton);
+
+  // Add a confirmation div, initially hidden
+  const confirmDiv = document.createElement('div');
+  confirmDiv.id = `${device_key}-confirm`; // Assign an id based on the device_key
+  confirmDiv.style.display = 'none';
+  confirmDiv.style.position = 'absolute';
+  confirmDiv.style.top = '0';
+  confirmDiv.style.bottom = '0';
+  confirmDiv.style.left = '0';
+  confirmDiv.style.right = '0';
+  confirmDiv.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+  confirmDiv.style.color = 'white';
+  confirmDiv.style.textAlign = 'center';
+  confirmDiv.style.paddingTop = '20%';  // Adjust as needed
+  deviceBox.appendChild(confirmDiv);
+
+  // Add confirmation text
+  const confirmText = document.createElement('p');
+  confirmText.textContent = 'Delete device?';
+  confirmDiv.appendChild(confirmText);
+
+  // Add "No" button
+  const noButton = document.createElement('button');
+  noButton.textContent = 'NO';
+  noButton.classList.add('no-button');
+  noButton.id = `${device_key}-no-button`;  // unique id for the "No" button
+  noButton.style.marginRight = '10px';
+  confirmDiv.appendChild(noButton);
+
+  // Add "Yes" button
+  const yesButton = document.createElement('button');
+  yesButton.classList.add('yes-button');
+  yesButton.textContent = 'YES';
+  yesButton.id = `${device_key}-yes-button`;  // unique id for the "Yes" button
+  confirmDiv.appendChild(yesButton);
+
+  // Toggle visibility of the confirmation div when the delete button is clicked
+  deleteButton.addEventListener('click', (e) => {
+    e.stopPropagation();  
+    confirmDiv.style.display = confirmDiv.style.display === 'none' ? 'block' : 'none';
+    deviceTop.style.display = deviceTop.style.display === 'none' ? 'block' : 'none';
+    const lockIcon = deviceBox.querySelector('.lock-icon'); // Query lock icon
+    if(lockIcon){
+        lockIcon.style.display = 'none'; // hide the lockIcon
     }
-      
-    });
-
-        // Hide confirmation div when clicked outside
-    window.addEventListener('click', (event) => {
-      if (!deviceBox.contains(event.target)) {
-          confirmDiv.style.display = 'none';
-          deviceTop.style.display = 'block';  // Show the other parts of the device box
-      }
-    });
-
-
-  /*##########--DEVICE ICON---########## */
-  const deviceIcon = document.createElement('div');
-  deviceIcon.classList.add('device-icon');
-  deviceTop.appendChild(deviceIcon);
-  
-  const icon = document.createElement('i');
-  icon.classList.add('fas', 'fa-lightbulb');
-  icon.style.color = '#FFFFFF';
-  deviceIcon.appendChild(icon);
-
-  // Retrieve the selected icon from local storage when the page is reloaded
-  const storedIconName = localStorage.getItem(`device-${device_key}-icon`);
-  if (storedIconName) {
-    icon.className = ''; // Clear existing classes
-    icon.classList.add('fas', storedIconName);
-  } else {
-    // If no icon is stored, default to 'fa-lightbulb'
-    icon.classList.add('fas', 'fa-lightbulb');
-  }
-  
-// Create a div to act as the icon dropdown menu
-  const dropdown = document.createElement('div');
-  dropdown.classList.add('icon-dropdown');
-  dropdown.style.display = 'none';                     // Hide the dropdown initially
-  dropdown.style.position = 'absolute';                // Position dropdown within the device box
-  dropdown.style.top = '0';                            // Align the top of the dropdown with the top of the device box
-  dropdown.style.bottom = '0';                         // Align the bottom of the dropdown with the bottom of the device box
-  dropdown.style.left = '0';                           // Align the left side of the dropdown with the left side of the device box
-  dropdown.style.right = '0';                          // Align the right side of the dropdown with the right side of the device box
-  dropdown.style.overflowY = 'scroll';                 // Add scroll bar if content exceeds max height
-  dropdown.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Set dropdown background color to semi-transparent
-  dropdown.style.color = 'white';
-  dropdown.style.zIndex = '1000'; // Ensure dropdown appears on top of other elements
-  deviceBox.appendChild(dropdown); // Append the dropdown to deviceBox instead of deviceTop
-
-    // Add a non-selectable "Choose Icon" option
-  const chooseIconOption = document.createElement('div');
-  chooseIconOption.innerText = 'Choose Icon';
-  chooseIconOption.style.fontWeight = 'bold';
-  chooseIconOption.style.padding = '10px';
-  chooseIconOption.style.pointerEvents = 'none'; // Make the option non-selectable
-  dropdown.appendChild(chooseIconOption);
-
-  // Add a few icon options
-  ['fa-lightbulb', 'fa-tv', 'fa-shower', 'fa-plug', 'fa-fan', 'fa-couch','fa-bed','fa-bath','fa-car','fa-home','fa-door-open'].forEach(iconName => {
-      const option = document.createElement('div');
-      option.style.padding = '10px'; // Add padding to options
-      option.value = iconName;
-      option.innerText = iconName;
-      option.addEventListener('click', () => { // Update icon when option is clicked
-          icon.className = '';  // clear existing classes
-          icon.classList.add('fas', iconName);
-          dropdown.style.display = 'none';  // Hide the dropdown after selection
-          deviceTop.style.display = 'block';  // Show the other parts of the device box
-
-            // Store the selected icon in local storage
-          localStorage.setItem(`device-${device_key}-icon`, iconName);
-      });
-      dropdown.appendChild(option);
   });
+
+  // Hide the confirmation div when "No" is clicked, and show the deviceTop
+  noButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    confirmDiv.style.display = 'none';
+    deviceTop.style.display = 'block';
+    const lockIcon = deviceBox.querySelector('.lock-icon'); // Query lock icon
+    if(lockIcon){
+      lockIcon.style.display = 'block'; // hide the lockIcon
+  }
+    
+  });
+
+      // Hide confirmation div when clicked outside
+  window.addEventListener('click', (event) => {
+    if (!deviceBox.contains(event.target)) {
+        confirmDiv.style.display = 'none';
+        deviceTop.style.display = 'block';  // Show the other parts of the device box
+    }
+  });
+
+
+/*##########--DEVICE ICON---########## */
+const deviceIcon = document.createElement('div');
+deviceIcon.classList.add('device-icon');
+deviceTop.appendChild(deviceIcon);
+
+const icon = document.createElement('i');
+icon.classList.add('fas', 'fa-lightbulb');
+icon.style.color = '#FFFFFF';
+deviceIcon.appendChild(icon);
+
+// Retrieve the selected icon from local storage when the page is reloaded
+const storedIconName = localStorage.getItem(`device-${device_key}-icon`);
+if (storedIconName) {
+  icon.className = ''; // Clear existing classes
+  icon.classList.add('fas', storedIconName);
+} else {
+  // If no icon is stored, default to 'fa-lightbulb'
+  icon.classList.add('fas', 'fa-lightbulb');
+}
+
+// Create a div to act as the icon dropdown menu
+const dropdown = document.createElement('div');
+dropdown.classList.add('icon-dropdown');
+dropdown.style.display = 'none';                     // Hide the dropdown initially
+dropdown.style.position = 'absolute';                // Position dropdown within the device box
+dropdown.style.top = '0';                            // Align the top of the dropdown with the top of the device box
+dropdown.style.bottom = '0';                         // Align the bottom of the dropdown with the bottom of the device box
+dropdown.style.left = '0';                           // Align the left side of the dropdown with the left side of the device box
+dropdown.style.right = '0';                          // Align the right side of the dropdown with the right side of the device box
+dropdown.style.overflowY = 'scroll';                 // Add scroll bar if content exceeds max height
+dropdown.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Set dropdown background color to semi-transparent
+dropdown.style.color = 'white';
+dropdown.style.zIndex = '1000'; // Ensure dropdown appears on top of other elements
+deviceBox.appendChild(dropdown); // Append the dropdown to deviceBox instead of deviceTop
+
+  // Add a non-selectable "Choose Icon" option
+const chooseIconOption = document.createElement('div');
+chooseIconOption.innerText = 'Choose Icon';
+chooseIconOption.style.fontWeight = 'bold';
+chooseIconOption.style.padding = '10px';
+chooseIconOption.style.pointerEvents = 'none'; // Make the option non-selectable
+dropdown.appendChild(chooseIconOption);
+
+// Add a few icon options
+['fa-lightbulb', 'fa-tv', 'fa-shower', 'fa-plug', 'fa-fan', 'fa-couch','fa-bed','fa-bath','fa-car','fa-home','fa-door-open'].forEach(iconName => {
+    const option = document.createElement('div');
+    option.style.padding = '10px'; // Add padding to options
+    option.value = iconName;
+    option.innerText = iconName;
+    option.addEventListener('click', () => { // Update icon when option is clicked
+        icon.className = '';  // clear existing classes
+        icon.classList.add('fas', iconName);
+        dropdown.style.display = 'none';  // Hide the dropdown after selection
+        deviceTop.style.display = 'block';  // Show the other parts of the device box
+
+          // Store the selected icon in local storage
+        localStorage.setItem(`device-${device_key}-icon`, iconName);
+    });
+    dropdown.appendChild(option);
+});
 
 
 // Toggle the visibility of the dropdown when the icon is clicked
@@ -294,139 +294,139 @@ function createInputDeviceBox(device_key, device) {
   deviceInput.value = device.name;
   deviceName.appendChild(deviceInput);
 
-    /*############---DELETE DEVICE BUTTON---#################*/
-    // Add a delete button
-    const deleteButton = document.createElement('i');
-    deleteButton.classList.add('fas', 'fa-times');
-    deleteButton.style.position = 'absolute';
-    deleteButton.style.right = '5px';
-    deleteButton.style.bottom = '5px';
-    deleteButton.style.color = '#FFFFFF';
-    deviceTop.appendChild(deleteButton);
-  
-    // Add a confirmation div, initially hidden
-    const confirmDiv = document.createElement('div');
-    confirmDiv.id = `${device_key}-confirm`; // Assign an id based on the device_key
-    confirmDiv.style.display = 'none';
-    confirmDiv.style.position = 'absolute';
-    confirmDiv.style.top = '0';
-    confirmDiv.style.bottom = '0';
-    confirmDiv.style.left = '0';
-    confirmDiv.style.right = '0';
-    confirmDiv.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-    confirmDiv.style.color = 'white';
-    confirmDiv.style.textAlign = 'center';
-    confirmDiv.style.paddingTop = '20%';  // Adjust as needed
-    deviceBox.appendChild(confirmDiv);
-  
-    // Add confirmation text
-    const confirmText = document.createElement('p');
-    confirmText.textContent = 'Delete device?';
-    confirmDiv.appendChild(confirmText);
-  
-    // Add "No" button
-    const noButton = document.createElement('button');
-    noButton.classList.add('no-button');
-    noButton.textContent = 'NO';
-    noButton.id = `${device_key}-no-button`;  // unique id for the "No" button
-    noButton.style.marginRight = '10px';
-    confirmDiv.appendChild(noButton);
-  
-    // Add "Yes" button
-    const yesButton = document.createElement('button');
-    yesButton.classList.add('yes-button');
-    yesButton.textContent = 'YES';
-    yesButton.id = `${device_key}-yes-button`;  // unique id for the "Yes" button
-    confirmDiv.appendChild(yesButton);
-  
-    // Toggle visibility of the confirmation div when the delete button is clicked
-    deleteButton.addEventListener('click', (e) => {
-      e.stopPropagation();  
-      confirmDiv.style.display = confirmDiv.style.display === 'none' ? 'block' : 'none';
-      deviceTop.style.display = deviceTop.style.display === 'none' ? 'block' : 'none';
-    });
-  
-    // Hide the confirmation div when "No" is clicked, and show the deviceTop
-    noButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      confirmDiv.style.display = 'none';
-      deviceTop.style.display = 'block';
-      
-    });
+  /*############---DELETE DEVICE BUTTON---#################*/
+  // Add a delete button
+  const deleteButton = document.createElement('i');
+  deleteButton.classList.add('fas', 'fa-trash');
+  deleteButton.style.position = 'absolute';
+  deleteButton.style.right = '5px';
+  deleteButton.style.bottom = '5px';
+  deleteButton.style.color = '#028fd5';
+  deviceTop.appendChild(deleteButton);
 
-        // Hide confirmation div when clicked outside
-    window.addEventListener('click', (event) => {
-      if (!deviceBox.contains(event.target)) {
-          confirmDiv.style.display = 'none';
-          deviceTop.style.display = 'block';  // Show the other parts of the device box
-      }
-    });
+  // Add a confirmation div, initially hidden
+  const confirmDiv = document.createElement('div');
+  confirmDiv.id = `${device_key}-confirm`; // Assign an id based on the device_key
+  confirmDiv.style.display = 'none';
+  confirmDiv.style.position = 'absolute';
+  confirmDiv.style.top = '0';
+  confirmDiv.style.bottom = '0';
+  confirmDiv.style.left = '0';
+  confirmDiv.style.right = '0';
+  confirmDiv.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+  confirmDiv.style.color = 'white';
+  confirmDiv.style.textAlign = 'center';
+  confirmDiv.style.paddingTop = '20%';  // Adjust as needed
+  deviceBox.appendChild(confirmDiv);
 
+  // Add confirmation text
+  const confirmText = document.createElement('p');
+  confirmText.textContent = 'Delete device?';
+  confirmDiv.appendChild(confirmText);
 
-  /*##########--DEVICE ICON---########## */
-  const deviceIcon = document.createElement('div');
-  deviceIcon.classList.add('device-icon');
-  deviceIcon.style.display = 'flex';        // Add this line
-  deviceIcon.style.flexDirection = 'column'; // Add this line
-  deviceIcon.style.alignItems = 'center';    // Add this line
-  deviceTop.appendChild(deviceIcon);
+  // Add "No" button
+  const noButton = document.createElement('button');
+  noButton.classList.add('no-button');
+  noButton.textContent = 'NO';
+  noButton.id = `${device_key}-no-button`;  // unique id for the "No" button
+  noButton.style.marginRight = '10px';
+  confirmDiv.appendChild(noButton);
 
-  const icon = document.createElement('i');
-  icon.classList.add('fa-solid', 'fa-door-open');
-  icon.style.marginTop = '10px'; // Add this line to move the icon down
-  icon.style.color = '#FFFFFF';
-  deviceIcon.appendChild(icon);
+  // Add "Yes" button
+  const yesButton = document.createElement('button');
+  yesButton.classList.add('yes-button');
+  yesButton.textContent = 'YES';
+  yesButton.id = `${device_key}-yes-button`;  // unique id for the "Yes" button
+  confirmDiv.appendChild(yesButton);
 
-  // Retrieve the selected icon from local storage when the page is reloaded
-  const storedIconName = localStorage.getItem(`device-${device_key}-icon`);
-  if (storedIconName) {
-    icon.className = ''; // Clear existing classes
-    icon.classList.add('fas', storedIconName);
-  } else {
-    // If no icon is stored, default to 'fa-lightbulb'
-    icon.classList.add('fas', 'fa-door-open');
-  }
-  
-// Create a div to act as the icon dropdown menu
-  const dropdown = document.createElement('div');
-  dropdown.classList.add('icon-dropdown');
-  dropdown.style.display = 'none';                     // Hide the dropdown initially
-  dropdown.style.position = 'absolute';                // Position dropdown within the device box
-  dropdown.style.top = '0';                            // Align the top of the dropdown with the top of the device box
-  dropdown.style.bottom = '0';                         // Align the bottom of the dropdown with the bottom of the device box
-  dropdown.style.left = '0';                           // Align the left side of the dropdown with the left side of the device box
-  dropdown.style.right = '0';                          // Align the right side of the dropdown with the right side of the device box
-  dropdown.style.overflowY = 'scroll';                 // Add scroll bar if content exceeds max height
-  dropdown.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Set dropdown background color to semi-transparent
-  dropdown.style.color = 'white';
-  dropdown.style.zIndex = '1000'; // Ensure dropdown appears on top of other elements
-  deviceBox.appendChild(dropdown); // Append the dropdown to deviceBox instead of deviceTop
-
-    // Add a non-selectable "Choose Icon" option
-  const chooseIconOption = document.createElement('div');
-  chooseIconOption.innerText = 'Choose Icon';
-  chooseIconOption.style.fontWeight = 'bold';
-  chooseIconOption.style.padding = '10px';
-  chooseIconOption.style.pointerEvents = 'none'; // Make the option non-selectable
-  dropdown.appendChild(chooseIconOption);
-
-  // Add a few icon options
-  ['fa-lightbulb', 'fa-tv', 'fa-shower', 'fa-plug', 'fa-fan', 'fa-couch','fa-bed','fa-bath','fa-car','fa-home','fa-door-open'].forEach(iconName => {
-      const option = document.createElement('div');
-      option.style.padding = '10px'; // Add padding to options
-      option.value = iconName;
-      option.innerText = iconName;
-      option.addEventListener('click', () => { // Update icon when option is clicked
-          icon.className = '';  // clear existing classes
-          icon.classList.add('fas', iconName);
-          dropdown.style.display = 'none';  // Hide the dropdown after selection
-          deviceTop.style.display = 'block';  // Show the other parts of the device box
-
-            // Store the selected icon in local storage
-          localStorage.setItem(`device-${device_key}-icon`, iconName);
-      });
-      dropdown.appendChild(option);
+  // Toggle visibility of the confirmation div when the delete button is clicked
+  deleteButton.addEventListener('click', (e) => {
+    e.stopPropagation();  
+    confirmDiv.style.display = confirmDiv.style.display === 'none' ? 'block' : 'none';
+    deviceTop.style.display = deviceTop.style.display === 'none' ? 'block' : 'none';
   });
+
+  // Hide the confirmation div when "No" is clicked, and show the deviceTop
+  noButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    confirmDiv.style.display = 'none';
+    deviceTop.style.display = 'block';
+    
+  });
+
+      // Hide confirmation div when clicked outside
+  window.addEventListener('click', (event) => {
+    if (!deviceBox.contains(event.target)) {
+        confirmDiv.style.display = 'none';
+        deviceTop.style.display = 'block';  // Show the other parts of the device box
+    }
+  });
+
+
+/*##########--DEVICE ICON---########## */
+const deviceIcon = document.createElement('div');
+deviceIcon.classList.add('device-icon');
+deviceIcon.style.display = 'flex';        // Add this line
+deviceIcon.style.flexDirection = 'column'; // Add this line
+deviceIcon.style.alignItems = 'center';    // Add this line
+deviceTop.appendChild(deviceIcon);
+
+const icon = document.createElement('i');
+icon.classList.add('fa-solid', 'fa-door-open');
+icon.style.marginTop = '10px'; // Add this line to move the icon down
+icon.style.color = '#FFFFFF';
+deviceIcon.appendChild(icon);
+
+// Retrieve the selected icon from local storage when the page is reloaded
+const storedIconName = localStorage.getItem(`device-${device_key}-icon`);
+if (storedIconName) {
+  icon.className = ''; // Clear existing classes
+  icon.classList.add('fas', storedIconName);
+} else {
+  // If no icon is stored, default to 'fa-lightbulb'
+  icon.classList.add('fas', 'fa-door-open');
+}
+
+// Create a div to act as the icon dropdown menu
+const dropdown = document.createElement('div');
+dropdown.classList.add('icon-dropdown');
+dropdown.style.display = 'none';                     // Hide the dropdown initially
+dropdown.style.position = 'absolute';                // Position dropdown within the device box
+dropdown.style.top = '0';                            // Align the top of the dropdown with the top of the device box
+dropdown.style.bottom = '0';                         // Align the bottom of the dropdown with the bottom of the device box
+dropdown.style.left = '0';                           // Align the left side of the dropdown with the left side of the device box
+dropdown.style.right = '0';                          // Align the right side of the dropdown with the right side of the device box
+dropdown.style.overflowY = 'scroll';                 // Add scroll bar if content exceeds max height
+dropdown.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Set dropdown background color to semi-transparent
+dropdown.style.color = 'white';
+dropdown.style.zIndex = '1000'; // Ensure dropdown appears on top of other elements
+deviceBox.appendChild(dropdown); // Append the dropdown to deviceBox instead of deviceTop
+
+  // Add a non-selectable "Choose Icon" option
+const chooseIconOption = document.createElement('div');
+chooseIconOption.innerText = 'Choose Icon';
+chooseIconOption.style.fontWeight = 'bold';
+chooseIconOption.style.padding = '10px';
+chooseIconOption.style.pointerEvents = 'none'; // Make the option non-selectable
+dropdown.appendChild(chooseIconOption);
+
+// Add a few icon options
+['fa-lightbulb', 'fa-tv', 'fa-shower', 'fa-plug', 'fa-fan', 'fa-couch','fa-bed','fa-bath','fa-car','fa-home','fa-door-open'].forEach(iconName => {
+    const option = document.createElement('div');
+    option.style.padding = '10px'; // Add padding to options
+    option.value = iconName;
+    option.innerText = iconName;
+    option.addEventListener('click', () => { // Update icon when option is clicked
+        icon.className = '';  // clear existing classes
+        icon.classList.add('fas', iconName);
+        dropdown.style.display = 'none';  // Hide the dropdown after selection
+        deviceTop.style.display = 'block';  // Show the other parts of the device box
+
+          // Store the selected icon in local storage
+        localStorage.setItem(`device-${device_key}-icon`, iconName);
+    });
+    dropdown.appendChild(option);
+});
 
 
 // Toggle the visibility of the dropdown when the icon is clicked
@@ -497,6 +497,9 @@ window.addEventListener('click', (event) => {
 }
 
 
+
+
+
 function createTHDSensorDeviceBox(device_key, device) {
   const deviceBox = document.createElement('div');
   deviceBox.classList.add('device-box');
@@ -524,73 +527,73 @@ function createTHDSensorDeviceBox(device_key, device) {
   deviceInput.value = device.name;
   deviceName.appendChild(deviceInput);
 
-      /*############---DELETE DEVICE BUTTON---#################*/
-    // Add a delete button
-    const deleteButton = document.createElement('i');
-    deleteButton.classList.add('fas', 'fa-times');
-    deleteButton.style.position = 'absolute';
-    deleteButton.style.right = '5px';
-    deleteButton.style.bottom = '5px';
-    deleteButton.style.color = '#FFFFFF';
-    deviceTop.appendChild(deleteButton);
-  
-    // Add a confirmation div, initially hidden
-    const confirmDiv = document.createElement('div');
-    confirmDiv.id = `${device_key}-confirm`; // Assign an id based on the device_key
-    confirmDiv.style.display = 'none';
-    confirmDiv.style.position = 'absolute';
-    confirmDiv.style.top = '0';
-    confirmDiv.style.bottom = '0';
-    confirmDiv.style.left = '0';
-    confirmDiv.style.right = '0';
-    confirmDiv.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-    confirmDiv.style.color = 'white';
-    confirmDiv.style.textAlign = 'center';
-    confirmDiv.style.paddingTop = '20%';  // Adjust as needed
-    deviceBox.appendChild(confirmDiv);
-  
-    // Add confirmation text
-    const confirmText = document.createElement('p');
-    confirmText.textContent = 'Delete device?';
-    confirmDiv.appendChild(confirmText);
-  
-    // Add "No" button
-    const noButton = document.createElement('button');
-    noButton.classList.add('no-button');
-    noButton.textContent = 'NO';
-    noButton.id = `${device_key}-no-button`;  // unique id for the "No" button
-    noButton.style.marginRight = '10px';
-    confirmDiv.appendChild(noButton);
-  
-    // Add "Yes" button
-    const yesButton = document.createElement('button');
-    yesButton.classList.add('yes-button');
-    yesButton.textContent = 'YES';
-    yesButton.id = `${device_key}-yes-button`;  // unique id for the "Yes" button
-    confirmDiv.appendChild(yesButton);
-  
-    // Toggle visibility of the confirmation div when the delete button is clicked
-    deleteButton.addEventListener('click', (e) => {
-      e.stopPropagation();  
-      confirmDiv.style.display = confirmDiv.style.display === 'none' ? 'block' : 'none';
-      deviceTop.style.display = deviceTop.style.display === 'none' ? 'block' : 'none';
-    });
-  
-    // Hide the confirmation div when "No" is clicked, and show the deviceTop
-    noButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      confirmDiv.style.display = 'none';
-      deviceTop.style.display = 'block';
-      
-    });
+    /*############---DELETE DEVICE BUTTON---#################*/
+  // Add a delete button
+  const deleteButton = document.createElement('i');
+  deleteButton.classList.add('fas', 'fa-trash');
+  deleteButton.style.position = 'absolute';
+  deleteButton.style.right = '5px';
+  deleteButton.style.bottom = '5px';
+  deleteButton.style.color = '#028fd5';
+  deviceTop.appendChild(deleteButton);
 
-        // Hide confirmation div when clicked outside
-    window.addEventListener('click', (event) => {
-      if (!deviceBox.contains(event.target)) {
-          confirmDiv.style.display = 'none';
-          deviceTop.style.display = 'block';  // Show the other parts of the device box
-      }
-    });
+  // Add a confirmation div, initially hidden
+  const confirmDiv = document.createElement('div');
+  confirmDiv.id = `${device_key}-confirm`; // Assign an id based on the device_key
+  confirmDiv.style.display = 'none';
+  confirmDiv.style.position = 'absolute';
+  confirmDiv.style.top = '0';
+  confirmDiv.style.bottom = '0';
+  confirmDiv.style.left = '0';
+  confirmDiv.style.right = '0';
+  confirmDiv.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+  confirmDiv.style.color = 'white';
+  confirmDiv.style.textAlign = 'center';
+  confirmDiv.style.paddingTop = '20%';  // Adjust as needed
+  deviceBox.appendChild(confirmDiv);
+
+  // Add confirmation text
+  const confirmText = document.createElement('p');
+  confirmText.textContent = 'Delete device?';
+  confirmDiv.appendChild(confirmText);
+
+  // Add "No" button
+  const noButton = document.createElement('button');
+  noButton.classList.add('no-button');
+  noButton.textContent = 'NO';
+  noButton.id = `${device_key}-no-button`;  // unique id for the "No" button
+  noButton.style.marginRight = '10px';
+  confirmDiv.appendChild(noButton);
+
+  // Add "Yes" button
+  const yesButton = document.createElement('button');
+  yesButton.classList.add('yes-button');
+  yesButton.textContent = 'YES';
+  yesButton.id = `${device_key}-yes-button`;  // unique id for the "Yes" button
+  confirmDiv.appendChild(yesButton);
+
+  // Toggle visibility of the confirmation div when the delete button is clicked
+  deleteButton.addEventListener('click', (e) => {
+    e.stopPropagation();  
+    confirmDiv.style.display = confirmDiv.style.display === 'none' ? 'block' : 'none';
+    deviceTop.style.display = deviceTop.style.display === 'none' ? 'block' : 'none';
+  });
+
+  // Hide the confirmation div when "No" is clicked, and show the deviceTop
+  noButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    confirmDiv.style.display = 'none';
+    deviceTop.style.display = 'block';
+    
+  });
+
+      // Hide confirmation div when clicked outside
+  window.addEventListener('click', (event) => {
+    if (!deviceBox.contains(event.target)) {
+        confirmDiv.style.display = 'none';
+        deviceTop.style.display = 'block';  // Show the other parts of the device box
+    }
+  });
 
 
   const deviceIcon = document.createElement('div');

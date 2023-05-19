@@ -3,25 +3,24 @@ document.addEventListener('DOMContentLoaded', () => {
     
   const socket = io();
   
-  //container for adding group name        
-  const groupNameContainer = document.getElementById("group-name-container");
-  const input = document.createElement("input");
-  input.className = "group-input";
-  input.type = "text";
-  input.placeholder = "Enter name";
-  input.id = "new-group-name";
-  groupNameContainer.appendChild(input);
+//container for adding group name        
+const groupNameContainer = document.getElementById("group-name-container");
+const input = document.createElement("input");
+input.className = "group-input";
+input.type = "text";
+input.placeholder = "Enter name";
+input.id = "new-group-name";
+groupNameContainer.appendChild(input);
           
   
   
-   
-    const addNewGroupButton = document.getElementById('add-new-group-button');
-    const addGroupContainer = document.getElementById('add-group-container');
-  
-    // Show/hide the add-rule-container when the "ADD NEW GROUP" button is clicked
-    addNewGroupButton.addEventListener('click', () => {
-      addGroupContainer.style.display = addGroupContainer.style.display === 'none' ? 'block' : 'none';
-    });
+const addNewGroupButton = document.getElementById('add-new-group-button');
+const addGroupContainer = document.getElementById('add-group-container');
+
+// Show/hide the add-rule-container when the "ADD NEW GROUP" button is clicked
+addNewGroupButton.addEventListener('click', () => {
+  addGroupContainer.style.display = addGroupContainer.style.display === 'none' ? 'block' : 'none';
+});
   
   
   /* 
@@ -31,21 +30,21 @@ document.addEventListener('DOMContentLoaded', () => {
   This is done by first collecting all the selected devices in a set and then looping through all the device selects and disabling the options that are already selected.
   The event listener at the end of the code listens for changes in device
   */
-  let DeviceRowCount = 0;
-  
-  //add group ROW
-  function addDeviceRow() {
+let DeviceRowCount = 0;
+
+//add group ROW
+      function addDeviceRow() {
+
       const groupWrapper = document.getElementById('groupWrapper');
       const DeviceRow = document.createElement('div');
       DeviceRow.classList.add('group-device-row');
-    
-    
+
       // Check if the number of rows is equal to the number of devices available
       const DeviceCount = Object.values(deviceData).length;
       if (DeviceRowCount >= DeviceCount) {
         return false; // Row was not added
       }
-    
+
       // Create a dropdown to select device
       const DeviceSelect = document.createElement('select');
       DeviceSelect.classList.add('device-select');
@@ -56,19 +55,18 @@ document.addEventListener('DOMContentLoaded', () => {
         optionDevice.value = deviceKey;
         optionDevice.textContent = device.name;
         DeviceSelect.appendChild(optionDevice);
-      
-      }
-      // Add an event listener to call updateGroupDeviceOptions when the selected device changes
-      /*when you select a device from the dropdown menu, the updateGroupDeviceOptions() function will be called, 
-      and the selected device will be disabled in the other dropdown menus. */
-    DeviceSelect.addEventListener('change', () => {
-    updateGroupDeviceOptions();
-    });
-  
-  
+        }
+        // Add an event listener to call updateGroupDeviceOptions when the selected device changes
+        /*when you select a device from the dropdown menu, the updateGroupDeviceOptions() function will be called, 
+        and the selected device will be disabled in the other dropdown menus. */
+      DeviceSelect.addEventListener('change', () => {
+      updateGroupDeviceOptions();
+      });
+
+
       DeviceRow.appendChild(DeviceSelect);
-    
-  
+
+
       // Create a remove button to delete the row
       const removeRowButton = document.createElement('button');
       removeRowButton.type = 'button';
@@ -77,26 +75,22 @@ document.addEventListener('DOMContentLoaded', () => {
       removeRowButton.addEventListener('click', () => {
       groupWrapper.removeChild(DeviceRow);
         updateGroupDeviceOptions();
-    
+
       // Decrement the DeviceRowCount since a row was removed
       DeviceRowCount--;
       });
       DeviceRow.appendChild(removeRowButton);
-  
-    
+
+
       // Add the device row to the groupWrapper and update the input device options
       groupWrapper.appendChild(DeviceRow);
       updateGroupDeviceOptions();
-    
+
       // Increment the DeviceRowCount since a row was added
       DeviceRowCount++;
       return true; // Row was added
-    }
-  
-  
-  
+      }
     
-  
   
     /* ###########################################################################################
    This function updates options to disable the options that are already selected

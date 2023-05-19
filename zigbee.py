@@ -167,7 +167,7 @@ def handle_received_data(device_id, payload):
 
  
 
-
+#for controling digital outputs/actuators (MQTT PUBLISHING)
 def control_actuator(device_key, command):
     devices = load_devices()
     if device_key not in devices:
@@ -187,10 +187,6 @@ def control_actuator(device_key, command):
         return
     
     client.publish(topic, payload)
-
-
-
-
 
 
 

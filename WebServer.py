@@ -442,8 +442,8 @@ def paring_device_action(data):
 @socketio.on('delete_device')
 def delete_deivce(data):
     device_key = data['device_key']
-    delete_device(device_key)
-    del device_data[device_key]
+    delete_device(device_key) #delete device from devices.json
+    del device_data[device_key] #delete device from device_data dictionary
     emit('device_deleted',{ 'device_key': device_key, 'device_data': device_data}, broadcast=True)  # Send the entire updated device_data object and deleted device key
     print(f"Device with key {device_key} deleted!!!!")
 
