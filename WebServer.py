@@ -459,6 +459,7 @@ def update_group_handler(data):
     groupKey = data['group_key']
     groupName = data['group_name']
     groupDevices = data['group_devices']
+    is_edit = data.get('is_edit', False)  # get the is_edit flag, default to False if it's not there
 
     existing_group_key = None
     existing_group_device_key = None
@@ -466,13 +467,20 @@ def update_group_handler(data):
     existing_device_name = None
 
     groups = load_groups()
-    # Check if the group name already exists
-    for group in group_data.values():
-        if group['group_name'] == groupName:
-            return {'error': f"Group name {groupName} already exists!"}
+
+    # If it's not an edit operation, check if the group name already exists
+    if not is_edit:
+        # Check if the group name already exists
+        for group in groups.values():
+            if group['group_name'] == groupName:
+                return {'error': f"Group name {groupName} already exists!"}
 
     # Check if the device is already assigned to some group
     for group_key, group_details in groups.items():
+        # If this is the group we are updating, skip it.
+        if is_edit and group_key == groupKey:
+            continue
+
         for group_device in group_details['group_devices']:
             for new_group_device in groupDevices:
                 if group_device['group_device_key'] == new_group_device['group_device_key']:
@@ -507,6 +515,9 @@ def delete_group_handler(data):
         delete_group(group_key)
         del group_data[group_key]
         emit('groups_updated', group_data, broadcast=True)
+        return {'success': True}  # Send a response indicating the operation was successful (acknowledgement)
+    else:
+        return {'error': 'Group not found'}  # Send a response indicating an error occurred (nack)
 
 
 

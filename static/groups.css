@@ -133,6 +133,40 @@
     box-shadow: 0px 0px 20px red;
   }
 
+
+  .edit-group-button {
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    background-color: transparent;
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+    background-color: transparent;
+    border: 2px solid black;
+    color: black;
+    border-radius: 5px;
+    font-size: 12px;
+    padding: 5px 2px; /* padding around the text */
+    width: 100%;
+    min-width: 60px;
+    max-width: 60px;
+    margin-top: 5px;
+    align-self: left;
+  }
+  
+  .edit-group-button:hover {
+    box-shadow: 0px 0px 20px orange;
+  }
+
+  .group-button-container {
+    display: flex;
+    align-items: center;
+}
+
+.group-button-container button {
+    margin-right: 10px;
+}
+
+
+
+
   .group-list-container {
     padding-left: 10px;
     display: flex;

@@ -168,89 +168,125 @@ let DeviceRowCount = 0;
   
   
   
-   /* 
-    ####################################################################################################################################################################################
-    The following code is an event listener for the form submission. When the form is submitted, it prevents the default form submission behavior and processes the form data as follows:
-   --> It selects all input device and creates an array of devices, where each device object contains the selected device key .
-   --> It creates a rule key by combining all device keys 
-   --> It sends the form data to the server using the 'add_group' event via the socket connection.
-   -->The server responds with either 'error' or 'success'. If there is an error, it alerts the user that particular device is already assigned ot another group
-    If the response is successful, it updates the groupData object and calls the updateGroupList() function to update the list of groups displayed on the page.
-    After the group is successfully added, it removes all existing device rows from the form, allowing the user to start fresh when adding a new rule.
-    */
-      const addGroupForm = document.getElementById("add-group-form");
-  
-       addGroupForm.addEventListener("submit", (event) => {
-          //console.log('Form submit event triggered');
-          event.preventDefault();
-        
-                // Get the selected input devices from group device rows
-                const groupDeviceRows = document.querySelectorAll('.group-device-row');
-                const groupDevices = Array.from(groupDeviceRows).map((row) => ({
-                  group_device_key: row.querySelector('.device-select').value
-                }));
-                const groupNameInput = document.getElementById("new-group-name");
-                const groupName = groupNameInput.value;
-  
-                // Validation check: If no devices are selected, show an alert and return early
-                if (groupDevices.length === 0) {
-                 alert('Please add at least one device to the group.');
-                return;
-                }
+/* 
+####################################################################################################################################################################################
+The following code is an event listener for the form submission. When the form is submitted, it prevents the default form submission behavior and processes the form data as follows:
+
+--> It selects all input devices and creates an array of devices, where each device object contains the selected device key.
+
+--> It then performs a series of validations:
+    - If no devices are selected, an alert is shown to the user and the function returns early.
+    - If any of the devices are not properly selected from the dropdown (e.g., 'Select Device'), an alert is shown and the function returns early.
+    - If the group name is empty, an alert is shown and the function returns early.
+
+--> It then defines a function addGroup, which performs the following tasks:
+    - It creates a group key by combining all device keys.
+    - It emits the 'add_group' event, sending the form data to the server using the socket connection.
+    - The server responds with either an 'error' or a successful response. If there is an error, it alerts the user about the issue (e.g., a device is already assigned to another group).
+    - If the response is successful, it updates the groupData object and calls the updateGroupList() and updateSidebarGroupLinks() functions to update the list of groups displayed on the page.
+    - It then removes all existing device rows from the form, allowing the user to start fresh when adding a new group. It also resets the group name input field and hides the addGroupContainer.
+
+--> If the currentlyEditingGroupKey is not null, meaning we're in editing mode, it emits the 'delete_group' event first to delete the existing group from the server. 
+    - If the server responds with an error during deletion, it alerts the user about the issue.
+    - If the deletion is successful, it then calls the addGroup function to add the updated group.
+
+--> If currentlyEditingGroupKey is null, meaning we're not in editing mode, it simply calls the addGroup function to add the new group.
+*/
+
+    const addGroupForm = document.getElementById("add-group-form");
+    const groupNameInput = document.getElementById("new-group-name");
+    let currentlyEditingGroupKey = null;
+    
+    addGroupForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+    
+      const groupDeviceRows = document.querySelectorAll('.group-device-row');
+      const groupDevices = Array.from(groupDeviceRows).map((row) => ({
+        group_device_key: row.querySelector('.device-select').value
+      }));
+    
+      const groupName = groupNameInput.value;
+    
+      if (groupDevices.length === 0) {
+        alert('Please add at least one device to the group.');
+        return;
+      }
+    
+      for (const groupDevice of groupDevices) {
+        if (groupDevice.group_device_key === 'Select Device') {
+          alert('Please select a valid  device.');
+          return;
+        }
+      }
       
-              // Validation check: If device is not selected from the dropdown, show an alert and return early
-              for (const groupDevice of groupDevices) {
-                if (groupDevice.group_device_key === 'Select Device') {
-                  alert('Please select a valid  device.');
-                  return;
-                }
-              }
-              if (groupName === '') {
-                  alert('Please enter a valid group name.');
-                  return;
-              }
-  
-              // Create a rule key by combining all device keys 
-              const group_key = groupDevices.map((groupDevice) => groupDevice.group_device_key).join('-');
+      if (groupName === '') {
+        alert('Please enter a valid group name.');
+        return;
+      }
+    
+      const addGroup = () => {
+        const group_key = groupDevices.map((groupDevice) => groupDevice.group_device_key).join('-');
       
-  
-              socket.emit('add_group', {
-                group_key,
+        socket.emit('add_group', {
+          group_key,
+          group_name: groupName,
+          group_devices: groupDevices,
+          is_edit: !!currentlyEditingGroupKey // true if editing, false or undefined if not
+        }, (response) => {
+          if (response && response.error) {
+            alert(response.error);
+          } else {
+            groupData[group_key] = {
                 group_name: groupName,
                 group_devices: groupDevices
-              }, (response) => {
-                 // console.log('Response from server', response);
-                  if (response && response.error) {
-                      alert(response.error);
-                  } else {
-                      groupData[group_key] = {
-                          group_name: groupName,
-                          group_devices: groupDevices
-                      };
+            };
     
-                  updateSidebarGroupLinks();
-                  updateGroupList();
-                  // Remove all existing device rows once group is added
-                groupDeviceRows.forEach(row => groupWrapper.removeChild(row));  
-                DeviceRowCount = 0; // Reset / set input DeviceRow Count to 0
-                 groupNameInput.value = ""; // Reset the group name input field
-  
-                  // Hide the add-rule-container after submitting the form
-                addGroupContainer.style.display = 'none';
-                
-                }
-              });
+            currentlyEditingGroupKey = null;
+            
+            updateSidebarGroupLinks();
+            updateGroupList();
+            groupDeviceRows.forEach(row => groupWrapper.removeChild(row));  
+            DeviceRowCount = 0; // Reset / set input DeviceRow Count to 0
+            groupNameInput.value = ""; // Reset the group name input field
+    
+            addGroupContainer.style.display = 'none';
+          }
         });
+      }
+    
+      if (currentlyEditingGroupKey) {
+        socket.emit("delete_group", { group_key: currentlyEditingGroupKey }, (response) => {
+          if (response && response.error) {
+            alert(response.error);
+          } else {
+            addGroup();
+          }
+        });
+      } else {
+        addGroup();
+      }
+    });
+    
   
   
-  /* ################################################################################################
-  The updateGroupList function is responsible for updating the displayed list of groups on the web page.
-  It first clears the inner HTML of the ruleList element. 
-  Then, it iterates through the groupData object and extracts information about each group, such as the group devices and group name.
-  For each group, it creates a text string that represents devices in the list separated with ",". 
-  It then creates a list item element, sets its text content to display the group, and creates a delete button for the group. 
-  When the delete button is clicked, it emits the "delete_group" event with the group key to delete the group on the server.
-  */
+/*
+################################################################################################
+The updateGroupList function is responsible for updating the displayed list of groups on the web page.
+
+--> It first clears the inner HTML of the groupList element. 
+--> Then, it iterates through the groupData object and extracts information about each group, such as the group devices and group name.
+--> For each group, it creates a text string that represents the devices in the list separated with ",". 
+--> It then creates a list item element, and adds separate div elements for the group name and group devices, displaying the relevant information.
+--> Within each list item, it creates a container for the buttons and adds two buttons - 'Delete' and 'Edit'.
+   - When the delete button is clicked, it emits the "delete_group" event with the group key to delete the group on the server.
+   - The edit button is assigned a dataset attribute with the group key. When the edit button is clicked, it calls the startEditingGroup function with the group key as argument.
+--> The list item, with all its child elements, is then appended to the groupList.
+
+The addEditButtonEventListeners function adds 'click' event listeners to all the 'edit-group-button' elements in the document.
+When the edit button is clicked, it calls the startEditingGroup function with the group key as argument.
+This function is called after updating the group list.
+*/
+
         const groupList = document.getElementById("group-list");
   
         function updateGroupList() {
@@ -274,20 +310,100 @@ let DeviceRowCount = 0;
             groupDevicesElement.textContent = `Devices: ${DevicesText}`;
             listItem.appendChild(groupDevicesElement);
         
+            // Create a container for the buttons
+            const groupButtonContainer = document.createElement("div");
+            groupButtonContainer.classList.add("group-button-container"); // You can style this class for positioning and spacing of the buttons
+
+            // Create Delete Button
             const deleteGroupButton = document.createElement("button");
             deleteGroupButton.classList.add("delete-group-button");
             deleteGroupButton.textContent = "Delete";
             deleteGroupButton.addEventListener("click", () => {
-              socket.emit("delete_group", { group_key: groupKey });
+                socket.emit("delete_group", { group_key: groupKey });
             });
-            listItem.appendChild(deleteGroupButton);
-        
+            groupButtonContainer.appendChild(deleteGroupButton);
+
+            // Create Edit Button
+            const editGroupButton = document.createElement("button");
+            editGroupButton.classList.add("edit-group-button");
+            editGroupButton.textContent = "Edit";
+            editGroupButton.dataset.groupKey = groupKey;
+            editGroupButton.addEventListener("click", () => {
+                startEditingGroup(groupKey);
+            });
+            groupButtonContainer.appendChild(editGroupButton);
+
+            // Append the button container to the list item
+            listItem.appendChild(groupButtonContainer);
+
             groupList.appendChild(listItem);
+
           }
         }
         
   
-  
+          // Call this function to add event listeners to the newly added edit buttons
+        function addEditButtonEventListeners() {
+          const editGroupButtons = document.querySelectorAll(".edit-group-button");
+          editGroupButtons.forEach(button => {
+              button.addEventListener('click', () => {
+                  const groupKey = button.dataset.groupKey; 
+                  startEditingGroup(groupKey);
+              });
+          });
+        }
+
+        // Call the function after updating the group list
+        updateGroupList();
+        addEditButtonEventListeners();
+
+
+
+      /*
+        ################################################################################################
+        The startEditingGroup function is responsible for initiating the group editing process on the web page.
+
+        --> It first sets the currentlyEditingGroupKey to the groupKey passed as argument.
+        --> It fetches the group data from the groupData object using the group key.
+        --> It populates the groupNameInput field with the group name from the group data.
+        --> It selects all the '.device-select' elements in the document and stores them in an array.
+        --> If the number of device select elements is less than the number of devices in the group, it adds additional device select elements by calling the addDeviceRow function.
+        --> It then iterates through the devices in the group and sets the value of each device select element to the corresponding group device key from the group data.
+        --> Finally, it displays the addGroupContainer so the user can see and edit the group data.
+        */
+
+      function startEditingGroup(groupKey) {
+        currentlyEditingGroupKey = groupKey;
+      
+        const group = groupData[groupKey];
+        groupNameInput.value = group.group_name;
+      
+        // Populate the device selects with the devices from the group.
+        let deviceSelects = Array.from(document.querySelectorAll('.device-select'));
+      
+        // Check if the number of device selects is less than the number of devices in the group
+        if (deviceSelects.length < group.group_devices.length) {
+          // If yes, add more device select input fields to match the number of devices in the group
+          const additionalSelectsNeeded = group.group_devices.length - deviceSelects.length;
+          for (let i = 0; i < additionalSelectsNeeded; i++) {
+            addDeviceRow();  // Assuming addDeviceRow is a function that adds a new device select input field
+          }
+          // Query the device selects again after adding new ones
+          deviceSelects = Array.from(document.querySelectorAll('.device-select'));
+        }
+      
+        for (let i = 0; i < group.group_devices.length; i++) {
+          deviceSelects[i].value = group.group_devices[i].group_device_key;
+        }
+      
+        // Show the add-group-container so the user can edit the group.
+        addGroupContainer.style.display = 'block';
+      }
+                
+
+
+
+
   
   /*
   This function populates sidebar list of added groups. When the user clicks on the group name it will navigate to the dashboard, but hide all devices except devices that are
@@ -382,4 +498,8 @@ let DeviceRowCount = 0;
   
   
   });
+
+
+
+
 
