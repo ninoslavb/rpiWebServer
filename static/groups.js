@@ -264,6 +264,7 @@ The following code is an event listener for the form submission. When the form i
         });
       } else {
         addGroup();
+        
       }
     });
     

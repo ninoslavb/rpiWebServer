@@ -113,7 +113,7 @@ deleteDeviceListener(device_key);
         // Check if the device is in this group
         for (let j = 0; j < groupDevices.length; j++) {
           if (groupDevices[j].group_device_key === device_key) {
-            alert("Cannot delete device. It is part of the group: " + group.group_name + ". To delete the device, you must first delete the group.");
+            alert("Cannot delete device. It is part of the group: " + group.group_name + ". To delete the device, you must first delete it from the group by usign edit button in Groups page");
             deviceTop.style.display = 'block'; // Make the device box visible again after alert message is shown
             confirmDiv.style.display = 'none'; //Hide device deletion window;
             return;

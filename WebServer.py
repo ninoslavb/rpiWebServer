@@ -331,6 +331,12 @@ def pairing_callback(event_type, device_info):
         if device_key in devices:
             print(f"Device with key {device_key} already exists, skipping adding.")
             return  # Skip the rest of the function if the device already exists
+        
+        pairing_devices = load_pairing_devices()
+        if friendly_name in pairing_devices:
+            print(f"Device with friendly name {friendly_name} already exists in pairing list, skipping adding to the pairing list.")
+            return
+
 
         #if device not exist, add device to the pairing list and send information to the frontend
         add_pairing_device(friendly_name,device_id,description,model,supported,vendor)
