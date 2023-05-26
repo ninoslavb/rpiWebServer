@@ -180,93 +180,100 @@ The following code is an event listener for the form submission. When the form i
     - If the group name is empty, an alert is shown and the function returns early.
 
 --> It then defines a function addGroup, which performs the following tasks:
-    - It creates a group key by combining all device keys.
+    - It creates a group key based on whether the group is currently being edited or a new group is being added. In the latter case, a pseudo-random group key is generated.
     - It emits the 'add_group' event, sending the form data to the server using the socket connection.
     - The server responds with either an 'error' or a successful response. If there is an error, it alerts the user about the issue (e.g., a device is already assigned to another group).
-    - If the response is successful, it updates the groupData object and calls the updateGroupList() and updateSidebarGroupLinks() functions to update the list of groups displayed on the page.
-    - It then removes all existing device rows from the form, allowing the user to start fresh when adding a new group. It also resets the group name input field and hides the addGroupContainer.
+    - If the response is successful, it updates the groupData object, removes the old group data if any, and calls the updateGroupList() and updateSidebarGroupLinks() functions to update the list of groups displayed on the page.
+    - It then removes all existing device rows from the form, resets the group name input field, and hides the addGroupContainer, allowing the user to start fresh when adding a new group or editing an existing one.
 
---> If the currentlyEditingGroupKey is not null, meaning we're in editing mode, it emits the 'delete_group' event first to delete the existing group from the server. 
-    - If the server responds with an error during deletion, it alerts the user about the issue.
-    - If the deletion is successful, it then calls the addGroup function to add the updated group.
-
---> If currentlyEditingGroupKey is null, meaning we're not in editing mode, it simply calls the addGroup function to add the new group.
+--> Finally, it calls the addGroup function to process the form data and add or update the group.
 */
 
-    const addGroupForm = document.getElementById("add-group-form");
-    const groupNameInput = document.getElementById("new-group-name");
-    let currentlyEditingGroupKey = null;
-    
-    addGroupForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-    
-      const groupDeviceRows = document.querySelectorAll('.group-device-row');
-      const groupDevices = Array.from(groupDeviceRows).map((row) => ({
-        group_device_key: row.querySelector('.device-select').value
-      }));
-    
-      const groupName = groupNameInput.value;
-    
-      if (groupDevices.length === 0) {
-        alert('Please add at least one device to the group.');
-        return;
-      }
-    
-      for (const groupDevice of groupDevices) {
-        if (groupDevice.group_device_key === 'Select Device') {
-          alert('Please select a valid  device.');
-          return;
+
+const addGroupForm = document.getElementById("add-group-form");
+const groupNameInput = document.getElementById("new-group-name");
+let originalGroupData = null;
+let currentlyEditingGroupKey = null;
+
+// Function to generate a pseudo-random group key.
+function generateGroupKey() {
+  return '_' + Math.random().toString(36).substr(2, 9);
+}
+
+addGroupForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const groupDeviceRows = document.querySelectorAll('.group-device-row');
+  const groupDevices = Array.from(groupDeviceRows).map((row) => ({
+    group_device_key: row.querySelector('.device-select').value
+  }));
+
+  const groupName = groupNameInput.value;
+
+  if (groupDevices.length === 0) {
+    alert('Please add at least one device to the group.');
+    return;
+  }
+
+  for (const groupDevice of groupDevices) {
+    if (groupDevice.group_device_key === 'Select Device') {
+      alert('Please select a valid device.');
+      return;
+    }
+  }
+
+  if (groupName === '') {
+    alert('Please enter a valid group name.');
+    return;
+  }
+
+  const addGroup = () => {
+    let groupKey;
+    if (currentlyEditingGroupKey) {
+      groupKey = currentlyEditingGroupKey;
+    } else {
+      groupKey = generateGroupKey();
+    }
+
+    socket.emit('add_group', {
+      group_key: groupKey,
+      group_name: groupName,
+      group_devices: groupDevices,
+      is_edit: !!currentlyEditingGroupKey
+    }, (response) => {
+      if (response && response.error) {
+        alert(response.error);
+        if (currentlyEditingGroupKey) {
+          // If an error occurred while editing a group, restore the original group.
+          groupData[currentlyEditingGroupKey] = originalGroupData;
         }
-      }
-      
-      if (groupName === '') {
-        alert('Please enter a valid group name.');
-        return;
-      }
-    
-      const addGroup = () => {
-        const group_key = groupDevices.map((groupDevice) => groupDevice.group_device_key).join('-');
-      
-        socket.emit('add_group', {
-          group_key,
-          group_name: groupName,
-          group_devices: groupDevices,
-          is_edit: !!currentlyEditingGroupKey // true if editing, false or undefined if not
-        }, (response) => {
-          if (response && response.error) {
-            alert(response.error);
-          } else {
-            groupData[group_key] = {
-                group_name: groupName,
-                group_devices: groupDevices
-            };
-    
-            currentlyEditingGroupKey = null;
-            
-            updateSidebarGroupLinks();
-            updateGroupList();
-            groupDeviceRows.forEach(row => groupWrapper.removeChild(row));  
-            DeviceRowCount = 0; // Reset / set input DeviceRow Count to 0
-            groupNameInput.value = ""; // Reset the group name input field
-    
-            addGroupContainer.style.display = 'none';
-          }
-        });
-      }
-    
-      if (currentlyEditingGroupKey) {
-        socket.emit("delete_group", { group_key: currentlyEditingGroupKey }, (response) => {
-          if (response && response.error) {
-            alert(response.error);
-          } else {
-            addGroup();
-          }
-        });
       } else {
-        addGroup();
-        
+        if (currentlyEditingGroupKey) {
+          delete groupData[currentlyEditingGroupKey]; // remove the old group data
+        }
+        groupData[groupKey] = {
+          group_name: groupName,
+          group_devices: groupDevices
+        };
+
+        currentlyEditingGroupKey = null;
+        originalGroupData = null;
+
+        updateSidebarGroupLinks();
+        updateGroupList();
+        groupDeviceRows.forEach(row => groupWrapper.removeChild(row));
+        DeviceRowCount = 0; // Reset / set input DeviceRow Count to 0
+        groupNameInput.value = ""; // Reset the group name input field
+
+        addGroupContainer.style.display = 'none';
       }
     });
+  }
+
+  addGroup();
+});
+
+
     
   
   
@@ -373,37 +380,37 @@ This function is called after updating the group list.
         --> Finally, it displays the addGroupContainer so the user can see and edit the group data.
         */
 
-      function startEditingGroup(groupKey) {
-        currentlyEditingGroupKey = groupKey;
-      
-        const group = groupData[groupKey];
-        groupNameInput.value = group.group_name;
-      
-        // Populate the device selects with the devices from the group.
-        let deviceSelects = Array.from(document.querySelectorAll('.device-select'));
-      
-        // Check if the number of device selects is less than the number of devices in the group
-        if (deviceSelects.length < group.group_devices.length) {
-          // If yes, add more device select input fields to match the number of devices in the group
-          const additionalSelectsNeeded = group.group_devices.length - deviceSelects.length;
-          for (let i = 0; i < additionalSelectsNeeded; i++) {
-            addDeviceRow();  // Assuming addDeviceRow is a function that adds a new device select input field
+        function startEditingGroup(groupKey) {
+          currentlyEditingGroupKey = groupKey;
+        
+          const group = groupData[groupKey];
+          groupNameInput.value = group.group_name;
+          
+          // Populate the device selects with the devices from the group.
+          let deviceSelects = Array.from(document.querySelectorAll('.device-select'));
+          
+          // Check if the number of device selects is less than the number of devices in the group
+          if (deviceSelects.length < group.group_devices.length) {
+            // If yes, add more device select input fields to match the number of devices in the group
+            const additionalSelectsNeeded = group.group_devices.length - deviceSelects.length;
+            for (let i = 0; i < additionalSelectsNeeded; i++) {
+              addDeviceRow();  // Assuming addDeviceRow is a function that adds a new device select input field
+            }
+            // Query the device selects again after adding new ones
+            deviceSelects = Array.from(document.querySelectorAll('.device-select'));
           }
-          // Query the device selects again after adding new ones
-          deviceSelects = Array.from(document.querySelectorAll('.device-select'));
+          
+          for (let i = 0; i < group.group_devices.length; i++) {
+            deviceSelects[i].value = group.group_devices[i].group_device_key;
+          }
+          
+          // Call updateGroupDeviceOptions to disable already selected options
+          updateGroupDeviceOptions();
+        
+          // Show the add-group-container so the user can edit the group.
+          addGroupContainer.style.display = 'block';
         }
-      
-        for (let i = 0; i < group.group_devices.length; i++) {
-          deviceSelects[i].value = group.group_devices[i].group_device_key;
-        }
-      
-        // Show the add-group-container so the user can edit the group.
-        addGroupContainer.style.display = 'block';
-      }
-                
-
-
-
+        
 
   
   /*
@@ -499,7 +506,6 @@ This function is called after updating the group list.
   
   
   });
-
 
 
 
