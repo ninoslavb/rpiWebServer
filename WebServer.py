@@ -459,15 +459,12 @@ def delete_deivce(data):
 ################################################################################################################################################################
 
 """
-The following functions handle the 'add_group' and 'delete_group' socket events. They perform different operations depending on the event that triggered them:
-@socketio.on('add_group')
-The function update_group_handler() is executed when the 'add_group' event is triggered. It takes data as an argument, which contains information about the group that needs to be added or updated. 
-The function first retrieves the required data from the input data dictionary and loads the existing groups. It then checks if the new group name already exists (if it's not an edit operation) and if any devices from the new group are already assigned to another group. 
-If a device is found that is already assigned to a group, the function returns an error message. If there are no issues, the function proceeds to add the new group or update the existing group. 
-In case of an update operation, the function first deletes the existing group, then adds the new group. The group data is then broadcasted to all clients to update their local copies of the group data.
-@socketio.on('delete_group')
-The function delete_group_handler() is executed when the 'delete_group' event is triggered. It deletes the group specified by the provided group key from the group data if it exists. 
-The function then broadcasts the updated group data to all clients. If the group was deleted successfully, the function returns a success message. If the group was not found, an error message is returned.
+This function is executed when the 'add_group' event is triggered. It receives a dictionary called data containing details about the group that needs to be added or updated.
+The function first retrieves the necessary data from the provided dictionary and loads the existing groups.
+The function then checks if a group with the new group's name already exists and it's not the same group being edited. If it does, the function returns an error message.
+The function also checks if any device from the new group is already assigned to another group. If a device is found that is already assigned to a group, the function returns an error message.
+If there are no conflicts with the group name or devices, the function proceeds to add the new group or update the existing group. In case of an update operation, the function first deletes the existing group, then adds the new group.
+Finally, the function broadcasts the updated group data to all clients to ensure they have the most up-to-date group data.
 """
 
 
@@ -485,11 +482,10 @@ def update_group_handler(data):
 
     groups = load_groups()
 
-    # If it's not an edit operation, check if the group name already exists
-    if not is_edit:
-        for group in groups.values():
-            if group['group_name'] == groupName:
-                return {'error': f"Group name {groupName} already exists!"}
+    # Check if the group name already exists
+    for group_key, group in groups.items():
+        if group['group_name'] == groupName and group_key != groupKey:
+            return {'error': f"Group name {groupName} already exists!"}
 
     for group_key, group_details in groups.items():
         if is_edit and group_key == groupKey:
@@ -521,6 +517,13 @@ def update_group_handler(data):
     else:
         return {'error': f"Device {existing_device_name} already assigned to the group {existing_group_name}."}
 
+
+"""
+This function is executed when the 'delete_group' event is triggered.
+The function receives a dictionary containing the group key of the group that needs to be deleted. If the group key exists in the group data, the function deletes the group.
+The function then broadcasts the updated group data to all clients to ensure they have the most up-to-date group data.
+If the group is deleted successfully, the function returns a success message. If the group was not found, the function returns an error message.
+"""
 @socketio.on('delete_group')
 def delete_group_handler(data):
     group_key = data['group_key']

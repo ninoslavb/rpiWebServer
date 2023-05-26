@@ -381,6 +381,12 @@ This function is called after updating the group list.
         */
 
         function startEditingGroup(groupKey) {
+
+          // Remove all existing device rows
+          const deviceRows = Array.from(document.querySelectorAll('.group-device-row'));
+          deviceRows.forEach(row => groupWrapper.removeChild(row));
+          DeviceRowCount = 0;
+
           currentlyEditingGroupKey = groupKey;
         
           const group = groupData[groupKey];
