@@ -542,7 +542,7 @@ def delete_group_handler(data):
 #############################################################---RULES---########################################################################################
 ################################################################################################################################################################            
 
-# add/update rule handler
+#add/update rule handler
 @socketio.on('add_rule')
 def update_rule_handler(data):
     rule_key = data['rule_key']
@@ -551,41 +551,26 @@ def update_rule_handler(data):
     logic_operator = data['logic_operator']
     output_device_key = data['output_key']
     output_device_action = data['output_action']
-    is_edit = data.get('is_edit', False)  # get the is_edit flag, default to False if it's not there
-
-    print(f"Received rule data: {data}")  # Debug line
 
     existing_output_rule_name = None
     existing_output_device_name = None
 
     rules = load_rules()
 
-    print(f"Loaded rules: {rules}")  # Debug line
-
-    # Check if the rule name already exists
-    for ruleKey, rule in rules.items():
-        if rule['rule_name'] == rule_name and ruleKey != rule_key:
-            return {'error': f"Rule name {rule_name} already exists!"}
-
     # Check if the output device is already used in existing rules
     for existing_rule_key, existing_rule in rules.items():
-        if is_edit and existing_rule_key == rule_key:
-            continue
-
         if existing_rule['output_device_key'] == output_device_key:
             existing_output_device_name = device_data[existing_rule['output_device_key']]['name']
             existing_output_rule_name = existing_rule['rule_name']
             return {'error': f"Output {existing_output_device_name} already assigned to the rule {existing_output_rule_name}."}
-    print(f"Checking rule_key: {rule_key} in rule_data")  # Debug line
+
+    # Check if the rule name already exists
+    for rule in rule_data.values():
+        if rule['rule_name'] == rule_name:
+            return {'error': f"Rule name {rule_name} already exists!"}
 
     if rule_key not in rule_data:
         if input_devices and output_device_key:
-            if is_edit:
-                print(f"Editing rule: {rule_key}")  # Debug line
-                delete_rule(rule_key)
-                del rule_data[rule_key]
-            
-            print(f"Adding rule: {rule_key}")  # Debug line
             add_rule(rule_key, rule_name, input_devices, logic_operator, output_device_key, output_device_action)
             rule_data[rule_key] = {
                 'rule_name': rule_name,
@@ -619,7 +604,6 @@ def delete_rule_handler(data):
         if not is_output_device_used:
             print(f"Unlocking device {output_device_key}")  # Add a console log
             emit('lock_device', {'device_key': output_device_key, 'isLocked': False}, broadcast=True)
-
 
 
 

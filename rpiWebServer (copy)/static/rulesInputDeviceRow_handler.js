@@ -71,7 +71,7 @@ function updateLogicOperatorVisibility() {
 }
 
 // this counter counts input devices available for rules
-let inputDeviceRowCount = 0;
+export let inputDeviceRowCount = 0;
 
 function setInputDeviceRowCount(value) {
   inputDeviceRowCount = value;
@@ -125,7 +125,6 @@ function addInputDeviceRow() {
 
   //create device selection dropdown from device types digital-input and sensor
   const inputDeviceSelect = createSelect('input-device-select', `<option disabled selected class="placeholder-option">Select Input Device</option>`);
-  inputDeviceSelect.classList.add('input-device-select');
   for (const deviceKey in deviceData) {
     const device = deviceData[deviceKey];
     if (device.type === 'digital-input'|| device.type === 'sensor') {
@@ -224,4 +223,4 @@ function addInputDeviceRow() {
 
 
 
-export {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount, updateInputDeviceOptions, createSelect};
+export {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount};

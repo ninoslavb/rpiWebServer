@@ -1,5 +1,5 @@
 
-import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount, updateInputDeviceOptions, createSelect} from './rulesInputDeviceRow_handler.js';
+import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount} from './rulesInputDeviceRow_handler.js';
 
 
   // DOM elements
@@ -8,7 +8,7 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
 
   const socket = io();
 
-  
+  const addRuleForm = document.getElementById("add-rule-form");
   const logicOperatorSelect = document.querySelector(".logic-operator-select");
   const outputSelect = document.querySelector(".output-select");
   const outputActionSelect = document.querySelector(".output-action-select");
@@ -95,15 +95,6 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
   
   */
 
-  const addRuleForm = document.getElementById("add-rule-form");
-  const ruleNameInput = document.getElementById("new-rule-name");
-  let originalRuleData = null;
-  let currentlyEditingRuleKey = null;
-
-  // Function to generate a pseudo-random rule key.
-  function generateRuleKey() {
-    return '_' + Math.random().toString(36).substr(2, 9);
-  }
 
   addRuleForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -135,7 +126,7 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
             });
             
           
-          
+          const ruleNameInput = document.getElementById("new-rule-name");
           const ruleName = ruleNameInput.value;
 
 
@@ -188,14 +179,9 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
             return;
         }
 
-        const addRule = () => {
-          let rule_key;
-          if (currentlyEditingRuleKey) {
-            rule_key = currentlyEditingRuleKey;
-          } else {
-            rule_key = generateRuleKey();
-          }
 
+        // Create a rule key by combining all the input device keys and the output device key
+        const rule_key = inputDevices.map((inputDevice) => inputDevice.input_device_key).join('-') + '-' + outputSelect.value;
 
         socket.emit('add_rule', {
           rule_key,
@@ -203,19 +189,11 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
           input_devices: inputDevices,
           logic_operator: logicOperatorSelect.value,
           output_key: outputSelect.value,
-          output_action: outputActionSelect.value,
-          is_edit: !!currentlyEditingRuleKey
+          output_action: outputActionSelect.value
         }, (response) => {
           if (response && response.error) {
             alert(response.error);
-            if (currentlyEditingRuleKey) {
-              // If an error occurred while editing a rule, restore the original rule.
-              ruleData[currentlyEditingRuleKey] = originalRuleData;
-            }
           } else {
-            if (currentlyEditingRuleKey) {
-              delete ruleData[currentlyEditingRuleKey]; // remove the old rule data
-            }
             ruleData[rule_key] = {
               rule_name: ruleName,
               input_devices: inputDevices,
@@ -224,11 +202,7 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
               output_device_action: outputActionSelect.value
             };
             updateRuleList();
-          
-          
-          currentlyEditingRuleKey = null;
-          originalRuleData = null;
-
+            
           inputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));  // Remove all existing input device rows once when rule is added   
           updateLogicOperatorVisibility() // update logic OperatorVisibility (hide it when the rule is applied and no more devices selected)
           setInputDeviceRowCount(0); // Reset / set input DeviceRow Count to 0
@@ -252,8 +226,6 @@ import {addInputDeviceRow, updateLogicOperatorVisibility, setInputDeviceRowCount
 
           }
         });
-      }
-      addRule();
   });
 
   
@@ -481,7 +453,7 @@ function updateRuleList() {
     editRuleButton.textContent = "Edit";
     editRuleButton.dataset.ruleKey = ruleKey;
     editRuleButton.addEventListener("click", () => {
-        startEditingRule(ruleKey);                        
+       // startEditingRule(ruleKey);                        ///TO BE IMPLEMENTED////
     });
     ruleButtonContainer.appendChild(editRuleButton);
     
@@ -493,102 +465,64 @@ function updateRuleList() {
   updateLockStates();
 }
 
-/* ###########start Editing Rule function##############
-1. Preparation: The function starts by preparing the environment for editing. This includes removing all the existing input device rows from the UI and resetting the input device count to zero. The currentlyEditingRuleKey is set with the provided ruleKey.
-2. Rule Selection: The function selects the rule to be edited based on the provided ruleKey and sets the rule name in the UI input field.
-3. Wait DOM Update: A helper function is defined to create a delay that allows the DOM to update. This is used later in the function to ensure that UI elements have been created or updated before the script continues.
-4. Input Devices Setup: The function iterates over the input devices defined in the rule. For each device, a new row is added to the UI, and the device is selected in the dropdown. If the selected device is of type 'digital-input' and subtype 'contact' or 'motion', the relevant options are populated and selected. If the selected device is of type 'sensor' and subtype 'temp', the temperature-related fields are populated and selected.
-5. Logic Operator Setup: The function sets the logic operator for the rule in the UI.
-6. Output Devices Setup: The function sets the output device and the associated action for the rule in the UI.
-7. Lock State Update: The lock state of the UI elements is updated to ensure that the user can only interact with the appropriate elements.
-8. Show Rule Editing Container: Finally, the container for editing the rule is displayed to the user.
+
+  
+  // Call this function to add event listeners to the newly added edit buttons
+  function addRuleEditButtonEventListeners() {
+    const editRuleButtons = document.querySelectorAll(".edit-rule-button");
+    editRuleButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const ruleKey = button.dataset.ruleKey; 
+           //startEditingRule(ruleKey);
+        });
+    });
+  }
+
+  // Call the function after updating the rule list
+  updateRuleList();
+  addRuleEditButtonEventListeners();
+
+
+/*  ############################################## TBD ############################################################
+  function startEditingRule(ruleKey) {
+
+    // Remove all existing device rows
+    const inputDeviceRows = Array.from(document.querySelectorAll('.input-device-row'));
+    inputDeviceRows.forEach(row => ruleWrapper.removeChild(row));
+    inputDeviceRowCount = 0;
+
+    currentlyEditingRuleKey = ruleKey;
+  
+    const rule = ruleData[ruleKey];
+    ruleNameInput.value = rule.rule_name;
+    
+    // Populate the device selects with the devices from the group.
+    let inputDeviceSelects = Array.from(document.querySelectorAll('.input-device-select'));
+    
+    // Check if the number of device selects is less than the number of input devices in the rule
+    if (inpuDeviceSelects.length < rule.input_devices.length) {
+      // If yes, add more device select input fields to match the number of devices in the group
+      const additionalSelectsNeeded = rule.input_devices.length - inputDeviceSelects.length;
+      for (let i = 0; i < additionalSelectsNeeded; i++) {
+        addInputDeviceRow();  // Assuming addDeviceRow is a function that adds a new device select input field
+      }
+      // Query the device selects again after adding new ones
+      inputDeviceSelects = Array.from(document.querySelectorAll('.input-device-select'));
+    }
+    
+    for (let i = 0; i < rule.input_devices.length; i++) {
+      inputDeviceSelects[i].value = rule.input_devices[i].rule_key;
+    }
+    
+    // Call updateGroupDeviceOptions to disable already selected options
+    updateInputDeviceOptions();
+  
+    // Show the add-group-container so the user can edit the group.
+    addRuleContainer.style.display = 'block';
+  }
+
 */
 
-
-async function startEditingRule(ruleKey) {
-  // Remove all existing device rows
-  const existingInputDeviceRows = Array.from(document.querySelectorAll('.input-device-row'));
-  existingInputDeviceRows.forEach(row => ruleWrapper.removeChild(row));
-  setInputDeviceRowCount(0); // Reset / set input DeviceRow Count to 0
-
-  currentlyEditingRuleKey = ruleKey;
-
-  const rule = ruleData[ruleKey];
-  ruleNameInput.value = rule.rule_name;
-
-
-  function waitDOMUpdate() {
-    return new Promise(resolve => setTimeout(resolve, 0));
-  }
-  
-
-  // Create input device rows for each input device in the rule
-  for (const inputDevice of rule.input_devices) {
-    const inputDeviceRowAdded = addInputDeviceRow();
-    if (inputDeviceRowAdded) {
-      const inputDeviceRow = document.querySelector('.input-device-row:last-child');
-      const inputDeviceSelect = inputDeviceRow.querySelector('.input-device-select');
-      inputDeviceSelect.value = inputDevice.input_device_key;
-  
-      // Check the device type and create the input device options accordingly
-      const selectedDevice = deviceData[inputDevice.input_device_key];
-      if (selectedDevice) {
-        if (selectedDevice.type === 'digital-input') {
-          if (selectedDevice.type1 === 'contact' || selectedDevice.type1 === 'motion') {
-            // Trigger the event and wait for DOM to update
-            inputDeviceSelect.dispatchEvent(new Event('change'));
-            await waitDOMUpdate();
-  
-            const inputDeviceOptionInput = inputDeviceRow.querySelector('.input-device-option');
-            if (inputDeviceOptionInput) {
-              // Then set the selected option value based on the rule data
-              inputDeviceOptionInput.value = inputDevice.input_device_option;
-            }
-          }
-        }
-  
-        if (selectedDevice.type === 'sensor' && selectedDevice.type1 === 'temp') {
-          // Dispatch the change event to create the temperatureRow
-          inputDeviceSelect.dispatchEvent(new Event('change'));
-          await waitDOMUpdate();
-  
-          const temperatureRow = inputDeviceRow.parentNode.querySelector('.temperature-row');
-          if (temperatureRow) {
-            const tempOptionInput = temperatureRow.querySelector('.temp-option');
-            const tempValueInput = temperatureRow.querySelector('.temp-value');
-            if (tempOptionInput && tempValueInput) {
-              // Set the selected option value based on the rule data
-              tempOptionInput.value = inputDevice.temp_option;
-              tempValueInput.value = inputDevice.temp_value;
-            }
-          }
-        } else {
-          const temperatureRow = inputDeviceRow.parentNode.querySelector('.temperature-row');
-          if (temperatureRow && temperatureRow.parentNode) {
-            temperatureRow.parentNode.removeChild(temperatureRow);
-          }
-        }
-      }
-    }
-  }
-
-
-  // Logic operator
-  const logicOperatorSelect = document.getElementById('logic-operator-select');
-  logicOperatorSelect.value = rule.logic_operator;
-
-  // Output device
-  const outputSelect = document.querySelector('.output-select');
-  outputSelect.value = rule.output_device_key;
-
-  const outputActionSelect = document.querySelector('.output-action-select');
-  outputActionSelect.value = rule.output_device_action;
-  
-  updateLockStates();
-
-  // Show the add-rule-container so the user can edit the rule.
-  addRuleContainer.style.display = 'block';
-}
 
 
 

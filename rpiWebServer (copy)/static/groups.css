@@ -17,8 +17,8 @@
   }
 
   
- /* Add New Rule Button */
-.custom-add-new-rule-button {
+ /* Add New Group Button */
+.custom-add-new-group-button {
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     text-align: center;
     border: 2px solid black;
@@ -29,12 +29,11 @@
     padding: 8px 16px;
   }
   
-  .custom-add-new-rule-button:hover {
+  .custom-add-new-group-button:hover {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.54);
   }
 
-   /* Rule name input */
-  .rule-input {
+  .group-input {
     background-color: transparent;
     border: 2px solid white;
     border-radius: 5px;
@@ -51,8 +50,8 @@
 
 
 
- /* Add Input Device Button */
- .custom-add-input-device-button {
+ /* Add Device to Group Button */
+ .custom-add-device-to-group-button {
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     text-align: center;
     border: 2px solid black;
@@ -65,13 +64,13 @@
     padding: 6px 12px;
   }
   
-  .custom-add-input-device-button:hover {
+  .custom-add-device-to-group-button:hover {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.54);
   }
 
   
-   /* Add Input Device Button */
- .custom-delete-input-button {
+   /* Delete devoce form selection button */
+ .custom-delete-device-button {
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     text-align: center;
     background-color: transparent;
@@ -90,12 +89,12 @@
     align-self: center;
   }
   
-  .custom-delete-input-button:hover {
+  .custom-delete-device-button:hover {
     box-shadow: 0px 0px 20px red;
   }
 
 
-  .custom-submit-rule-button {
+  .custom-submit-group-button {
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     text-align: center;
     border: 2px solid black;
@@ -108,12 +107,12 @@
     padding: 6px 12px;
   }
   
-  .custom-submit-rule-button:hover {
+  .custom-submit-group-button:hover {
     box-shadow: 0px 0px 20px rgb(56, 252, 7);
   }
 
 
-  .delete-rule-button {
+  .delete-group-button {
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     background-color: transparent;
     transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
@@ -130,12 +129,12 @@
     align-self: left;
   }
   
-  .delete-rule-button:hover {
+  .delete-group-button:hover {
     box-shadow: 0px 0px 20px red;
   }
 
 
-  .edit-rule-button {
+  .edit-group-button {
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     background-color: transparent;
     transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
@@ -152,52 +151,52 @@
     align-self: left;
   }
   
-  .edit-rule-button:hover {
+  .edit-group-button:hover {
     box-shadow: 0px 0px 20px orange;
   }
 
-  .rule-button-container {
+  .group-button-container {
     display: flex;
     align-items: center;
 }
 
-.rule-button-container button {
+.group-button-container button {
     margin-right: 10px;
 }
 
-  .rule-list-container {
+
+
+
+  .group-list-container {
     padding-left: 10px;
     display: flex;
     flex-direction: column;
     align-items: left;
     text-align: left; 
   }
-  .rule-list-container h3 {
+  .group-list-container h3 {
     margin-bottom: 0.5rem; 
   }
 
-  #rule-list {
+  #group-list {
     padding: 0px; /* Remove default padding from the list */
   }
-  
-  .rule-list-item {
+
+
+  .group-list-item {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: column; /* Set the direction to column */
     font-family: 'Poppins', Arial, sans-serif;
     font-size: 16px;
     color: white;
     list-style-type: none; /* Remove the dot at the beginning */
-    margin-bottom: 1rem; /* Add some spacing between list items */
+    margin-bottom: 8px; /* Add some spacing between list items */
     font-weight: bold; /* Make the text bold, you can adjust this as needed */
   }
- 
-    
 
 
 
-
-  #add-rule-container {
+  #add-group-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -209,7 +208,7 @@
     border-radius: 5px;
   }
   
-  #add-rule-form {
+  #add-group-form {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -218,17 +217,16 @@
     width: 100%;
   }
 
-  #ruleWrapper,
-  #inputDeviceWrapper,
-  #logicOperatorWrapper,
-  #outputWrapper {
+
+
+  #groupWrapper {
     display: flex;
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
   }
   
-  .input-device-row {
+  .group-device-row {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
@@ -236,15 +234,8 @@
     margin-bottom: 10px;
   }
 
-  .output-device-row {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
 
-  #addInputDeviceButton {
+  #addDeviceToGroupButton {
     align-self: flex-start;
   }
   
@@ -253,7 +244,7 @@
   }
   
   
-  .input-device-select {
+  .device-select {
     background-color: transparent; /* background color */
     border: 2px solid white; /* border color and size */
     border-radius: 5px; /* rounded corners */
@@ -268,102 +259,7 @@
     margin-right: 10px;
   }
   
-  .input-device-option {
-    background-color: transparent; /* background color */
-    border: 2px solid white; /* border color and size */
-    border-radius: 5px; /* rounded corners */
-    color: white; /* text color */
-    font-family: Arial, sans-serif; /* font */
-    font-size: 12px; /* font size */
-    padding: 5px 10px; /* padding around the text */
-    width: 100%;
-    min-width: 120px;
-    max-width: 120px;
-    margin-bottom: 5px;
-    margin-right: 5px;
-  }
 
-  .temp-option {
-    background-color: transparent; /* background color */
-    border: 2px solid white; /* border color and size */
-    border-radius: 5px; /* rounded corners */
-    color: white; /* text color */
-    font-family: Arial, sans-serif; /* font */
-    font-size: 12px; /* font size */
-    padding: 5px 10px; /* padding around the text */
-    width: 100%;
-    min-width: 120px;
-    max-width: 120px;
-    margin-bottom: 5px;
-    margin-right: 5px;
-  }
-
-  .temp-value {
-    background-color: transparent;
-    border: 2px solid white;
-    border-radius: 5px;
-    color: white;
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    padding: 5px 5px;
-    width: 100%;
-    min-width: 60px;
-    max-width: 60px;
-    margin-bottom: 5px;
-    margin-right: 5px;
-}
-  
-  .output-select {
-    background-color: transparent; /* background color */
-    border: 2px solid white; /* border color and size */
-    border-radius: 5px; /* rounded corners */
-    color: white; /* text color */
-    font-family: Arial, sans-serif; /* font */
-    font-size: 12px; /* font size */
-    padding: 5px 5px; /* padding around the text */
-    width: 100%;
-    min-width: 150px;
-    max-width: 150px;
-    margin-bottom: 5px;
-    margin-right: 10px;
-  }
-
-  .output-action-select {
-    background-color: transparent; /* background color */
-    border: 2px solid white; /* border color and size */
-    border-radius: 5px; /* rounded corners */
-    color: white; /* text color */
-    font-family: Arial, sans-serif; /* font */
-    font-size: 12px; /* font size */
-    padding: 5px 10px; /* padding around the text */
-    width: 100%;
-    min-width: 120px;
-    max-width: 120px;
-    margin-bottom: 5px;
-    margin-right: 5px;
-  }
-
-  .logic-operator-select {
-    background-color: transparent; /* background color */
-    border: 2px solid white; /* border color and size */
-    border-radius: 5px; /* rounded corners */
-    color: white; /* text color */
-    font-family: Arial, sans-serif; /* font */
-    font-size: 12px; /* font size */
-    padding: 5px 10px; /* padding around the text */
-    width: 100%;
-    min-width: 120px;
-    max-width: 120px;
-    margin-bottom: 5px;
-    margin-right: 5px;
-    display: none; /* Hide dropwdown when the page is rendered first time */
-  }
-
-    /* Remove "Logic operation between inputs" text when the page is rendered first time */
-  .logic-operator-select-text {
-    display: none;
-  }
-  
   
   /* Change the text color of the dropdown menu */
   select:focus option, select:active option {
