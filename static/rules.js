@@ -471,8 +471,10 @@ for (const ruleKey in ruleData) {
   const deleteRuleButton = document.createElement("button");
   deleteRuleButton.classList.add("delete-rule-button");
   deleteRuleButton.textContent = "Delete";
+  deleteRuleButton.dataset.ruleKey = ruleKey;
   deleteRuleButton.addEventListener("click", () => {
     socket.emit("delete_rule", { rule_key: ruleKey });
+
   });
   ruleButtonContainer.appendChild(deleteRuleButton);
   
@@ -535,10 +537,25 @@ const existingInputDeviceRows = document.querySelectorAll('.input-device-row');
 existingInputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));
 
 setInputDeviceRowCount(0); // Reset / set input DeviceRow Count to 0
-
-
-currentlyEditingRuleKey = ruleKey;
-
+/*
+  // If there is a currently editing rule, show its delete button again
+  if (currentlyEditingRuleKey) {
+    const previousDeleteRuleButton = document.querySelector(`.delete-rule-button[data-rule-key="${currentlyEditingRuleKey}"]`);
+    if(previousDeleteRuleButton) {
+        previousDeleteRuleButton.style.display = 'block';
+    }
+  }
+  */
+  // Update the currently editing rule key
+  currentlyEditingRuleKey = ruleKey;
+  
+  /*
+  // Hide the delete button of the currently editing rule
+  const deleteRuleButton = document.querySelector(`.delete-rule-button[data-rule-key="${ruleKey}"]`);
+  if(deleteRuleButton) {
+      deleteRuleButton.style.display = 'none';
+  }
+*/
 const rule = ruleData[ruleKey];
 ruleNameInput.value = rule.rule_name;
 
@@ -616,7 +633,7 @@ addRuleContainer.style.display = 'block';
 // Load the current rules and display them
 socket.on("rules_updated", (rules) => {
 ruleData = rules; // Update the ruleData object with the new data
-addRuleContainer.style.display = 'none'; //hide ADD Rule container once when rule is added/deleted.
+//addRuleContainer.style.display = 'none'; //hide ADD Rule container once when rule is added/deleted.
 updateRuleList();
 });
 

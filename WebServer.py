@@ -446,7 +446,7 @@ def paring_device_action(data):
 
 #wait for delete device event
 @socketio.on('delete_device')
-def delete_device(data):
+def deleteDevice(data):
     device_key = data['device_key']
     delete_device(device_key) #delete device from devices.json
     del device_data[device_key] #delete device from device_data dictionary
