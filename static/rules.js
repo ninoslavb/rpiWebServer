@@ -620,7 +620,7 @@ async function startEditingRule(ruleKey) {
 // Load the current rules and display them
 socket.on("rules_updated", (rules) => {
   ruleData = rules; // Update the ruleData object with the new data
-  addRuleContainer.style.display = 'none'; //hide add rule container once when rule is added/deleted.
+  addRuleContainer.style.display = 'none'; //hide ADD Rule container once when rule is added/deleted.
   updateRuleList();
 });
 
