@@ -446,7 +446,7 @@ def paring_device_action(data):
 
 #wait for delete device event
 @socketio.on('delete_device')
-def delete_deivce(data):
+def delete_device(data):
     device_key = data['device_key']
     delete_device(device_key) #delete device from devices.json
     del device_data[device_key] #delete device from device_data dictionary
@@ -507,7 +507,7 @@ def update_group_handler(data):
     if existing_group_device_key is None:
         if is_edit:
             delete_group(groupKey)
-            del group_data[groupKey]
+            del group_data[group_key]
         add_group(groupKey, groupDevices, groupName)
         group_data[groupKey] = {
             'group_name': groupName,

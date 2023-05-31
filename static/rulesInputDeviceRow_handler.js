@@ -162,7 +162,6 @@ function addInputDeviceRow() {
   `));
   temperatureRow.appendChild(createInput('text', 'temp-value', 'Value'));
   temperatureRow.appendChild(createLabel(' °C'));
- 
 
   inputDeviceSelect.addEventListener('change', () => {
     const selectedDevice = deviceData[inputDeviceSelect.value];
