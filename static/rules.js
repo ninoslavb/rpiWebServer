@@ -493,6 +493,25 @@ function updateRuleList() {
   updateLockStates();
 }
 
+
+// Call this function to add event listeners to the newly added edit buttons
+function addEditButtonEventListeners() {
+  const editRuleButtons = document.querySelectorAll(".edit-rule-button");
+  editRuleButtons.forEach(button => {
+      button.addEventListener('click', () => {
+          const ruleKey = button.dataset.ruleKey; 
+          startEditingRule(ruleKey);
+      });
+  });
+}
+
+// Call the function after updating the group list
+updateRuleList();
+addEditButtonEventListeners();
+
+
+
+
 /* ###########start Editing Rule function##############
 1. Preparation: The function starts by preparing the environment for editing. This includes removing all the existing input device rows from the UI and resetting the input device count to zero. The currentlyEditingRuleKey is set with the provided ruleKey.
 2. Rule Selection: The function selects the rule to be edited based on the provided ruleKey and sets the rule name in the UI input field.
@@ -505,10 +524,13 @@ function updateRuleList() {
 */
 
 
+
 async function startEditingRule(ruleKey) {
+
+  
   // Remove all existing device rows
   const existingInputDeviceRows = Array.from(document.querySelectorAll('.input-device-row'));
-  existingInputDeviceRows.forEach(row => ruleWrapper.removeChild(row));
+  existingInputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));
   setInputDeviceRowCount(0); // Reset / set input DeviceRow Count to 0
 
   currentlyEditingRuleKey = ruleKey;
@@ -598,6 +620,7 @@ async function startEditingRule(ruleKey) {
 // Load the current rules and display them
 socket.on("rules_updated", (rules) => {
   ruleData = rules; // Update the ruleData object with the new data
+  addRuleContainer.style.display = 'none'; //hide add rule container once when rule is added/deleted.
   updateRuleList();
 });
 
