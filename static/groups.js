@@ -189,7 +189,6 @@ The following code is an event listener for the form submission. When the form i
 --> Finally, it calls the addGroup function to process the form data and add or update the group.
 */
 
-
 const addGroupForm = document.getElementById("add-group-form");
 const groupNameInput = document.getElementById("new-group-name");
 let originalGroupData = null;
@@ -203,6 +202,9 @@ function generateGroupKey() {
 addGroupForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
+  // Get all delete and edit buttons
+ // const deleteButtons = document.querySelectorAll(".delete-group-button");
+  //const editButtons = document.querySelectorAll(".edit-group-button");
   const groupDeviceRows = document.querySelectorAll('.group-device-row');
   const groupDevices = Array.from(groupDeviceRows).map((row) => ({
     group_device_key: row.querySelector('.device-select').value
@@ -235,12 +237,23 @@ addGroupForm.addEventListener("submit", (event) => {
       groupKey = generateGroupKey();
     }
 
+    // Log event data
+    console.log(`Emitting add_group event with data: ${JSON.stringify({
+      group_key: groupKey,
+      group_name: groupName,
+      group_devices: groupDevices,
+      is_edit: !!currentlyEditingGroupKey
+    })}`);
+
     socket.emit('add_group', {
       group_key: groupKey,
       group_name: groupName,
       group_devices: groupDevices,
       is_edit: !!currentlyEditingGroupKey
     }, (response) => {
+      // Log response
+      console.log(`Received response from add_group event: ${JSON.stringify(response)}`);
+
       if (response && response.error) {
         alert(response.error);
         if (currentlyEditingGroupKey) {
@@ -248,13 +261,11 @@ addGroupForm.addEventListener("submit", (event) => {
           groupData[currentlyEditingGroupKey] = originalGroupData;
         }
       } else {
-        if (currentlyEditingGroupKey) {
-          delete groupData[currentlyEditingGroupKey]; // remove the old group data
-        }
         groupData[groupKey] = {
           group_name: groupName,
           group_devices: groupDevices
         };
+
 
         currentlyEditingGroupKey = null;
         originalGroupData = null;
@@ -326,6 +337,7 @@ This function is called after updating the group list.
             const deleteGroupButton = document.createElement("button");
             deleteGroupButton.classList.add("delete-group-button");
             deleteGroupButton.textContent = "Delete";
+            deleteGroupButton.dataset.groupKey = groupKey;
             deleteGroupButton.addEventListener("click", () => {
                 socket.emit("delete_group", { group_key: groupKey });
             });
@@ -386,7 +398,7 @@ This function is called after updating the group list.
           const deviceRows = Array.from(document.querySelectorAll('.group-device-row'));
           deviceRows.forEach(row => groupWrapper.removeChild(row));
           DeviceRowCount = 0;
-
+       
           currentlyEditingGroupKey = groupKey;
         
           const group = groupData[groupKey];
@@ -489,11 +501,15 @@ This function is called after updating the group list.
   
         // Load the current groups and display them
         socket.on("groups_updated", (groups) => {
+        
+          addGroupContainer.style.display = 'none'; //hide ADD Rule container once when rule is added/deleted.
           groupData = groups; // Update the groupData object with the new data
           updateSidebarGroupLinks();
           updateGroupList(); // update group list in Groups page
         });
         
+
+       
   
   
   /* ##########################################################################################################

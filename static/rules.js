@@ -516,14 +516,13 @@ addEditButtonEventListeners();
 
 
 /* ###########start Editing Rule function##############
-1. Preparation: The function starts by preparing the environment for editing. This includes removing all the existing input device rows from the UI and resetting the input device count to zero. The currentlyEditingRuleKey is set with the provided ruleKey.
+1. Preparation: The function starts by preparing the environment for editing. This includes removing all the existing temperature rows and input device rows from the UI, then resetting the input device count to zero. The currentlyEditingRuleKey is set with the provided ruleKey.
 2. Rule Selection: The function selects the rule to be edited based on the provided ruleKey and sets the rule name in the UI input field.
-3. Wait DOM Update: A helper function is defined to create a delay that allows the DOM to update. This is used later in the function to ensure that UI elements have been created or updated before the script continues.
-4. Input Devices Setup: The function iterates over the input devices defined in the rule. For each device, a new row is added to the UI, and the device is selected in the dropdown. If the selected device is of type 'digital-input' and subtype 'contact' or 'motion', the relevant options are populated and selected. If the selected device is of type 'sensor' and subtype 'temp', the temperature-related fields are populated and selected.
-5. Logic Operator Setup: The function sets the logic operator for the rule in the UI.
-6. Output Devices Setup: The function sets the output device and the associated action for the rule in the UI.
-7. Lock State Update: The lock state of the UI elements is updated to ensure that the user can only interact with the appropriate elements.
-8. Show Rule Editing Container: Finally, the container for editing the rule is displayed to the user.
+3. Input Devices Setup: The function iterates over the input devices defined in the rule. For each device, a new row is added to the UI, and the device is selected in the dropdown. If the selected device is of type 'digital-input', the relevant options are populated and selected. If the selected device is of type 'sensor' and subtype 'temp', the temperature-related fields are populated and selected. This process also includes a mechanism to allow the DOM to update, ensuring that UI elements have been created or updated before the script continues.
+4. Logic Operator Setup: The function sets the logic operator for the rule in the UI.
+5. Output Devices Setup: The function sets the output device and the associated action for the rule in the UI.
+6. Lock State Update: The lock state of the UI elements is updated to ensure that the user can only interact with the appropriate elements.
+7. Show Rule Editing Container: Finally, the container for editing the rule is displayed to the user.
 */
 
 
@@ -537,25 +536,10 @@ const existingInputDeviceRows = document.querySelectorAll('.input-device-row');
 existingInputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));
 
 setInputDeviceRowCount(0); // Reset / set input DeviceRow Count to 0
-/*
-  // If there is a currently editing rule, show its delete button again
-  if (currentlyEditingRuleKey) {
-    const previousDeleteRuleButton = document.querySelector(`.delete-rule-button[data-rule-key="${currentlyEditingRuleKey}"]`);
-    if(previousDeleteRuleButton) {
-        previousDeleteRuleButton.style.display = 'block';
-    }
-  }
-  */
+
   // Update the currently editing rule key
-  currentlyEditingRuleKey = ruleKey;
+currentlyEditingRuleKey = ruleKey;
   
-  /*
-  // Hide the delete button of the currently editing rule
-  const deleteRuleButton = document.querySelector(`.delete-rule-button[data-rule-key="${ruleKey}"]`);
-  if(deleteRuleButton) {
-      deleteRuleButton.style.display = 'none';
-  }
-*/
 const rule = ruleData[ruleKey];
 ruleNameInput.value = rule.rule_name;
 
@@ -633,7 +617,7 @@ addRuleContainer.style.display = 'block';
 // Load the current rules and display them
 socket.on("rules_updated", (rules) => {
 ruleData = rules; // Update the ruleData object with the new data
-//addRuleContainer.style.display = 'none'; //hide ADD Rule container once when rule is added/deleted.
+addRuleContainer.style.display = 'none'; //hide ADD Rule container once when rule is added/deleted.
 updateRuleList();
 });
 
