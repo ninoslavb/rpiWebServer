@@ -16,13 +16,27 @@ groupNameContainer.appendChild(input);
   
 const addNewGroupButton = document.getElementById('add-new-group-button');
 const addGroupContainer = document.getElementById('add-group-container');
+const groupNameInput = document.getElementById("new-group-name");
 
-// Show/hide the add-rule-container when the "ADD NEW GROUP" button is clicked
+//function to reset add group form (we use it everytime when ADD GROUP is clicked)
+function resetAddGroupForm() {
+  const groupDeviceRows = document.querySelectorAll('.group-device-row');
+  groupDeviceRows.forEach(row => groupWrapper.removeChild(row));
+  DeviceRowCount = 0;
+  groupNameInput.value = "";
+  addGroupContainer.style.display = 'none';
+}
+
+// Show/hide the add-group-container when the "ADD NEW GROUP" button is clicked
 addNewGroupButton.addEventListener('click', () => {
-  addGroupContainer.style.display = addGroupContainer.style.display === 'none' ? 'block' : 'none';
+  if (addGroupContainer.style.display === 'none') {
+    resetAddGroupForm();
+    addGroupContainer.style.display = 'block';
+  } else {
+    addGroupContainer.style.display = 'none';
+  }
 });
-  
-  
+
   /* 
   The addDeviceRow function creates a new device row with a dropdown for selecting device for the group.
   It also adds a remove button to delete the device row.
@@ -190,7 +204,7 @@ The following code is an event listener for the form submission. When the form i
 */
 
 const addGroupForm = document.getElementById("add-group-form");
-const groupNameInput = document.getElementById("new-group-name");
+
 let originalGroupData = null;
 let currentlyEditingGroupKey = null;
 

@@ -19,20 +19,52 @@ const ruleList = document.getElementById("rule-list");
 const addNewRuleButton = document.getElementById('add-new-rule-button');
 const addRuleContainer = document.getElementById('add-rule-container');
 
-addNewRuleButton.addEventListener('click', () => {
-  addRuleContainer.style.display = addRuleContainer.style.display === 'none' ? 'block' : 'none';
+//container for adding rule name      
+const ruleNameContainer = document.getElementById("rule-name-container");
+const input = document.createElement("input");
+input.className = "rule-input";
+input.type = "text";
+input.placeholder = "Enter name";
+input.id = "new-rule-name";
+ruleNameContainer.appendChild(input);
 
+
+const ruleNameInput = document.getElementById("new-rule-name");
+
+function resetAddRuleForm() {
+
+  const temperatureRows = document.querySelectorAll('.temperature-row');
+  temperatureRows.forEach(row => inputDeviceWrapper.removeChild(row));
+
+  const existingInputDeviceRows = document.querySelectorAll('.input-device-row');
+  existingInputDeviceRows.forEach(row => inputDeviceWrapper.removeChild(row));
+
+  updateLogicOperatorVisibility() // update logic OperatorVisibility (hide it when the rule is applied and no more devices selected)
+  setInputDeviceRowCount(0); // Reset / set input DeviceRow Count to 0
+
+  // Reset the logic operator, output select, and output action select to their default values
+  logicOperatorSelect.value = 'Select Logic';
+  outputSelect.value = 'Select Output Device';
+  outputActionSelect.value = 'Select Action';
+  ruleNameInput.value = ""; // Reset the rule name input field
+
+    // Hide the add-rule-container after submitting the form
+  addRuleContainer.style.display = 'none';
+
+
+}
+
+// Show/hide the add-rule-container when the "ADD NEW RULE" button is clicked
+addNewRuleButton.addEventListener('click', () => {
+  if (addRuleContainer.style.display === 'none') {
+    resetAddRuleForm();
+    addRuleContainer.style.display = 'block';
+  } else {
+    addRuleContainer.style.display = 'none';
+  }
 });
 
 
-//container for adding rule name      
-  const ruleNameContainer = document.getElementById("rule-name-container");
-  const input = document.createElement("input");
-  input.className = "rule-input";
-  input.type = "text";
-  input.placeholder = "Enter name";
-  input.id = "new-rule-name";
-  ruleNameContainer.appendChild(input);
 
 
 
@@ -97,7 +129,7 @@ After the rule is successfully added, it removes all existing input device rows 
 */
 
 const addRuleForm = document.getElementById("add-rule-form");
-const ruleNameInput = document.getElementById("new-rule-name");
+
 let originalRuleData = null;
 let currentlyEditingRuleKey = null;
 
