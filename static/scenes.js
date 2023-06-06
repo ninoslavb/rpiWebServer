@@ -186,44 +186,41 @@ function addSceneDeviceRow() {
 
 
 
-/*##################################################################################################################################################################
-updateSceneDeviceOptions():
-This function is used to update the options in all the 'select' elements for scene devices in the document. 
-It starts by querying all the 'select' elements with the class 'scene-device-select'. 
-Then for each 'select' element, it clears the inner HTML and creates a new 'option' element for each 'digital-output' device in the 'deviceData'. 
-It preserves the previously selected option by saving its value before clearing the inner HTML and then setting the value back after the new options have been added. 
-This function is assigned to the 'window' object to make it globally accessible.
-*/
+  
+  /* ###########################################################################################
+   This function updates options to disable the options that are already selected
+  */
 
 function updateSceneDeviceOptions() {
-  // Query all elements
-  const sceneDeviceSelects = document.querySelectorAll('.scene-device-select');
+  const selectedSceneDevices = new Set();
+  const DeviceSelectElements = document.getElementsByClassName('scene-device-select');
 
-
-  sceneDeviceSelects.forEach((sceneDeviceSelect) => {
-    const currentValueOutput = sceneDeviceSelect.value;
-    sceneDeviceSelect.innerHTML = `<option disabled selected>Select Scene Device</option>`;
-
-    for (const deviceKey in deviceData) {
-      const device = deviceData[deviceKey];
-      if (device.type === 'digital-output') {
-        const optionDeviceOutput = document.createElement("option");
-        optionDeviceOutput.value = deviceKey;
-        optionDeviceOutput.textContent = device.name;
-        sceneDeviceSelect.appendChild(optionDeviceOutput);
-      }
+  // Loop through all input device selects and add their values to the selectedInputDevices set
+  for (const selectElement of DeviceSelectElements) {
+    if (selectElement.value !== "") {
+      selectedSceneDevices.add(selectElement.value);
     }
-    sceneDeviceSelect.value = currentValueOutput;
-  });
+  }
 
+  // Loop through all device selects and disable the options that are already selected
+for (const selectElement of DeviceSelectElements) {
+  for (const optionElement of selectElement.options) {
+    // Check if the optionElement has the custom class
+    const isPlaceholder = optionElement.classList.contains("placeholder-option");
+
+    if (!isPlaceholder && optionElement.value !== "" && selectedSceneDevices.has(optionElement.value)) {
+      optionElement.disabled = selectElement.value !== optionElement.value;
+    } else {
+      optionElement.disabled = isPlaceholder;
+    }
+  }
+}
 }
 
 window.updateSceneDeviceOptions = updateSceneDeviceOptions;
 
-
-
 /*#################################################################################################################################################################
-updateSceneListDeviceOptions():
+Options():
 This function is used to update the options in all the 'select' elements for scene devices in the document's scene list. 
 It starts by querying all the 'select' elements with the class 'scene-device-select'. 
 Then for each 'select' element, it clears the inner HTML and creates a new 'option' element for each device in the 'deviceData'. 
@@ -555,7 +552,7 @@ for (const sceneDevice of scene.scene_devices) {
 
     }
   }
-}
+}        
 
 // Show the add-scene-container so the user can edit the scene.
 addSceneContainer.style.display = 'block';

@@ -409,6 +409,7 @@ document.addEventListener('click', function(e) {
               } 
             updateDeviceOptions();      //append newly added device to the rule options
             updateGroupDeviceOptions(); //append newly added device to the group options
+            updateSceneDeviceOptions();
           
           });
 
