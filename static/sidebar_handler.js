@@ -15,7 +15,7 @@ function toggleSidebar() {
 
 
 function navigate(pageId, title) {
-  const pages = ['dashboard','pairing' ,'groups', 'rules'];
+  const pages = ['dashboard' ,'groups', 'rules', 'pairing', 'scenes'];
   
   pages.forEach(page => {
     const pageElement = document.getElementById(page);

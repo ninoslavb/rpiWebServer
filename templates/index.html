@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/master.css?v=1423221421224344535125466644555554552555555566251234422112331" />
     <link rel="stylesheet" href="/static/rules.css?v=12123324321321425523544255551233451554555366555545555252554456633" />
     <link rel="stylesheet" href="/static/groups.css?v=1212332244251551232555354455123125543432554425355166544555563255655333" />
+    <link rel="stylesheet" href="/static/scenes.css?v=121233224425155123166544555563255655333" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
     <script src="/static/test.js"></script>
@@ -15,7 +16,9 @@
       let deviceData = JSON.parse('{{ device_data | tojson | safe }}'); 
       let pairingdeviceData = JSON.parse('{{ pairing_device_data | tojson | safe }}'); 
       let ruleData = JSON.parse('{{ rule_data | tojson | safe }}'); 
-      let groupData = JSON.parse('{{ group_data | tojson | safe }}'); 
+      let groupData = JSON.parse('{{ group_data | tojson | safe }}');
+      let sceneData = JSON.parse('{{ scene_data | tojson | safe }}');
+
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,12 +34,16 @@
       <div class="sidebar collapsed" id="sidebar">
         <ul>
           <li><button onclick="navigate('dashboard', 'Dashboard'); toggleSidebar();">Dashboard</button></li>
-          <li><button onclick="navigate('pairing', 'Pairing'); toggleSidebar();">Pairing</button></li>
           <li id="groups-li">
             <button onclick="navigate('groups', 'Groups'); toggleSidebar();">Groups</button>
             <ul id="group-sidebar-list" class="group-sidebar-list"></ul>
           </li>
           <li><button onclick="navigate('rules', 'Rules'); toggleSidebar();">Rules</button></li>
+          <li id="scenes-li">
+            <button onclick="navigate('scenes', 'Scenes'); toggleSidebar();">Scenes</button>
+            <ul id="scenes-sidebar-list" class="scenes-sidebar-list"></ul>
+          </li>
+          <li><button onclick="navigate('pairing', 'Pairing'); toggleSidebar();">Device Pairing</button></li>
         </ul>
       </div>
 
@@ -53,7 +60,7 @@
       </div>     
 
       <div id="pairing" style="display: none;">    
-        <h1 class="page-title">Pairing</h1> <!-- Inital page title is Pairing-->
+        <h1 class="page-title">Device Pairing</h1> <!-- Inital page title is Pairing-->
         <div class="pairing-device-container">  
               <!-- Paring device boxes are added here at the beginning of main.js -->
         </div>  
@@ -152,6 +159,41 @@
 
 
 
+          <!-- SCENES -->
+          <div id="scenes" class="tab-content" style="display:none;">
+            <div id="scenes">
+              <h1 class="page-title">Scenes</h1> 
+              <button type="button" id="add-new-scene-button" class="custom-add-new-scene-button">ADD NEW SCENE</button>
+              <div id="add-scene-container" style="display: none;">
+                <form id="add-scene-form">
+                  <div id="sceneWrapper">
+                    <label>Scene Name:</label>
+                        <div class="scene-name" id="scene-name-container">
+                        <!-- The input element will be created by JavaScript -->
+                        </div>
+                  <div id="sceneDeviceWrapper">
+                     <!-- The scene name element will be created by JavaScript -->
+                    <label for="input">Scene devices:</label>
+                    <!-- The scene-device-row elements will be added here when the "Add Scene Device" button is clicked.  -->
+                    <button type="button" id="addSceneDeviceButton" class="custom-add-scene-device-button">Add Scene Device</button>
+                  </div>
+
+                  </div>
+                  <br><br>
+                  <button type="submit" class="custom-submit-scene-button">Submit scene</button>
+                </form>
+              </div>
+              <div class="scene-list-container">
+              <h3>Current Scenes:</h3>
+              <ul id="scene-list">
+                <!-- Scene list will be added here via JavaScript -->
+              </ul>
+             </div>
+            </div>
+          </div>
+
+
+
 
       
 </div>
@@ -165,6 +207,8 @@
 <script type="module" src="/static/rules.js"></script>
 <script type="module" src="/static/groups.js"></script>
 <script type="module" src="/static/rulesInputDeviceRow_handler.js"></script>
+<script type="module" src="/static/scenes.js"></script>
+
   
 </body>
 </html>

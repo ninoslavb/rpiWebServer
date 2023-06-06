@@ -75,7 +75,7 @@ Finally, it restores the original value of the select element.
 This function is used when we want to update the input or output device options, for example, when a new device is added or when device name is updated
 */
 function updateDeviceOptions() {
-  // Query all elements with the class 'input-device-select'
+  // Query all elements with the class 'input-device-select' and 'output select'
   const inputDeviceSelects = document.querySelectorAll('.input-device-select');
   const outputDeviceSelects = document.querySelectorAll('.output-select');
 

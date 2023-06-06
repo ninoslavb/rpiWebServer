@@ -4,6 +4,8 @@ from flask_socketio import SocketIO, emit
 from database_handler import load_devices, save_devices, get_device_status, update_device_gpio_status, get_device_name, update_device_name, get_device_gpio_id, get_device_type, add_device, delete_device, get_device_gpio_pin, add_pairing_device, load_pairing_devices, delete_pairing_device
 from rule_handler import add_rule, load_rules, delete_rule
 from group_handler import add_group, load_groups, delete_group
+from scene_handler import add_scene, load_scenes, delete_scene
+
 import json
 import os
 import time
@@ -86,6 +88,16 @@ def init_rules():
         }
     return rule_data
 
+def init_scenes():
+    scene_data = {}
+    scenes = load_scenes()
+    for scene_key, scene in scenes.items():
+        scene_data[scene_key] = {
+            'scene_name': scene['scene_name'],
+            'scene_devices': scene['scene_devices'],
+        }
+    return scene_data
+
 def init_groups():
     group_data = {}
     groups = load_groups()
@@ -117,6 +129,7 @@ if __name__ == '__main__':
     device_data = init_device_data()
     rule_data = init_rules()
     group_data = init_groups()
+    scene_data = init_scenes()
     pairing_device_data = init_pairing_device_data()
 
 devices = load_devices()
@@ -142,7 +155,7 @@ for device_key, device in device_data.items():
 #render device_data, rule data and group data in index.html
 @app.route("/")
 def index():
-    return render_template('index.html', device_data=device_data, rule_data=rule_data, group_data=group_data, pairing_device_data=pairing_device_data)
+    return render_template('index.html', device_data=device_data, rule_data=rule_data, group_data=group_data, pairing_device_data=pairing_device_data, scene_data=scene_data)
 
 #################################################################################################################################################################
 ####################################################---SOCKET INITIAL CONNECTION---##############################################################################
@@ -180,6 +193,13 @@ def handle_connect():
     # Emit rule names
     for rule_key, rule in rule_data.items():
         emit('rule_name_updated', {'rule_key': rule_key, 'rule_name': rule['rule_name']})  
+
+    # Emit current scenes
+    emit('scenes_updated', scene_data, broadcast=True)  # Send the entire scene_data object
+
+    # Emit rule names
+    for scene_key, scene in scene_data.items():
+        emit('scene_name_updated', {'scene_key': scene_key, 'scene_name': scene['scene_name']})  
 
     
     # Emit current groups
@@ -537,6 +557,66 @@ def delete_group_handler(data):
 
 
 
+################################################################################################################################################################
+#############################################################---SCENES---########################################################################################
+################################################################################################################################################################            
+
+# add/update scene handler
+@socketio.on('add_scene')
+def update_scene_handler(data):
+    scene_key = data['scene_key']
+    scene_name = data['scene_name']
+    scene_devices = data['scene_devices']
+    is_edit = data.get('is_edit', False)  # get the is_edit flag, default to False if it's not there
+
+    scenes = load_scenes()
+    rules = load_rules()
+
+    # Check if the scene name already exists in other scenes
+    for sceneKey, scene in scenes.items():
+        if scene['scene_name'] == scene_name and sceneKey != scene_key:
+            return {'error': f"Scene name {scene_name} already exists!"}
+
+    for ruleKey, rule in rules.items():
+        for scene_device in scene_devices:
+            if scene_device['scene_device_key'] == rule['output_device_key']:
+                device_name = device_data[scene_device['scene_device_key']]['name']
+                return {'error': f"Device {device_name} is part of the rule: {rule['rule_name']}. Scene cannot be added! To be able to use device in the scene you must delete it from the rule!"}
+
+
+    # if it's an edit, delete the old scene
+    if is_edit:
+        print(f"Editing scene: {scene_key}")  # Debug line
+        delete_scene(scene_key)
+        if scene_key in scene_data:
+            del scene_data[scene_key]
+
+    # Add the new/updated rule if input devices and output device key are provided
+    if scene_devices:
+        print(f"Adding/Updating scene: {scene_key}")  # Debug line
+        add_scene(scene_key, scene_name, scene_devices)
+        scene_data[scene_key] = {
+            'scene_name': scene_name,
+            'scene_devices': scene_devices
+        }
+        print(f"Updated scene_data: {scene_data}")
+        emit('scenes_updated', scene_data, broadcast=True)
+        return 'success'
+    else:
+        return 'error'
+
+
+
+#delete_rule_handler
+@socketio.on('delete_scene')
+def delete_scene_handler(data):
+    scene_key = data['scene_key']
+    if scene_key in scene_data:
+        delete_scene(scene_key)
+        del scene_data[scene_key]
+        emit('scenes_updated', scene_data, broadcast=True)
+
+
 
 ################################################################################################################################################################
 #############################################################---RULES---########################################################################################
@@ -557,11 +637,22 @@ def update_rule_handler(data):
     existing_output_device_name = None
 
     rules = load_rules()
+    scenes = load_scenes()
 
     # Check if the rule name already exists
     for ruleKey, rule in rules.items():
         if rule['rule_name'] == rule_name and ruleKey != rule_key:
             return {'error': f"Rule name {rule_name} already exists!"}
+
+
+   # Check if output device is part of any scene
+    for sceneKey, scene in scenes.items():
+        for scene_device in scene['scene_devices']:
+            if scene_device['scene_device_key'] == output_device_key:
+                device_name = device_data[output_device_key]['name']
+                return {'error': f"Output device {device_name} is part of the scene: {scene['scene_name']}. Rule cannot be added! To be able to use device in the rule you must delete it from the scene!"}
+
+
 
     # Check if the output device is already used in existing rules
     for existing_rule_key, existing_rule in rules.items():
@@ -572,6 +663,7 @@ def update_rule_handler(data):
             existing_output_device_name = device_data[existing_rule['output_device_key']]['name']
             existing_output_rule_name = existing_rule['rule_name']
             return {'error': f"Output {existing_output_device_name} already assigned to the rule {existing_output_rule_name}."}
+
 
     # if it's an edit, delete the old rule
     if is_edit:
