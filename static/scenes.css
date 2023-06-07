@@ -297,3 +297,9 @@ r {
   }
   
  
+  #scenes-sidebar-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  

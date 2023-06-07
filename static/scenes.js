@@ -561,6 +561,84 @@ addSceneContainer.style.display = 'block';
 
 
 
+function updateSidebarSceneLinks() {
+  const sceneSidebarList = document.getElementById("scenes-sidebar-list");
+  sceneSidebarList.innerHTML = "";
+
+  for (const sceneKey in sceneData) {
+    const scene = sceneData[sceneKey];
+    const sceneName = scene.scene_name;
+
+    // Create scene list item
+    const sceneNameLi = document.createElement("li");
+    sceneNameLi.classList.add("scene-li");
+
+    // Create scene name div
+    const sceneNameDiv = document.createElement("div");
+    sceneNameDiv.classList.add("scene-name"); // change this to a different class name if desired
+    sceneNameDiv.textContent = sceneName;
+    sceneNameDiv.dataset.sceneKey = sceneKey;
+    sceneNameDiv.style.flexGrow = "1"; // Add this
+
+    // Create a container for the play and stop buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.classList.add("scene-button-container"); 
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.justifyContent = 'flex-end';
+    buttonContainer.style.gap = '2px'; // add some space between the buttons
+
+    // Create the scene play button
+    const scenePlayButton = document.createElement("button");
+    scenePlayButton.classList.add("scene-play-button");
+    const scenePlayIcon = document.createElement("i");
+    scenePlayIcon.classList.add("fa-solid", "fa-play");
+    scenePlayButton.appendChild(scenePlayIcon);
+    scenePlayButton.dataset.sceneKey = sceneKey;
+    scenePlayButton.addEventListener("click", () => {
+      socket.emit('play_scene', { scene_key: sceneKey, scene_devices: scene.scene_devices });
+    });
+
+    // Create the scene stop button
+    const sceneStopButton = document.createElement("button");
+    sceneStopButton.classList.add("scene-stop-button");
+    const sceneStopIcon = document.createElement("i");
+    sceneStopIcon.classList.add("fa-solid", "fa-stop");
+    sceneStopButton.appendChild(sceneStopIcon);
+    sceneStopButton.dataset.sceneKey = sceneKey;
+    sceneStopButton.addEventListener("click", () => {
+      socket.emit('stop_scene', { scene_key: sceneKey, scene_devices: scene.scene_devices });
+    });
+
+    // Add the play and stop buttons to the container
+    buttonContainer.appendChild(scenePlayButton);
+    buttonContainer.appendChild(sceneStopButton);
+
+    // Add scene name div to the scene list item
+    sceneNameLi.appendChild(sceneNameDiv);
+
+
+    // Add the buttons container to the scene name Li
+    sceneNameLi.appendChild(buttonContainer);
+
+
+    // Add scene list item to the sidebar list
+    sceneSidebarList.appendChild(sceneNameLi);
+  }
+}
+
+// Call the function to initially populate the sidebar
+updateSidebarSceneLinks();
+
+
+
+
+
+
+
+
+
+
+
 // Load the current scenes and display them
 socket.on("scenes_updated", (data) => {
   sceneData = data.scenes; // Update the sceneData object with the new data

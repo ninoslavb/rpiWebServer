@@ -514,7 +514,7 @@ This function is called after updating the group list.
   // Load the current rules and display them
   socket.on("groups_updated", (data) => {
     groupData = data.groups; // Update the ruleData object with the new data
-    if(data.deleted){
+    if(data.deleted){ //if the group is deleted
       addGroupContainer.style.display = 'none'; //hide ADD Scene container when scene is deleted
     }
     updateSidebarGroupLinks();
