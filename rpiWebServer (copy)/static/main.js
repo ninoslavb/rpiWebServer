@@ -7,11 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const socket = io.connect(); //connect the socket
 
 
-    const addGroupContainer = document.getElementById('add-group-container');
-    const addRuleContainer = document.getElementById('add-rule-container');
-    const addSceneContainer = document.getElementById('add-scene-container');
-
-
 /*###################################### ADD PAIRING DEVICE ########################################################################### */
     const pairingdeviceContainer = document.querySelector(".pairing-device-container");
     const pairingDeviceKeys = Object.keys(pairingdeviceData)    
@@ -127,36 +122,8 @@ deleteDeviceListener(device_key);
       }
 
 
-      //CHECK IF DEVICE IS PART OF ANY SCENE, AND IF YES ALERT!
-      const sceneKeys = Object.keys(sceneData);
-
-      for (let i = 0; i < sceneKeys.length; i++) {
-        const sceneKey = sceneKeys[i];
-        const scene = sceneData[sceneKey];
-        const sceneDevices = scene.scene_devices;
-
-        // Check if the device is in this scene
-        for (let j = 0; j < sceneDevices.length; j++) {
-          if (sceneDevices[j].scene_device_key === device_key) {
-            alert("Cannot delete device. It is part of the scene: " + scene.scene_name + ". To delete the device, you must first delete it from the scene using the edit button in the Scenes page.");
-            deviceTop.style.display = 'block'; // Make the device box visible again after alert message is shown
-            confirmDiv.style.display = 'none'; //Hide device deletion window;
-            const lockIcon = deviceBox.querySelector('.lock-icon'); // Query lock icon
-            if(lockIcon){
-              lockIcon.style.display = 'block'; // hide the lockIcon
-            }
-            return;
-          }
-        }
-      }
-      
-
-
       //If device is not part of any rule or group, proceed with deletion
       socket.emit('delete_device', { device_key: device_key });
-
-
-
     });
   }
 }
@@ -169,12 +136,6 @@ socket.on("device_deleted", (data) => {
   if (deviceBoxToDelete) { // Make sure the box was found before trying to remove it
     deviceBoxToDelete.parentElement.removeChild(deviceBoxToDelete); // Remove the device box from its parent
   }
-  updateDeviceOptions();      //remove device from the rule options
-  updateGroupDeviceOptions(); //remove device fom the group options
-  updateSceneDeviceOptions(); // remove device from the rule options
-  addGroupContainer.style.display = 'none'; //close add group container when device is deleted so it is refreshed once when device is deleted
-  addRuleContainer.style.display = 'none';  //close add rule container when device is deleted so it is refreshed once when device is deleted
-  addSceneContainer.style.display = 'none'; //close add scene container when device is deleted so it is refreshed once when device is deleted
   });
 
 
@@ -372,15 +333,20 @@ pairingdeviceContainer.appendChild(pairingdeviceBox);
 
 // Load the current pairing devices on the load and display them
 socket.on("pairing_devices_updated", (data) => {
-  pairingdeviceData = data; // Update the pairingdeviceData object with the new data
-  });
-  
+pairingdeviceData = data; // Update the groupData object with the new data
+});
 
 
 // Add event listener to all 'Accept' buttons
 document.addEventListener('click', function(e) {
   if (e.target && e.target.classList.contains('accept-button')) {  // Check if clicked element is an 'Accept' button
       const friendly_name = e.target.getAttribute('data-friendly-name');  // Retrieve friendly_name from the attribute
+      const pairingdeviceBox = document.querySelector(`div[pairing-device-id="${friendly_name}"]`);
+
+      if (pairingdeviceBox) {
+          pairingdeviceContainer.removeChild(pairingdeviceBox);
+      }
+
       const action = 'accept_device';
       socket.emit('pairing_device_action', { friendly_name: friendly_name, action: action });
   }
@@ -392,19 +358,16 @@ document.addEventListener('click', function(e) {
 document.addEventListener('click', function(e) {
   if (e.target && e.target.classList.contains('decline-button')) {  // Check if clicked element is an 'Decline' button
       const friendly_name = e.target.getAttribute('data-friendly-name');  // Retrieve friendly_name from the attribute
+      const pairingdeviceBox = document.querySelector(`div[pairing-device-id="${friendly_name}"]`);
+
+      if (pairingdeviceBox) {
+          pairingdeviceContainer.removeChild(pairingdeviceBox);
+      }
+
       const action = 'decline_device';
       socket.emit('pairing_device_action', { friendly_name: friendly_name, action: action });
   }
 });
-
-//remove device pairing box once when device is accepted or deleted
-socket.on("pairing_device_deleted", (data) => {
-  const deletedPairingDevice = data;
-  const deletedPairingdeviceBox = document.querySelector(`div[pairing-device-id="${deletedPairingDevice.friendly_name}"]`);
-  if (deletedPairingdeviceBox) {
-    pairingdeviceContainer.removeChild(deletedPairingdeviceBox);
-  }
-  });
 
 
 
@@ -446,11 +409,7 @@ socket.on("pairing_device_deleted", (data) => {
               } 
             updateDeviceOptions();      //append newly added device to the rule options
             updateGroupDeviceOptions(); //append newly added device to the group options
-            updateSceneDeviceOptions(); //append newly added device to the scene options
-
-            addGroupContainer.style.display = 'none'; //close add group container when device is added so it is refreshed once when device is added
-            addRuleContainer.style.display = 'none';  //close add rule container when device is added so it is refreshed once when device is added
-            addSceneContainer.style.display = 'none'; //close add scene container when device is added so it is refreshed once when device is added
+            updateSceneDeviceOptions();
           
           });
 

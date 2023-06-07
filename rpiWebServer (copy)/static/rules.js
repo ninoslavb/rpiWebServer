@@ -647,11 +647,9 @@ addRuleContainer.style.display = 'block';
 
 
 // Load the current rules and display them
-socket.on("rules_updated", (data) => {
-ruleData = data.rules; // Update the ruleData object with the new data
-if(data.deleted){
-  addRuleContainer.style.display = 'none'; //hide ADD Scene container when scene is deleted
-}
+socket.on("rules_updated", (rules) => {
+ruleData = rules; // Update the ruleData object with the new data
+addRuleContainer.style.display = 'none'; //hide ADD Rule container once when rule is added/deleted.
 updateRuleList();
 });
 

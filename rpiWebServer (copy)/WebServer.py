@@ -188,14 +188,14 @@ def handle_connect():
         emit('device_name_updated', {'device_key': device_key, 'device_name': device['name']})   
 
     # Emit current rules
-    emit('rules_updated', {'rules': rule_data, 'deleted': False}, broadcast=True)# Send the entire rule_data object
+    emit('rules_updated', rule_data, broadcast=True)  # Send the entire rule_data object
 
     # Emit rule names
     for rule_key, rule in rule_data.items():
         emit('rule_name_updated', {'rule_key': rule_key, 'rule_name': rule['rule_name']})  
 
     # Emit current scenes
-    emit('scenes_updated', {'scenes': scene_data, 'deleted': False}, broadcast=True)
+    emit('scenes_updated', scene_data, broadcast=True)  # Send the entire scene_data object
 
     # Emit rule names
     for scene_key, scene in scene_data.items():
@@ -203,7 +203,7 @@ def handle_connect():
 
     
     # Emit current groups
-    emit('groups_updated', {'groups': group_data, 'deleted': False}, broadcast=True)# Send the entire group_data object
+    emit('groups_updated', group_data, broadcast=True)  # Send the entire group_data object
 
     # Emit group names
     for group_key, group in group_data.items():
@@ -451,10 +451,11 @@ def paring_device_action(data):
         #send information about new device to the frontend to render it
         socketio.emit('new_device_added', {'device_key': device_key, 'device_info': new_device_info}, namespace='/')
         socketio.emit('device_gpio_status', {'device_key': device_key, 'gpio_status': device_data[device_key]['gpio_status'],'device_type1':device_data[device_key]['type1'],'device_source': device_data[device_key]['source'],'device_bat_stat': device_data[device_key]['bat_stat']}, namespace='/')
-        
-    #delete pairing device from the pairing device dictionary (does not matter if it is accepted or declined)
+      
+    else:
+        return   
+    #delete pairing devie from the pairing device dictionary (does not matter if it is accepted or declined)
     if friendly_name in pairing_device_data:
-        socketio.emit('pairing_device_deleted', {'friendly_name': friendly_name}, namespace='/')
         delete_pairing_device(friendly_name)
         del pairing_device_data[friendly_name]
         emit('pairing_devices_updated', pairing_device_data, broadcast=True)  # Send the entire pairing_device_data object
@@ -532,7 +533,7 @@ def update_group_handler(data):
             'group_name': groupName,
             'group_devices': groupDevices
         }
-        emit('groups_updated', {'groups': group_data, 'deleted': False}, broadcast=True)# Send the entire group_data object
+        emit('groups_updated', group_data, broadcast=True)
     else:
         return {'error': f"Device {existing_device_name} already assigned to the group {existing_group_name}."}
 
@@ -549,7 +550,7 @@ def delete_group_handler(data):
     if group_key in group_data:
         delete_group(group_key)
         del group_data[group_key]
-        emit('groups_updated', {'groups': group_data, 'deleted': True}, broadcast=True)# Send the entire group_data object
+        emit('groups_updated', group_data, broadcast=True)
         return {'success': True}  # Send a response indicating the operation was successful (acknowledgement)
     else:
         return {'error': 'Group not found'}  # Send a response indicating an error occurred (nack)
@@ -599,7 +600,7 @@ def update_scene_handler(data):
             'scene_devices': scene_devices
         }
         print(f"Updated scene_data: {scene_data}")
-        emit('scenes_updated', {'scenes': scene_data, 'deleted': False}, broadcast=True)
+        emit('scenes_updated', scene_data, broadcast=True)
         return 'success'
     else:
         return 'error'
@@ -613,7 +614,7 @@ def delete_scene_handler(data):
     if scene_key in scene_data:
         delete_scene(scene_key)
         del scene_data[scene_key]
-        emit('scenes_updated', {'scenes': scene_data, 'deleted': True}, broadcast=True)
+        emit('scenes_updated', scene_data, broadcast=True)
 
 
 
@@ -683,7 +684,7 @@ def update_rule_handler(data):
             'output_device_action': output_device_action
         }
         print(f"Updated rule_data: {rule_data}")
-        emit('rules_updated', {'rules': rule_data, 'deleted': False}, broadcast=True)# Send the entire rule_data object
+        emit('rules_updated', rule_data, broadcast=True)
         emit('lock_device', {'device_key': output_device_key, 'isLocked': True}, broadcast=True)
         return 'success'
     else:
@@ -699,7 +700,7 @@ def delete_rule_handler(data):
         output_device_key = rule_data[rule_key]['output_device_key']
         delete_rule(rule_key)
         del rule_data[rule_key]
-        emit('rules_updated', {'rules': rule_data, 'deleted': True}, broadcast=True)# Send the entire rule_data object
+        emit('rules_updated', rule_data, broadcast=True)
 
         is_output_device_used = False
         for remaining_rule_key, remaining_rule in rule_data.items():

@@ -236,7 +236,7 @@ function updateSceneListDeviceOptions() {
   
     DeviceSelects.forEach((sceneDeviceSelect) => {   // Iterate through each input device select element
       const currentValue = sceneDeviceSelect.value;       // Store the current value of the select element
-      sceneDeviceSelect.innerHTML = `<option disabled selected>Select Scene Device</option>`; // Reset the inner HTML of the select element, keeping only the disabled option
+      DeviceSelect.innerHTML = `<option disabled selected>Select Scene Device</option>`; // Reset the inner HTML of the select element, keeping only the disabled option
       //inputDeviceOption.innerHTML = `<option disabled selected>Select State</option>`; // Reset the inner HTML of the select element, keeping only the disabled option
       for (const deviceKey in deviceData) {                 // Iterate through the deviceData object
         const device = deviceData[deviceKey];             
@@ -561,14 +561,15 @@ addSceneContainer.style.display = 'block';
 
 
 
+
+
 // Load the current scenes and display them
-socket.on("scenes_updated", (data) => {
-  sceneData = data.scenes; // Update the sceneData object with the new data
-  if(data.deleted){
-      addSceneContainer.style.display = 'none'; //hide ADD Scene container when scene is deleted
-  }
-  updateSceneList();
+socket.on("scenes_updated", (scenes) => {
+sceneData = scenes; // Update the sceneData object with the new data
+addSceneContainer.style.display = 'none'; //hide ADD Scene container once when scene is added/deleted.
+updateSceneList();
 });
+
 
 
 

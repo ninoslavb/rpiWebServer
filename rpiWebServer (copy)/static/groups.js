@@ -265,6 +265,9 @@ addGroupForm.addEventListener("submit", (event) => {
       group_devices: groupDevices,
       is_edit: !!currentlyEditingGroupKey
     }, (response) => {
+      // Log response
+      console.log(`Received response from add_group event: ${JSON.stringify(response)}`);
+
       if (response && response.error) {
         alert(response.error);
         if (currentlyEditingGroupKey) {
@@ -510,17 +513,18 @@ This function is called after updating the group list.
   It updates the groupData object with the new data and calls the updateGroupList( function to update the displayed list of rules.
   */
   
-
-  // Load the current rules and display them
-  socket.on("groups_updated", (data) => {
-    groupData = data.groups; // Update the ruleData object with the new data
-    if(data.deleted){
-      addGroupContainer.style.display = 'none'; //hide ADD Scene container when scene is deleted
-    }
-    updateSidebarGroupLinks();
-    updateGroupList();
-    });
+        // Load the current groups and display them
+        socket.on("groups_updated", (groups) => {
         
+          addGroupContainer.style.display = 'none'; //hide ADD Rule container once when rule is added/deleted.
+          groupData = groups; // Update the groupData object with the new data
+          updateSidebarGroupLinks();
+          updateGroupList(); // update group list in Groups page
+        });
+        
+
+       
+  
   
   /* ##########################################################################################################
   This event listener is added to the "Add Device to Group" button . 
