@@ -4,7 +4,7 @@ from flask_socketio import SocketIO, emit
 from database_handler import load_devices, save_devices, get_device_status, update_device_gpio_status, get_device_name, update_device_name, get_device_gpio_id, get_device_type, add_device, delete_device, get_device_gpio_pin, add_pairing_device, load_pairing_devices, delete_pairing_device
 from rule_handler import add_rule, load_rules, delete_rule
 from group_handler import add_group, load_groups, delete_group
-from scene_handler import add_scene, load_scenes, delete_scene
+from scene_handler import add_scene, load_scenes, delete_scene, save_scenes
 
 import json
 import os
@@ -95,6 +95,7 @@ def init_scenes():
         scene_data[scene_key] = {
             'scene_name': scene['scene_name'],
             'scene_devices': scene['scene_devices'],
+            'is_playing': scene['is_playing'],
         }
     return scene_data
 
@@ -567,6 +568,7 @@ def update_scene_handler(data):
     scene_name = data['scene_name']
     scene_devices = data['scene_devices']
     is_edit = data.get('is_edit', False)  # get the is_edit flag, default to False if it's not there
+    is_playing = data.get('is_playing', False)  # get the is_playing flag, default to False if it's not there
 
     scenes = load_scenes()
     rules = load_rules()
@@ -582,6 +584,28 @@ def update_scene_handler(data):
                 device_name = device_data[scene_device['scene_device_key']]['name']
                 return {'error': f"Device {device_name} is part of the rule: {rule['rule_name']}. Scene cannot be added! To be able to use device in the scene you must delete it from the rule!"}
 
+    
+    # Validate scene devices for collision of states
+    for scene_device in scene_devices:
+        
+        device_key = scene_device['scene_device_key']
+        device_name = device_data[device_key]['name']
+        active_state = scene_device['scene_active_device_option']
+        inactive_state = scene_device['scene_inactive_device_option']
+
+        # Check if the device is part of other scenes
+        for sceneKey, scene in scenes.items():
+            if sceneKey != scene_key:
+                for other_device in scene['scene_devices']:
+                    if other_device['scene_device_key'] == device_key:
+                        other_active_state = other_device['scene_active_device_option']
+                        other_inactive_state = other_device['scene_inactive_device_option']
+
+                        # Check for collision of states
+                        if active_state != other_active_state or inactive_state != other_inactive_state:
+                            other_scene_name = scene['scene_name']
+                            return {'error': f"Collision of states for device {device_name} in scenes: {scene_name} and {other_scene_name}. Scene activated action and scene stopped action need to match in both scenes!"}
+        
 
     # if it's an edit, delete the old scene
     if is_edit:
@@ -593,16 +617,30 @@ def update_scene_handler(data):
     # Add the new/updated rule if input devices and output device key are provided
     if scene_devices:
         print(f"Adding/Updating scene: {scene_key}")  # Debug line
-        add_scene(scene_key, scene_name, scene_devices)
+        add_scene(scene_key, scene_name, scene_devices, is_playing)
         scene_data[scene_key] = {
             'scene_name': scene_name,
-            'scene_devices': scene_devices
-        }
+            'scene_devices': scene_devices,
+            'is_playing': is_playing
+        }       
+        # Perform actions on newly added devices
+        for scene_device in scene_devices:
+            device_key = scene_device.get('scene_device_key')
+            if is_playing:
+                action = scene_device.get('scene_active_device_option')
+            else:
+                action = scene_device.get('scene_inactive_device_option')
+            if device_key:
+                if device_key in device_data:
+                    perform_scene_device_action(device_key, action, scene_key)
+
+
         print(f"Updated scene_data: {scene_data}")
         emit('scenes_updated', {'scenes': scene_data, 'deleted': False}, broadcast=True)
         return 'success'
     else:
         return 'error'
+
 
 
 
@@ -614,6 +652,94 @@ def delete_scene_handler(data):
         delete_scene(scene_key)
         del scene_data[scene_key]
         emit('scenes_updated', {'scenes': scene_data, 'deleted': True}, broadcast=True)
+
+
+
+def perform_scene_device_action(device_key, action, scene_key):
+    scenes = load_scenes()
+
+    # Check if the device is part of any other playing scenes
+    for other_scene_key, other_scene in scenes.items():
+        if other_scene_key != scene_key and other_scene['is_playing']:
+            other_scene_devices = other_scene.get('scene_devices', [])
+            for other_scene_device in other_scene_devices:
+                if other_scene_device['scene_device_key'] == device_key:
+                    return  # Device is part of another playing scene, don't perform action
+
+    if device_key in device_data:
+        if device_data[device_key]['source'] == 'rpi':
+            if action == '1':
+                # Code to turn the digital output ON
+                GPIO.output(device_data[device_key]['gpio_pin'], GPIO.HIGH)
+            elif action == '0':
+                # Code to turn the digital output OFF
+                GPIO.output(device_data[device_key]['gpio_pin'], GPIO.LOW)
+
+            # Update the GPIO status of the device
+            device_data[device_key]['gpio_status'] = GPIO.input(device_data[device_key]['gpio_pin'])
+            update_device_gpio_status(device_key, device_data[device_key]['gpio_status'])
+
+        elif device_data[device_key]['source'] == 'zbee':
+            if action == '1':
+                # Code to control the digital output via Zigbee
+                control_actuator(device_key, 1)
+            elif action == '0':
+                # Code to control the digital output via Zigbee
+                control_actuator(device_key, 0)
+
+        # Emit the updated device GPIO status to the client
+        emit('device_gpio_status', {
+            'device_key': device_key,
+            'gpio_status': device_data[device_key]['gpio_status'],
+            'device_type1': device_data[device_key]['type1'],
+            'device_source': device_data[device_key]['source'],
+            'device_bat_stat': device_data[device_key]['bat_stat']
+        }, broadcast=True)
+
+
+
+@socketio.on('play_scene')
+def scene_is_playing(data):
+    scene_key = data.get('scene_key')
+    scenes = load_scenes()
+
+    if scene_key in scenes:
+        scenes[scene_key]['is_playing'] = True
+        save_scenes(scenes)
+        scene_data[scene_key]['is_playing'] = True
+        emit("scenes_updated", {'scenes': scene_data}, broadcast=True)
+
+        scene_devices = scenes[scene_key].get('scene_devices', [])
+        for scene_device in scene_devices:
+            device_key = scene_device.get('scene_device_key')
+            action = scene_device.get('scene_active_device_option')
+            if device_key and action:
+                if device_key in device_data:
+                    perform_scene_device_action(device_key, action, scene_key)
+                else:
+                    print(f"Device key: {device_key} does not exist in device_data.")
+
+@socketio.on('stop_scene')
+def scene_is_stopped(data):
+    scene_key = data.get('scene_key')
+    scenes = load_scenes()
+
+    if scene_key in scenes:
+        scenes[scene_key]['is_playing'] = False
+        save_scenes(scenes)
+        scene_data[scene_key]['is_playing'] = False
+        emit("scenes_updated", {'scenes': scene_data}, broadcast=True)
+
+        scene_devices = scenes[scene_key].get('scene_devices', [])
+        for scene_device in scene_devices:
+            device_key = scene_device.get('scene_device_key')
+            action = scene_device.get('scene_inactive_device_option')
+            if device_key and action:
+                if device_key in device_data:
+                    perform_scene_device_action(device_key, action, scene_key)
+                else:
+                    print(f"Device key: {device_key} does not exist in device_data.")
+
 
 
 

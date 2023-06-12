@@ -108,6 +108,7 @@ html, body {
 .scene-play-button i,
 .scene-stop-button i {
   display: flex;
+  margin-left: 5px;  /* adjust as needed */
   justify-content: center;
   align-items: center;
   width: 100%;
@@ -115,13 +116,20 @@ html, body {
   transition: color 0.3s ease; /* Add transition for smooth effect */
 }
 
-.scene-play-button:hover i,
-.scene-stop-button:hover i {
-  color: black; /* Change icon color on hover */
+
+.sidebar .play-button-text,
+.stop-button-text {
+  font-size: 16px;
+  font-weight: normal;
+  color: whitesmoke;
+  padding-left: 10px;
+ /* display: flex; 
+  align-items: center;*/
 }
-
-
-
+.sidebar .play-button-text:hover,
+.stop-button-text:hover {
+  background-color: transparent; /* Change to your desired hover color */
+}
 
 
 

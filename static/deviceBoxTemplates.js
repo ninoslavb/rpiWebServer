@@ -37,7 +37,7 @@ function createOutputDeviceBox(device_key, device) {
   deleteButton.style.position = 'absolute';
   deleteButton.style.right = '5px';
   deleteButton.style.bottom = '5px';
-  deleteButton.style.color = '#028fd5';
+  deleteButton.style.color = '#f5f5f5';
   deviceTop.appendChild(deleteButton);
 
   // Add a confirmation div, initially hidden
@@ -301,7 +301,7 @@ function createInputDeviceBox(device_key, device) {
   deleteButton.style.position = 'absolute';
   deleteButton.style.right = '5px';
   deleteButton.style.bottom = '5px';
-  deleteButton.style.color = '#028fd5';
+  deleteButton.style.color = '#f5f5f5';
   deviceTop.appendChild(deleteButton);
 
   // Add a confirmation div, initially hidden
@@ -534,7 +534,7 @@ function createTHDSensorDeviceBox(device_key, device) {
   deleteButton.style.position = 'absolute';
   deleteButton.style.right = '5px';
   deleteButton.style.bottom = '5px';
-  deleteButton.style.color = '#028fd5';
+  deleteButton.style.color = '#f5f5f5';
   deviceTop.appendChild(deleteButton);
 
   // Add a confirmation div, initially hidden

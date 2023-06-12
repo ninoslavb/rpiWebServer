@@ -29,12 +29,13 @@ def save_scenes(devices):
 
 
 
-def add_scene(scene_key, scene_name, scene_devices):
+def add_scene(scene_key, scene_name, scene_devices, is_playing):
     scenes = load_scenes()
     if scene_key not in scenes:
         scenes[scene_key] = {
             'scene_name': scene_name,
-            'scene_devices': scene_devices
+            'scene_devices': scene_devices,
+            'is_playing': is_playing
         }
         save_scenes(scenes)
     else:

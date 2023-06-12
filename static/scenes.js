@@ -289,6 +289,9 @@ function generateSceneKey() {
   return '_' + Math.random().toString(36).substr(2, 9);
 }
 
+
+
+
 addSceneForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -340,8 +343,11 @@ addSceneForm.addEventListener("submit", (event) => {
 
       const addScene = () => {
         let scene_key;
+        let is_playing = false;
+        
         if (currentlyEditingSceneKey) {
           scene_key = currentlyEditingSceneKey;
+          is_playing = sceneData[scene_key].is_playing;
         } else {
           scene_key = generateSceneKey();
         }
@@ -351,7 +357,8 @@ addSceneForm.addEventListener("submit", (event) => {
         scene_key,
         scene_name: sceneName,
         scene_devices: sceneDevices,
-        is_edit: !!currentlyEditingSceneKey
+        is_edit: !!currentlyEditingSceneKey,
+        is_playing: is_playing
       }, (response) => {
         if (response && response.error) {
           alert(response.error);
@@ -365,8 +372,11 @@ addSceneForm.addEventListener("submit", (event) => {
           }
           sceneData[scene_key] = {
             scene_name: sceneName,
-            scene_devices: sceneDevices
+            scene_devices: sceneDevices,
+            is_playing: is_playing
           };
+        
+          updateSidebarSceneLinks();
           updateSceneList();
         
         
@@ -590,24 +600,50 @@ function updateSidebarSceneLinks() {
     // Create the scene play button
     const scenePlayButton = document.createElement("button");
     scenePlayButton.classList.add("scene-play-button");
+    scenePlayButton.style.display = "inline-flex";  //initially visible
+    const scenePlayText = document.createElement("span");
+    scenePlayText.textContent = scene.is_playing ? "" : "Play";
+    scenePlayText.classList.add("play-button-text");
+    scenePlayButton.appendChild(scenePlayText);
     const scenePlayIcon = document.createElement("i");
     scenePlayIcon.classList.add("fa-solid", "fa-play");
     scenePlayButton.appendChild(scenePlayIcon);
     scenePlayButton.dataset.sceneKey = sceneKey;
-    scenePlayButton.addEventListener("click", () => {
-      socket.emit('play_scene', { scene_key: sceneKey, scene_devices: scene.scene_devices });
-    });
 
+ 
     // Create the scene stop button
     const sceneStopButton = document.createElement("button");
     sceneStopButton.classList.add("scene-stop-button");
+    sceneStopButton.style.display = "none";  //initially hidden
+    const sceneStopText = document.createElement("span");
+    sceneStopText.textContent = scene.is_playing ? "Stop" : "";
+    sceneStopText.classList.add("stop-button-text");
+    sceneStopButton.appendChild(sceneStopText);
     const sceneStopIcon = document.createElement("i");
     sceneStopIcon.classList.add("fa-solid", "fa-stop");
     sceneStopButton.appendChild(sceneStopIcon);
     sceneStopButton.dataset.sceneKey = sceneKey;
-    sceneStopButton.addEventListener("click", () => {
-      socket.emit('stop_scene', { scene_key: sceneKey, scene_devices: scene.scene_devices });
+
+
+    scenePlayButton.addEventListener("click", () => {
+      socket.emit('play_scene', { scene_key: sceneKey});
+      scenePlayButton.style.display = "none";
+      sceneStopButton.style.display = "inline-flex"; 
     });
+
+
+    sceneStopButton.addEventListener("click", () => {
+    sceneStopButton.style.display = scene.is_playing ? "inline-flex" : "none"; 
+      socket.emit('stop_scene', { scene_key: sceneKey });
+      sceneStopButton.style.display = "none"; 
+      scenePlayButton.style.display = "inline-flex";
+    });
+
+    // Set the initial display state for the buttons
+    scenePlayButton.style.display = scene.is_playing ? "none" : "inline-flex"; 
+    scenePlayText.nodeValue = scene.is_playing ? "" : "Play";
+    sceneStopButton.style.display = scene.is_playing ? "inline-flex" : "none"; 
+    sceneStopText.nodeValue = scene.is_playing ? "Stop" : "";
 
     // Add the play and stop buttons to the container
     buttonContainer.appendChild(scenePlayButton);
@@ -641,11 +677,13 @@ updateSidebarSceneLinks();
 
 // Load the current scenes and display them
 socket.on("scenes_updated", (data) => {
+  //console.log(data);  // Add this line for debugging
   sceneData = data.scenes; // Update the sceneData object with the new data
   if(data.deleted){
       addSceneContainer.style.display = 'none'; //hide ADD Scene container when scene is deleted
   }
   updateSceneList();
+  updateSidebarSceneLinks();
 });
 
 
