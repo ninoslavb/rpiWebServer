@@ -216,6 +216,7 @@ addDigitalOutputEventListener is attached for all device keys with type digital-
         if (deviceSource === 'zbee') {
           const batteryValue = deviceBox.querySelector('.battery-value');
           if (deviceBatStat !== null && deviceBatStat !== undefined) {
+            if(batteryValue.textContent) //check if text Content exists
             batteryValue.textContent = `${deviceBatStat}%`;
           }
         }
