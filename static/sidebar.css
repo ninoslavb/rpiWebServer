@@ -61,12 +61,16 @@ html, body {
   font-weight: normal;
   color:whitesmoke;
   padding-top: 5px;
-  text-indent: 10px;
+  text-indent: 5px;
   margin:0;
 }
 
 .sidebar .group-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar li.group-li {
+  padding: 4px 0;
 }
 
 
@@ -133,14 +137,6 @@ html, body {
 
 
 
-.group-li {
-  font-size: 16px; /* Adjust the font size */
-  font-weight: normal;
-  padding: 0; /* Adjust the padding */
-  margin: 0; /* Remove any margin */
-  text-indent: 15px; /* Add some indentation */
-  
-}
 
 
 

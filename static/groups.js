@@ -459,7 +459,7 @@ This function is called after updating the group list.
   
       //create list and list button with the name of the group in it
       const groupLinkLi = document.createElement("li");
-     // groupLinkLi.classList.add("group-li");
+      groupLinkLi.classList.add("group-li");
       const groupLink = document.createElement("button");
       groupLink.classList.add("group-button");
       groupLink.textContent = groupName;
