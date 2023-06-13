@@ -71,6 +71,7 @@ html, body {
 
 .sidebar li.group-li {
   padding: 4px 0;
+  font-size: 16px; /* Adjust the font size */
 }
 
 

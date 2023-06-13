@@ -623,16 +623,16 @@ def update_scene_handler(data):
             'scene_devices': scene_devices,
             'is_playing': is_playing
         }       
-        # Perform actions on newly added devices
+        # Perform actions on newly added devices. if scene is playing perform playing action
         for scene_device in scene_devices:
             device_key = scene_device.get('scene_device_key')
             if is_playing:
                 action = scene_device.get('scene_active_device_option')
-            else:
-                action = scene_device.get('scene_inactive_device_option')
-            if device_key:
-                if device_key in device_data:
-                    perform_scene_device_action(device_key, action, scene_key)
+            #else:
+             #   action = scene_device.get('scene_inactive_device_option')
+                if device_key:
+                    if device_key in device_data:
+                        perform_scene_device_action(device_key, action, scene_key)
 
 
         print(f"Updated scene_data: {scene_data}")
