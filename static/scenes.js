@@ -629,6 +629,7 @@ function updateSidebarSceneLinks() {
       socket.emit('play_scene', { scene_key: sceneKey});
       scenePlayButton.style.display = "none";
       sceneStopButton.style.display = "inline-flex"; 
+      toggleSidebar(); // toggle the sidebar when the play button is pressed
     });
 
 
@@ -637,6 +638,7 @@ function updateSidebarSceneLinks() {
       socket.emit('stop_scene', { scene_key: sceneKey });
       sceneStopButton.style.display = "none"; 
       scenePlayButton.style.display = "inline-flex";
+      toggleSidebar(); // toggle the sidebar when the stop button is pressed
     });
 
     // Set the initial display state for the buttons
