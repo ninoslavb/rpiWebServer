@@ -604,7 +604,7 @@ def update_scene_handler(data):
                         # Check for collision of states
                         if active_state != other_active_state or inactive_state != other_inactive_state:
                             other_scene_name = scene['scene_name']
-                            return {'error': f"Collision of states for device {device_name} in scenes: {scene_name} and {other_scene_name}. Scene activated action and scene stopped action need to match in both scenes!"}
+                            return {'error': f"Collision of states for device {device_name} in scenes: {scene_name} and {other_scene_name}. Scene started action and scene stopped action need to match in both scenes!"}
         
 
     # if it's an edit, delete the old scene
@@ -623,7 +623,7 @@ def update_scene_handler(data):
             'scene_devices': scene_devices,
             'is_playing': is_playing
         }       
-        # Perform actions on newly added devices. if scene is playing perform playing action
+        # Perform actions on newly added devices. if scene is playing (started) perform playing action
         for scene_device in scene_devices:
             device_key = scene_device.get('scene_device_key')
             if is_playing:

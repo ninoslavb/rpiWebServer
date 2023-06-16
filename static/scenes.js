@@ -137,7 +137,7 @@ function createSceneDeviceSelect() {
   
     if (selectedDevice.type === 'digital-output') {
         const sceneActiveDeviceOption = createSelect('scene-active-device-option', `
-          <option disabled selected>Select Scene Activated Action</option>
+          <option disabled selected>Select Scene Started Action</option>
           <option value="0">OFF</option>
           <option value="1">ON</option>
         `);
@@ -326,8 +326,8 @@ addSceneForm.addEventListener("submit", (event) => {
         if (sceneDevice.scene_device_key === 'Select Scene Device') {
           alert('Please select a valid scene device.');
           return;
-        } else if (sceneDevice.scene_active_device_option === 'Select Scene Activated Action') {
-          alert('Please select a valid device action when the scene is activated.');
+        } else if (sceneDevice.scene_active_device_option === 'Select Scene Started Action') {
+          alert('Please select a valid device action when the scene is started.');
           return;
        }
     
@@ -438,7 +438,7 @@ for (const sceneKey in sceneData) {
     let sceneText = '';
   
     if (device.type === 'digital-output') {
-    sceneText = `${device.name} state is ${getDigitalOutputText(sceneDevice.scene_active_device_option)} when the scene is activated and ${getDigitalOutputText(sceneDevice.scene_inactive_device_option)} when the scene is stopped `;
+    sceneText = `${device.name} state is ${getDigitalOutputText(sceneDevice.scene_active_device_option)} when the scene is started and ${getDigitalOutputText(sceneDevice.scene_inactive_device_option)} when the scene is stopped `;
     } 
   
     return index === 0 ? `${sceneText}` : `${sceneText}`;

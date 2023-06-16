@@ -139,6 +139,7 @@ dropdown.style.right = '0';                          // Align the right side of 
 dropdown.style.overflowY = 'scroll';                 // Add scroll bar if content exceeds max height
 dropdown.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Set dropdown background color to semi-transparent
 dropdown.style.color = 'white';
+//dropdown.style.width = '100%';                       // Set width to 100%
 dropdown.style.zIndex = '1000'; // Ensure dropdown appears on top of other elements
 deviceBox.appendChild(dropdown); // Append the dropdown to deviceBox instead of deviceTop
 
@@ -150,12 +151,26 @@ chooseIconOption.style.padding = '10px';
 chooseIconOption.style.pointerEvents = 'none'; // Make the option non-selectable
 dropdown.appendChild(chooseIconOption);
 
+const iconMapping = {
+  'fa-lightbulb': 'Light Bulb',
+  'fa-tv': 'TV',
+  'fa-shower': 'Shower',
+  'fa-plug': 'Plug',
+  'fa-fan': 'Fan',
+  'fa-couch': 'Couch',
+  'fa-bed': 'Bed',
+  'fa-bath': 'Bath',
+  'fa-car': 'Car',
+  'fa-home': 'Home',
+  'fa-door-open': 'Door Open',
+};
+
 // Add a few icon options
-['fa-lightbulb', 'fa-tv', 'fa-shower', 'fa-plug', 'fa-fan', 'fa-couch','fa-bed','fa-bath','fa-car','fa-home','fa-door-open'].forEach(iconName => {
+Object.keys(iconMapping).forEach(iconName => {
     const option = document.createElement('div');
     option.style.padding = '10px'; // Add padding to options
     option.value = iconName;
-    option.innerText = iconName;
+    option.innerText = iconMapping[iconName];
     option.addEventListener('click', () => { // Update icon when option is clicked
         icon.className = '';  // clear existing classes
         icon.classList.add('fas', iconName);
@@ -410,8 +425,22 @@ chooseIconOption.style.padding = '10px';
 chooseIconOption.style.pointerEvents = 'none'; // Make the option non-selectable
 dropdown.appendChild(chooseIconOption);
 
+const iconMapping = {
+  'fa-lightbulb': 'Light Bulb',
+  'fa-tv': 'TV',
+  'fa-shower': 'Shower',
+  'fa-plug': 'Plug',
+  'fa-fan': 'Fan',
+  'fa-couch': 'Couch',
+  'fa-bed': 'Bed',
+  'fa-bath': 'Bath',
+  'fa-car': 'Car',
+  'fa-home': 'Home',
+  'fa-door-open': 'Door Open',
+};
+
 // Add a few icon options
-['fa-lightbulb', 'fa-tv', 'fa-shower', 'fa-plug', 'fa-fan', 'fa-couch','fa-bed','fa-bath','fa-car','fa-home','fa-door-open'].forEach(iconName => {
+Object.keys(iconMapping).forEach(iconName => {
     const option = document.createElement('div');
     option.style.padding = '10px'; // Add padding to options
     option.value = iconName;
